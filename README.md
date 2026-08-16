@@ -4,6 +4,8 @@
 
 基于 Vue 3 + Vite + TailwindCSS 构建的纯前端 Web 应用，首期包含 2048、贪吃蛇、俄罗斯方块三款经典益智游戏，支持 PC / 手机浏览器，同一 WiFi 局域网内扫码即玩。
 
+> 🕹️ **在线体验**：https://xyl886.github.io/EasyGame/
+
 > 项目代号：EasyGame-MVP | 版本：v0.1.0
 
 ---
@@ -53,6 +55,14 @@ pnpm preview
 1. 终端会打印本机局域网 IP
 2. 打开页面左上角/侧边的 **局域网面板（LanPanel）**，会显示当前局域网访问地址 + 二维码
 3. 同一 WiFi 下的手机/平板扫码即可访问
+
+### 🌐 在线部署
+
+本仓库已配置 **GitHub Actions 自动部署**，推送 `main` 分支即自动构建并发布到 GitHub Pages：
+
+- **在线地址**：https://xyl886.github.io/EasyGame/
+- 部署流程：`.github/workflows/deploy.yml`（pnpm 构建 + `--base=/EasyGame/` 子路径部署）
+- 本地部署其他平台：`pnpm build` 后将 `dist/` 目录上传至任意静态托管（Nginx / Vercel / Netlify 等）即可
 
 ## 📁 目录结构
 
