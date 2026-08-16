@@ -41,10 +41,10 @@
 
       <!-- 游戏主体 -->
       <main class="max-w-5xl w-full mx-auto flex-1 flex flex-col px-2">
-        <!-- 牌桌舞台（固定设计尺寸 + 等比缩放） -->
+        <!-- 牌桌舞台（固定设计尺寸 + 等比缩放；竖屏保底尺寸可横向滚动） -->
         <div
           ref="wrapRef"
-          class="relative w-full overflow-hidden rounded-xl bg-[#017e00] dark:bg-[#016300] shadow-inner"
+          class="relative w-full overflow-x-auto overflow-y-hidden rounded-xl bg-[#017e00] dark:bg-[#016300] shadow-inner"
           :style="{ height: wrapHeight + 'px' }"
           @wheel.prevent="onWheel"
           @pointermove="onTablePointerMove"
@@ -82,8 +82,7 @@
               >
                 <div
                   class="card3d"
-                  :class="{ 'card-dealing': dealing }"
-                  :style="{ animationDelay: (flipDelay + idx * 0.03) + 's' }"
+                  :class="{ 'face-down': !isTopCard(ci, idx), 'flip-in': flipKeys.has(ci + '-' + idx) }"
                 >
                   <!-- 牌面 -->
                   <div class="card-face card-front rounded-xl bg-white dark:bg-gray-700 border shadow-sm">
@@ -333,7 +332,9 @@ function updateScale() {
   const wrap = wrapRef.value
   if (!wrap) return
   const avail = (landscape.value ? window.innerHeight : wrap.clientWidth) - 20
-  scale.value = Math.max(0.05, Math.min(1, avail / STAGE_W))
+  // 竖屏保底尺寸（牌 ≥ 约 52px），超出部分横向滚动；横屏/PC 填满宽度
+  const minScale = isMobile.value && !landscape.value ? 0.26 : 0.05
+  scale.value = Math.max(minScale, Math.min(1, avail / STAGE_W))
   let maxLen = 0
   for (const col of state.columns) maxLen = Math.max(maxLen, col.length)
   stageH.value = maxLen * offsetView.value + PAD_H + 40
@@ -373,16 +374,13 @@ function toggleSound() {
   soundOn.value = sound.enabled
 }
 
-// ===== 入场翻牌动画 =====
-const dealing = ref(false)
-const flipDelay = ref(0.2)
-function startDealAnimation() {
-  dealing.value = false
-  flipDelay.value = 0.2
-  nextTick(() => {
-    dealing.value = true
-    flipDelay.value = 0.2
-  })
+// ===== 入场/翻开动画（只有列顶牌显示正面，下层为牌背；移动后新顶牌翻面） =====
+const flipKeys = ref<Set<string>>(new Set())
+let prevTopKeys = new Set<string>()
+
+/** 该牌是否为所在列的顶牌（顶牌显示正面，其余牌背） */
+function isTopCard(ci: number, idx: number): boolean {
+  return idx === state.columns[ci].length - 1
 }
 
 // ===== 难度标签 =====
@@ -625,22 +623,22 @@ function undo() {
 
 function newGame() {
   engine = new SpiderEngine(settings.config)
+  prevTopKeys = new Set()
   syncState()
   finishedElapsed.value = 0
   lastSubmittedScore = -1
   clearAutosave(AUTOSAVE_GAME_ID)
-  startDealAnimation()
   updateScale()
   sound.play('start')
 }
 
 function applySettings(config: SpiderConfig) {
   engine = new SpiderEngine(config)
+  prevTopKeys = new Set()
   syncState()
   finishedElapsed.value = 0
   lastSubmittedScore = -1
   clearAutosave(AUTOSAVE_GAME_ID)
-  startDealAnimation()
   updateScale()
 }
 
@@ -669,6 +667,20 @@ function syncState() {
   state.suits = s.suits
   state.mode = s.mode
   canUndo.value = engine.canUndo()
+  // 检测新翻开的顶牌（入场 + 移动后）→ 翻面动画
+  const newTops = new Set<string>()
+  state.columns.forEach((col, ci) => {
+    if (col.length > 0) newTops.add(`${ci}-${col.length - 1}`)
+  })
+  const fresh: string[] = []
+  for (const k of newTops) if (!prevTopKeys.has(k)) fresh.push(k)
+  prevTopKeys = newTops
+  if (fresh.length > 0) {
+    flipKeys.value = new Set(fresh)
+    setTimeout(() => {
+      flipKeys.value = new Set()
+    }, 700)
+  }
   const last = engine.getLastCompleted()
   if (last) {
     flashCol.value = last.col
@@ -702,9 +714,6 @@ onMounted(() => {
   if (state.status === 'won') {
     finishedElapsed.value = Math.floor((Date.now() - state.startTime) / 1000)
     submitScoreIfWon()
-  } else if (state.moves === 0) {
-    // 新局入场翻牌动画
-    startDealAnimation()
   }
   document.addEventListener('visibilitychange', onVisibilityChange)
   window.addEventListener('pagehide', onPageHide)
@@ -730,11 +739,14 @@ onBeforeUnmount(() => {
   border-radius: 18px;
 }
 
-/* 牌 3D 结构 */
+/* 牌 3D 结构：默认正面朝上（顶牌）；非顶牌背面朝上 */
 .card3d {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
+}
+.card3d.face-down {
+  transform: rotateY(180deg);
 }
 .card-face {
   position: absolute;
@@ -768,8 +780,8 @@ onBeforeUnmount(() => {
     transform: rotateY(0deg);
   }
 }
-.card-dealing {
-  animation: dealFlip 0.45s ease both;
+.card3d.flip-in {
+  animation: dealFlip 0.45s ease;
 }
 
 /* 提示高亮闪烁 */
