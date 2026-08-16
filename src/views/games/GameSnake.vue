@@ -95,9 +95,15 @@
           <div
             v-for="i in state.size * state.size"
             :key="i - 1"
-            class="rounded-sm transition-colors duration-75"
+            class="rounded-sm transition-colors duration-75 relative"
             :class="cellClass(i - 1)"
-          ></div>
+          >
+            <!-- 蛇头朝向眼睛 -->
+            <template v-if="isHead(i - 1)">
+              <span class="absolute rounded-full bg-white/90 shadow-sm" :style="eyeStyle(0)"></span>
+              <span class="absolute rounded-full bg-white/90 shadow-sm" :style="eyeStyle(1)"></span>
+            </template>
+          </div>
         </div>
 
         <!-- 游戏结束遮罩 -->
@@ -389,6 +395,36 @@ function cellClass(idx: number): string {
     default:
       return 'cell-bg-light dark:cell-bg-dark'
   }
+}
+
+/** 该格是否为蛇头 */
+function isHead(idx: number): boolean {
+  return cellMap.value.get(`${idx % state.size},${Math.floor(idx / state.size)}`) === 'head'
+}
+
+/** 蛇头眼睛位置：按移动方向分布（百分比定位，随格子缩放） */
+const HEAD_EYES: Record<Direction, [{ left: string; top: string }, { left: string; top: string }]> = {
+  up: [
+    { left: '16%', top: '14%' },
+    { left: '62%', top: '14%' },
+  ],
+  down: [
+    { left: '16%', top: '64%' },
+    { left: '62%', top: '64%' },
+  ],
+  left: [
+    { left: '14%', top: '16%' },
+    { left: '14%', top: '62%' },
+  ],
+  right: [
+    { left: '64%', top: '16%' },
+    { left: '64%', top: '62%' },
+  ],
+}
+
+function eyeStyle(which: 0 | 1) {
+  const pos = (HEAD_EYES[state.direction] ?? HEAD_EYES.right)[which]
+  return { ...pos, width: '24%', height: '24%' }
 }
 
 function syncState() {

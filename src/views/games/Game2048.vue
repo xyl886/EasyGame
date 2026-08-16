@@ -96,6 +96,11 @@
           ></div>
         </div>
 
+        <!-- 空棋盘大 logo（经典 2048 风格，被方块层自然盖住） -->
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+          <span class="text-5xl md:text-6xl font-extrabold tracking-tight text-text-light dark:text-text-dark opacity-10">{{ winLabel }}</span>
+        </div>
+
         <!-- 方块层（绝对定位 + left/top 百分比，平滑过渡） -->
         <div class="absolute" :style="tileLayerStyle">
           <div

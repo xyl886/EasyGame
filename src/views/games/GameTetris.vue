@@ -130,6 +130,12 @@
             ></div>
           </div>
 
+          <!-- 消行白闪反馈 -->
+          <div
+            v-if="lineFlash"
+            class="absolute inset-0 rounded-2xl pointer-events-none z-20 bg-white dark:bg-white/80 line-flash"
+          ></div>
+
           <!-- 游戏结束遮罩 -->
           <div
             v-if="state.over || state.won"
@@ -387,6 +393,15 @@ function onPageHide() {
 const engine = shallowRef(new TetrisEngine(settings.config))
 const state = reactive<TetrisState>(engine.value.getState())
 
+/** 消行白闪（短暂高亮反馈） */
+const lineFlash = ref(false)
+let lineFlashTimer: ReturnType<typeof setTimeout> | null = null
+function flashLines() {
+  lineFlash.value = true
+  if (lineFlashTimer) clearTimeout(lineFlashTimer)
+  lineFlashTimer = setTimeout(() => (lineFlash.value = false), 280)
+}
+
 const boardRef = ref<HTMLDivElement | null>(null)
 const gap = ref(2)
 const padding = ref(4)
@@ -536,7 +551,10 @@ function scheduleTick() {
     engine.value.step()
     syncState()
     // 音效：消行 / 通关 / 游戏结束（引擎胜利时 won=true 且 over=true，先判 won）
-    if (state.lines > prevLines) sound.play('line')
+    if (state.lines > prevLines) {
+      sound.play('line')
+      flashLines()
+    }
     if (state.won) sound.play('win')
     else if (state.over) sound.play('over')
     submitScoreIfOver()
@@ -760,6 +778,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   stopTick()
+  if (lineFlashTimer) clearTimeout(lineFlashTimer)
   // 离开页面兜底保存
   if (!state.over) autosaver.flush()
   autosaver.dispose()
@@ -776,5 +795,17 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* 消行白闪 */
+@keyframes lineFlash {
+  0% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.line-flash {
+  animation: lineFlash 0.28s ease-out forwards;
+}
 /* tetris 不需要额外样式，靠 tailwind 工具类 */
 </style>
