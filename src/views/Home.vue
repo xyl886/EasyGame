@@ -46,8 +46,8 @@
 
       <!-- 游戏大厅 -->
       <section>
-        <h2 class="text-lg font-semibold mb-5 text-text-light dark:text-text-dark">游戏大厅</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <h2 class="text-base font-semibold mb-3 text-text-light dark:text-text-dark">游戏大厅</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           <GameCard v-for="g in gameStore.games" :key="g.id" :game="g" />
         </div>
       </section>

@@ -70,6 +70,13 @@
             ❓ 玩法
           </button>
           <button
+            @click="doHint"
+            :disabled="state.status === 'won'"
+            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-purple-400/40 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-text-light dark:text-text-dark"
+          >
+            💡 提示
+          </button>
+          <button
             @click="undo"
             :disabled="!canUndo"
             class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-purple-400/40 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-text-light dark:text-text-dark"
@@ -85,21 +92,28 @@
           </button>
         </div>
         <div class="text-xs opacity-60 text-text-muted-light dark:text-text-muted-dark hidden sm:block">
-          点击牌串选中，再点目标列移动 · 同花色降序才能整串移动
+          点击/拖动牌串 → 目标列 · 双击自动归位 · 同花色降序才能整串移动
         </div>
       </div>
 
       <!-- 牌桌 -->
       <div
+        ref="tableRef"
         class="relative w-full rounded-xl bg-emerald-900/10 dark:bg-emerald-950/30 border border-border-light dark:border-border-dark p-2 overflow-x-auto"
+        @pointermove="onTablePointerMove"
+        @pointerup="onTablePointerUp"
+        @pointercancel="cancelDrag"
       >
         <div class="flex gap-1.5 min-w-max mx-auto">
           <div
             v-for="(col, ci) in state.columns"
             :key="ci"
-            class="relative shrink-0"
+            :data-col="ci"
+            class="relative shrink-0 rounded-md"
+            :class="[colClass(ci), { 'ring-2 ring-emerald-400 z-10': dragOverCol === ci && dragging }]"
             :style="{ width: cardW + 'px', height: Math.max(70, col.length * 20 + 10) + 'px' }"
             @click="onColumnAreaClick(ci)"
+            @dblclick.self="onColumnDblClick(ci)"
           >
             <div
               v-for="(card, idx) in col"
@@ -107,10 +121,12 @@
               class="absolute w-full rounded-md border flex flex-col items-center justify-center leading-none shadow-sm"
               :class="cardClass(card, ci, idx)"
               :style="{ top: idx * 20 + 'px', height: cardH + 'px' }"
+              @pointerdown.stop="onCardPointerDown(ci, idx, $event)"
               @click.stop="onCardClick(ci, idx)"
+              @dblclick.stop="onCardDblClick(ci, idx)"
             >
-              <span class="font-bold">{{ rankLabel(card.rank) }}</span>
-              <span class="text-[10px]">{{ SUIT_SYMBOL[card.suit] }}</span>
+              <span class="absolute top-0.5 left-1 text-[10px] font-bold leading-none">{{ rankLabel(card.rank) }}{{ SUIT_SYMBOL[card.suit] }}</span>
+              <span class="text-base">{{ SUIT_SYMBOL[card.suit] }}</span>
             </div>
             <!-- 空列占位 -->
             <div
@@ -121,6 +137,15 @@
               ✦
             </div>
           </div>
+        </div>
+        <!-- 拖拽跟随指示 -->
+        <div
+          v-if="dragging && dragPreview"
+          class="fixed z-50 pointer-events-none w-11 rounded-md border bg-white dark:bg-gray-800 shadow-claude-lg flex flex-col items-center justify-center text-purple-600"
+          :style="{ left: dragX + 'px', top: dragY + 'px' }"
+        >
+          <span class="absolute top-0.5 left-1 text-[10px] font-bold">{{ dragPreview }}</span>
+          <span class="text-base">♠</span>
         </div>
       </div>
 
@@ -269,6 +294,48 @@ const now = ref(Date.now())
 const cardW = 46
 const cardH = 62
 
+// ===== 拖拽状态 =====
+const tableRef = ref<HTMLElement | null>(null)
+const dragging = ref(false)
+const dragX = ref(0)
+const dragY = ref(0)
+const dragPreview = ref('')
+const dragOverCol = ref<number | null>(null)
+/** 拖拽源：{ col, count, startX, startY } */
+const dragSource = ref<{ col: number; count: number; startX: number; startY: number } | null>(null)
+/** 提示高亮的列 */
+const hintCol = ref<number | null>(null)
+/** 收牌动画的列 */
+const flashCol = ref<number | null>(null)
+
+/** 选中串后所有合法目标列 */
+const validTargets = computed<number[]>(() => {
+  const sel = state.selected
+  if (!sel) return []
+  const list: number[] = []
+  for (let t = 0; t < 10; t++) {
+    if (engine.canMoveTo(sel.col, t, sel.count)) list.push(t)
+  }
+  return list
+})
+
+function colClass(ci: number): string {
+  const classes: string[] = []
+  // 合法目标列高亮（选中后）
+  if (state.selected && validTargets.value.includes(ci)) {
+    classes.push('ring-2 ring-emerald-400/70')
+  }
+  // 提示高亮
+  if (hintCol.value === ci) {
+    classes.push('hint-flash')
+  }
+  // 收牌闪光
+  if (flashCol.value === ci) {
+    classes.push('complete-flash')
+  }
+  return classes.join(' ')
+}
+
 const difficultyLabel = computed(() => DIFFICULTY_LABELS[settings.config.difficulty])
 
 const elapsedText = computed(() => {
@@ -325,6 +392,115 @@ function onCardClick(ci: number, idx: number) {
     sound.play('click')
     syncState()
   }
+}
+
+// ===== 拖拽 =====
+function onCardPointerDown(ci: number, idx: number, e: PointerEvent) {
+  if (state.status === 'won') return
+  if (e.button === 2) return
+  const eng = engine
+  // 无选中时先选中（点击逻辑也会做，这里为拖拽记录起点）
+  if (!eng.getSelected()) {
+    eng.selectAt(ci, idx)
+  }
+  const sel = eng.getSelected()
+  if (!sel) return
+  syncState()
+  dragSource.value = { col: ci, count: sel.count, startX: e.clientX, startY: e.clientY }
+  dragging.value = false
+  dragOverCol.value = null
+  const card = state.columns[ci][idx]
+  dragPreview.value = rankLabel(card.rank) + SUIT_SYMBOL[card.suit]
+}
+
+function onTablePointerMove(e: PointerEvent) {
+  const src = dragSource.value
+  if (!src) return
+  const dx = e.clientX - src.startX
+  const dy = e.clientY - src.startY
+  if (!dragging.value && Math.max(Math.abs(dx), Math.abs(dy)) > 10) {
+    dragging.value = true
+    if (navigator.vibrate) navigator.vibrate(10)
+  }
+  if (!dragging.value) return
+  dragX.value = e.clientX - 22
+  dragY.value = e.clientY - 30
+  // 找当前悬停列
+  const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null
+  const colEl = el?.closest('[data-col]') as HTMLElement | null
+  dragOverCol.value = colEl ? Number(colEl.dataset.col) : null
+}
+
+function onTablePointerUp(e: PointerEvent) {
+  const src = dragSource.value
+  if (!src) return
+  dragSource.value = null
+  if (dragging.value) {
+    dragging.value = false
+    // 拖到目标列 → 移动
+    const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null
+    const colEl = el?.closest('[data-col]') as HTMLElement | null
+    const target = colEl ? Number(colEl.dataset.col) : null
+    if (target !== null && target !== src.col) {
+      if (engine.moveSelected(target)) {
+        sound.play('move')
+        syncState()
+        handleProgress()
+        dragOverCol.value = null
+        return
+      }
+    }
+    dragOverCol.value = null
+    // 拖动未成功：保持选中
+    syncState()
+  }
+}
+
+function cancelDrag() {
+  dragSource.value = null
+  dragging.value = false
+  dragOverCol.value = null
+}
+
+// ===== 双击自动移动 =====
+function onCardDblClick(ci: number, idx: number) {
+  if (state.status === 'won') return
+  const count = engine.selectAt(ci, idx)
+  if (count > 0 && engine.autoMove(ci, count)) {
+    sound.play('move')
+    syncState()
+    handleProgress()
+  } else {
+    engine.clearSelection()
+    syncState()
+  }
+}
+
+function onColumnDblClick(ci: number) {
+  if (state.status === 'won') return
+  const moves = engine.findMoves()
+  const m = moves.find((x) => x.col === ci)
+  if (m && engine.autoMove(ci, m.count)) {
+    sound.play('move')
+    syncState()
+    handleProgress()
+  }
+}
+
+// ===== 提示 =====
+function doHint() {
+  if (state.status === 'won') return
+  const moves = engine.findMoves()
+  if (moves.length === 0) {
+    toast(state.stock.length > 0 ? '没有可用移动，试试发牌 🃏' : '没有可用移动了')
+    return
+  }
+  const m = moves[0]
+  hintCol.value = m.col
+  sound.play('start')
+  setTimeout(() => {
+    hintCol.value = null
+  }, 1500)
 }
 
 /** 点击列（空白区域/列顶上方） */
@@ -421,6 +597,16 @@ function syncState() {
   state.bestScore = s.bestScore
   state.difficulty = s.difficulty
   canUndo.value = engine.canUndo()
+  // 收牌动画检测
+  const last = engine.getLastCompleted()
+  if (last) {
+    flashCol.value = last.col
+    sound.play('line')
+    setTimeout(() => {
+      flashCol.value = null
+    }, 800)
+  }
+  engine.clearLastCompleted()
 }
 
 function persistAutosave() {
@@ -459,5 +645,20 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* 蜘蛛纸牌不需要额外样式 */
+/* 提示高亮闪烁 */
+@keyframes hintFlash {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.8); }
+  50% { box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.2); }
+}
+.hint-flash {
+  animation: hintFlash 0.6s ease-in-out 2;
+}
+/* 收牌闪光 */
+@keyframes completeFlash {
+  0% { background-color: rgba(52, 211, 153, 0.85); }
+  100% { background-color: transparent; }
+}
+.complete-flash {
+  animation: completeFlash 0.7s ease;
+}
 </style>

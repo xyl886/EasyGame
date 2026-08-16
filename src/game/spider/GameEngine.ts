@@ -48,6 +48,8 @@ export class SpiderEngine implements BaseGame<SpiderState, number> {
   private bestScoreKey: string
   /** 撤销历史：每步操作的反向描述 */
   private history: Array<() => void> = []
+  /** 最近一次收牌事件（视图动画用）：{ 列号, 时间戳 } */
+  private lastCompletedEvent: { col: number; time: number } | null = null
 
   constructor(config: Partial<SpiderConfig> = {}) {
     this.config = { ...DEFAULT_SPIDER_CONFIG, ...config }
@@ -173,18 +175,10 @@ export class SpiderEngine implements BaseGame<SpiderState, number> {
    * 校验：串合法（同花色降序）+ 目标合法（空列或顶牌=串底+1）。
    */
   tryMove(fromCol: number, toCol: number, count: number): boolean {
-    if (fromCol < 0 || fromCol >= COLS || toCol < 0 || toCol >= COLS) return false
-    if (fromCol === toCol) return false
+    if (!this.canMoveTo(fromCol, toCol, count)) return false
     const from = this.columns[fromCol]
     const to = this.columns[toCol]
-    if (count <= 0 || count > from.length) return false
     const fromIdx = from.length - count
-    if (!this.isRunFrom(fromCol, fromIdx)) return false
-    const bottom = from[fromIdx]
-    if (to.length > 0) {
-      const top = to[to.length - 1]
-      if (top.rank !== bottom.rank + 1) return false
-    }
     // 执行移动
     const moved = from.splice(fromIdx, count)
     const fromBefore = [...from]
@@ -204,6 +198,50 @@ export class SpiderEngine implements BaseGame<SpiderState, number> {
     this.completeAndCheck()
     this.updateBest()
     return true
+  }
+
+  /** 纯校验：fromCol 顶部 count 张能否移到 toCol（不改变状态） */
+  canMoveTo(fromCol: number, toCol: number, count: number): boolean {
+    if (fromCol < 0 || fromCol >= COLS || toCol < 0 || toCol >= COLS) return false
+    if (fromCol === toCol) return false
+    if (count <= 0) return false
+    const from = this.columns[fromCol]
+    const to = this.columns[toCol]
+    if (count > from.length) return false
+    const fromIdx = from.length - count
+    if (!this.isRunFrom(fromCol, fromIdx)) return false
+    const bottom = from[fromIdx]
+    if (to.length > 0) {
+      const top = to[to.length - 1]
+      if (top.rank !== bottom.rank + 1) return false
+    }
+    return true
+  }
+
+  /** 所有可移动串及其合法目标列（提示功能用） */
+  findMoves(): Array<{ col: number; count: number; targets: number[] }> {
+    if (this.status !== 'ready' && this.status !== 'playing') return []
+    const moves: Array<{ col: number; count: number; targets: number[] }> = []
+    for (let c = 0; c < COLS; c++) {
+      const run = this.topRunLength(c)
+      if (run === 0) continue
+      const targets: number[] = []
+      for (let t = 0; t < COLS; t++) {
+        if (this.canMoveTo(c, t, run)) targets.push(t)
+      }
+      if (targets.length > 0) moves.push({ col: c, count: run, targets })
+    }
+    return moves
+  }
+
+  /** 自动把 (col, count) 串移到第一个合法目标（双击/提示用）。返回是否成功 */
+  autoMove(col: number, count: number): boolean {
+    const targets: number[] = []
+    for (let t = 0; t < COLS; t++) {
+      if (this.canMoveTo(col, t, count)) targets.push(t)
+    }
+    if (targets.length === 0) return false
+    return this.tryMove(col, targets[0], count)
   }
 
   /** 发牌：给每列各发一张（牌堆剩余时） */
@@ -250,6 +288,7 @@ export class SpiderEngine implements BaseGame<SpiderState, number> {
           const before = [...col]
           col.splice(col.length - 13, 13)
           this.completed++
+          this.lastCompletedEvent = { col: c, time: Date.now() }
           this.history.push(() => {
             this.columns[c] = before
             this.completed--
@@ -271,6 +310,15 @@ export class SpiderEngine implements BaseGame<SpiderState, number> {
       this.bestScore = s
       StorageAdapter.set(this.bestScoreKey, this.bestScore)
     }
+  }
+
+  /** 最近一次收牌事件（null=尚无；视图检测后置空） */
+  getLastCompleted(): { col: number; time: number } | null {
+    return this.lastCompletedEvent
+  }
+
+  clearLastCompleted(): void {
+    this.lastCompletedEvent = null
   }
 
   /** 撤销一步（含移动/发牌/收牌） */
