@@ -32,7 +32,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 81,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 3, kind: 'general', row: 0, col: 3, w: 1, h: 2, name: '赵云' },
       { id: 4, kind: 'general', row: 2, col: 0, w: 1, h: 2, name: '马超' },
       { id: 6, kind: 'guanyu', row: 2, col: 1, w: 2, h: 1, name: '关羽' },
@@ -50,7 +50,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 70,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 3, kind: 'general', row: 0, col: 3, w: 1, h: 2, name: '赵云' },
       { id: 9, kind: 'soldier', row: 2, col: 0, w: 1, h: 1, name: '兵' },
       { id: 6, kind: 'guanyu', row: 2, col: 1, w: 2, h: 1, name: '关羽' },
@@ -67,7 +67,7 @@ export const LEVELS: LevelDef[] = [
     name: '将拥曹营',
     minSteps: 72,
     pieces: [
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 2, kind: 'general', row: 1, col: 0, w: 1, h: 2, name: '张飞' },
       { id: 3, kind: 'general', row: 1, col: 3, w: 1, h: 2, name: '赵云' },
       { id: 4, kind: 'general', row: 2, col: 1, w: 1, h: 2, name: '马超' },
@@ -86,7 +86,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 60,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 3, kind: 'general', row: 0, col: 3, w: 1, h: 2, name: '赵云' },
       { id: 7, kind: 'soldier', row: 2, col: 0, w: 1, h: 1, name: '兵' },
       { id: 8, kind: 'soldier', row: 2, col: 1, w: 1, h: 1, name: '兵' },
@@ -104,7 +104,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 72,
     pieces: [
       { id: 7, kind: 'soldier', row: 0, col: 0, w: 1, h: 1, name: '兵' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 8, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 2, kind: 'general', row: 1, col: 0, w: 1, h: 2, name: '张飞' },
       { id: 3, kind: 'general', row: 1, col: 3, w: 1, h: 2, name: '赵云' },
@@ -122,7 +122,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 47,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 7, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 8, kind: 'soldier', row: 1, col: 3, w: 1, h: 1, name: '兵' },
       { id: 4, kind: 'general', row: 2, col: 0, w: 1, h: 2, name: '马超' },
@@ -140,7 +140,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 54,
     pieces: [
       { id: 7, kind: 'soldier', row: 0, col: 0, w: 1, h: 1, name: '兵' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 8, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 9, kind: 'soldier', row: 1, col: 0, w: 1, h: 1, name: '兵' },
       { id: 10, kind: 'soldier', row: 1, col: 3, w: 1, h: 1, name: '兵' },
@@ -158,7 +158,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 70,
     pieces: [
       { id: 7, kind: 'soldier', row: 0, col: 0, w: 1, h: 1, name: '兵' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 8, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 2, kind: 'general', row: 1, col: 0, w: 1, h: 2, name: '张飞' },
       { id: 3, kind: 'general', row: 1, col: 3, w: 1, h: 2, name: '赵云' },
@@ -176,7 +176,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 58,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 7, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 8, kind: 'soldier', row: 1, col: 3, w: 1, h: 1, name: '兵' },
       { id: 3, kind: 'general', row: 2, col: 0, w: 1, h: 2, name: '赵云' },
@@ -194,7 +194,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 39,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 7, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 8, kind: 'soldier', row: 1, col: 3, w: 1, h: 1, name: '兵' },
       { id: 4, kind: 'general', row: 2, col: 0, w: 1, h: 2, name: '马超' },
@@ -212,7 +212,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 62,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 7, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 8, kind: 'soldier', row: 1, col: 3, w: 1, h: 1, name: '兵' },
       { id: 3, kind: 'general', row: 2, col: 0, w: 1, h: 2, name: '赵云' },
@@ -230,7 +230,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 32,
     pieces: [
       { id: 7, kind: 'soldier', row: 0, col: 0, w: 1, h: 1, name: '兵' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 8, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 9, kind: 'soldier', row: 1, col: 0, w: 1, h: 1, name: '兵' },
       { id: 10, kind: 'soldier', row: 1, col: 3, w: 1, h: 1, name: '兵' },
@@ -248,7 +248,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 62,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 7, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 8, kind: 'soldier', row: 1, col: 3, w: 1, h: 1, name: '兵' },
       { id: 6, kind: 'guanyu', row: 2, col: 0, w: 2, h: 1, name: '关羽' },
@@ -266,7 +266,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 81,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 3, kind: 'general', row: 0, col: 3, w: 1, h: 2, name: '赵云' },
       { id: 7, kind: 'soldier', row: 2, col: 0, w: 1, h: 1, name: '兵' },
       { id: 4, kind: 'general', row: 2, col: 1, w: 1, h: 2, name: '马超' },
@@ -284,7 +284,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 99,
     pieces: [
       { id: 7, kind: 'soldier', row: 0, col: 0, w: 1, h: 1, name: '兵' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 8, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 2, kind: 'general', row: 1, col: 0, w: 1, h: 2, name: '张飞' },
       { id: 3, kind: 'general', row: 1, col: 3, w: 1, h: 2, name: '赵云' },
@@ -302,7 +302,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 73,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 7, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 8, kind: 'soldier', row: 1, col: 3, w: 1, h: 1, name: '兵' },
       { id: 4, kind: 'general', row: 2, col: 0, w: 1, h: 2, name: '马超' },
@@ -320,7 +320,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 83,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 3, kind: 'general', row: 0, col: 3, w: 1, h: 2, name: '赵云' },
       { id: 5, kind: 'general', row: 2, col: 0, w: 2, h: 1, name: '黄忠' },
       { id: 6, kind: 'guanyu', row: 2, col: 2, w: 2, h: 1, name: '关羽' },
@@ -338,7 +338,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 102,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 3, kind: 'general', row: 0, col: 3, w: 1, h: 2, name: '赵云' },
       { id: 7, kind: 'soldier', row: 2, col: 0, w: 1, h: 1, name: '兵' },
       { id: 4, kind: 'general', row: 2, col: 1, w: 2, h: 1, name: '马超' },
@@ -356,7 +356,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 120,
     pieces: [
       { id: 7, kind: 'soldier', row: 0, col: 0, w: 1, h: 1, name: '兵' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 8, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 2, kind: 'general', row: 1, col: 0, w: 1, h: 2, name: '张飞' },
       { id: 3, kind: 'general', row: 1, col: 3, w: 1, h: 2, name: '赵云' },
@@ -374,7 +374,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 87,
     pieces: [
       { id: 7, kind: 'soldier', row: 0, col: 0, w: 1, h: 1, name: '兵' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 3, kind: 'general', row: 0, col: 3, w: 1, h: 2, name: '赵云' },
       { id: 8, kind: 'soldier', row: 1, col: 0, w: 1, h: 1, name: '兵' },
       { id: 2, kind: 'general', row: 2, col: 0, w: 1, h: 2, name: '张飞' },
@@ -392,7 +392,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 40,
     pieces: [
       { id: 7, kind: 'soldier', row: 0, col: 0, w: 1, h: 1, name: '兵' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 8, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 9, kind: 'soldier', row: 1, col: 0, w: 1, h: 1, name: '兵' },
       { id: 10, kind: 'soldier', row: 1, col: 3, w: 1, h: 1, name: '兵' },
@@ -410,7 +410,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 103,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 3, kind: 'general', row: 0, col: 3, w: 1, h: 2, name: '赵云' },
       { id: 4, kind: 'general', row: 2, col: 0, w: 2, h: 1, name: '马超' },
       { id: 5, kind: 'general', row: 2, col: 2, w: 2, h: 1, name: '黄忠' },
@@ -428,7 +428,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 98,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 3, kind: 'general', row: 0, col: 3, w: 1, h: 2, name: '赵云' },
       { id: 7, kind: 'soldier', row: 2, col: 0, w: 1, h: 1, name: '兵' },
       { id: 6, kind: 'guanyu', row: 2, col: 1, w: 2, h: 1, name: '关羽' },
@@ -446,7 +446,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 79,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 7, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 8, kind: 'soldier', row: 1, col: 3, w: 1, h: 1, name: '兵' },
       { id: 3, kind: 'general', row: 2, col: 0, w: 2, h: 1, name: '赵云' },
@@ -464,7 +464,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 77,
     pieces: [
       { id: 7, kind: 'soldier', row: 0, col: 0, w: 1, h: 1, name: '兵' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 8, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 9, kind: 'soldier', row: 1, col: 0, w: 1, h: 1, name: '兵' },
       { id: 10, kind: 'soldier', row: 1, col: 3, w: 1, h: 1, name: '兵' },
@@ -482,7 +482,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 87,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 7, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 8, kind: 'soldier', row: 1, col: 3, w: 1, h: 1, name: '兵' },
       { id: 9, kind: 'soldier', row: 2, col: 0, w: 1, h: 1, name: '兵' },
@@ -500,7 +500,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 34,
     pieces: [
       { id: 7, kind: 'soldier', row: 0, col: 0, w: 1, h: 1, name: '兵' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 8, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 9, kind: 'soldier', row: 1, col: 0, w: 1, h: 1, name: '兵' },
       { id: 10, kind: 'soldier', row: 1, col: 3, w: 1, h: 1, name: '兵' },
@@ -521,7 +521,7 @@ export const LEVELS: LevelDef[] = [
       { id: 7, kind: 'soldier', row: 0, col: 1, w: 1, h: 1, name: '兵' },
       { id: 8, kind: 'soldier', row: 0, col: 2, w: 1, h: 1, name: '兵' },
       { id: 3, kind: 'general', row: 0, col: 3, w: 1, h: 2, name: '赵云' },
-      { id: 1, kind: 'caocao', row: 1, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 1, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 9, kind: 'soldier', row: 2, col: 0, w: 1, h: 1, name: '兵' },
       { id: 5, kind: 'general', row: 2, col: 3, w: 1, h: 2, name: '黄忠' },
       { id: 4, kind: 'general', row: 3, col: 0, w: 1, h: 2, name: '马超' },
@@ -537,7 +537,7 @@ export const LEVELS: LevelDef[] = [
     pieces: [
       { id: 7, kind: 'soldier', row: 0, col: 0, w: 1, h: 1, name: '兵' },
       { id: 8, kind: 'soldier', row: 0, col: 1, w: 1, h: 1, name: '兵' },
-      { id: 1, kind: 'caocao', row: 0, col: 2, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 2, w: 2, h: 2, name: '曹操' },
       { id: 2, kind: 'general', row: 1, col: 0, w: 2, h: 1, name: '张飞' },
       { id: 3, kind: 'general', row: 2, col: 0, w: 2, h: 1, name: '赵云' },
       { id: 4, kind: 'general', row: 2, col: 2, w: 2, h: 1, name: '马超' },
@@ -554,7 +554,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 34,
     pieces: [
       { id: 7, kind: 'soldier', row: 0, col: 0, w: 1, h: 1, name: '兵' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 8, kind: 'soldier', row: 0, col: 3, w: 1, h: 1, name: '兵' },
       { id: 9, kind: 'soldier', row: 1, col: 0, w: 1, h: 1, name: '兵' },
       { id: 10, kind: 'soldier', row: 1, col: 3, w: 1, h: 1, name: '兵' },
@@ -574,7 +574,7 @@ export const LEVELS: LevelDef[] = [
       { id: 2, kind: 'general', row: 0, col: 0, w: 2, h: 1, name: '张飞' },
       { id: 3, kind: 'general', row: 0, col: 2, w: 2, h: 1, name: '赵云' },
       { id: 4, kind: 'general', row: 1, col: 0, w: 1, h: 2, name: '马超' },
-      { id: 1, kind: 'caocao', row: 1, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 1, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 5, kind: 'general', row: 1, col: 3, w: 1, h: 2, name: '黄忠' },
       { id: 7, kind: 'soldier', row: 3, col: 0, w: 1, h: 1, name: '兵' },
       { id: 6, kind: 'guanyu', row: 3, col: 1, w: 2, h: 1, name: '关羽' },
@@ -589,7 +589,7 @@ export const LEVELS: LevelDef[] = [
     name: '前挡后阻',
     minSteps: 42,
     pieces: [
-      { id: 1, kind: 'caocao', row: 0, col: 0, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 0, w: 2, h: 2, name: '曹操' },
       { id: 5, kind: 'general', row: 0, col: 2, w: 2, h: 1, name: '黄忠' },
       { id: 4, kind: 'general', row: 1, col: 2, w: 1, h: 2, name: '马超' },
       { id: 7, kind: 'soldier', row: 1, col: 3, w: 1, h: 1, name: '兵' },
@@ -616,7 +616,7 @@ export const LEVELS: LevelDef[] = [
       { id: 9, kind: 'soldier', row: 2, col: 2, w: 1, h: 1, name: '兵' },
       { id: 10, kind: 'soldier', row: 2, col: 3, w: 1, h: 1, name: '兵' },
       { id: 6, kind: 'guanyu', row: 3, col: 0, w: 2, h: 1, name: '关羽' },
-      { id: 1, kind: 'caocao', row: 3, col: 2, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 3, col: 2, w: 2, h: 2, name: '曹操' },
     ],
     steps: [63, 53, 23, 72, 81, 24, 94, 91, 104, 104, 11, 62, 62, 53, 103, 104, 14, 43, 43, 32, 92, 91, 11, 102, 102, 51, 64, 64, 103, 102, 62, 52, 23, 23, 83, 83, 74, 73, 94, 94, 11, 51, 61, 104, 104, 43, 52, 82, 21, 104, 63, 83, 54, 41, 62, 102, 23, 54, 44, 33, 33, 12, 72, 71, 51, 21, 81, 101, 64, 64, 43, 33, 13, 72, 72, 92, 92, 51, 21, 104, 83, 14, 31, 31, 42, 62, 103, 84, 13, 93, 94, 74, 73, 52, 21, 31, 41, 62, 102, 83, 14, 44, 33, 52, 91, 74, 41, 61, 102, 102, 82, 82, 13, 23, 73, 93, 54, 54, 41, 31, 61, 81, 82, 12],
   },
@@ -626,7 +626,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 0,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 3, kind: 'general', row: 0, col: 3, w: 1, h: 2, name: '赵云' },
       { id: 4, kind: 'general', row: 2, col: 0, w: 1, h: 2, name: '马超' },
       { id: 6, kind: 'guanyu', row: 2, col: 1, w: 1, h: 2, name: '关羽' },
@@ -644,7 +644,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 103,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 1, h: 2, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 1, w: 2, h: 2, name: '曹操' },
       { id: 3, kind: 'general', row: 0, col: 3, w: 1, h: 2, name: '赵云' },
       { id: 4, kind: 'general', row: 2, col: 0, w: 2, h: 1, name: '马超' },
       { id: 5, kind: 'general', row: 2, col: 2, w: 2, h: 1, name: '黄忠' },
@@ -662,7 +662,7 @@ export const LEVELS: LevelDef[] = [
     minSteps: 28,
     pieces: [
       { id: 2, kind: 'general', row: 0, col: 0, w: 2, h: 1, name: '张飞' },
-      { id: 1, kind: 'caocao', row: 0, col: 2, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 2, w: 2, h: 2, name: '曹操' },
       { id: 3, kind: 'general', row: 1, col: 0, w: 2, h: 1, name: '赵云' },
       { id: 4, kind: 'general', row: 2, col: 0, w: 2, h: 1, name: '马超' },
       { id: 5, kind: 'general', row: 2, col: 2, w: 2, h: 1, name: '黄忠' },
@@ -679,7 +679,7 @@ export const LEVELS: LevelDef[] = [
     name: '夹道藏兵',
     minSteps: 75,
     pieces: [
-      { id: 1, kind: 'caocao', row: 0, col: 0, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 0, w: 2, h: 2, name: '曹操' },
       { id: 7, kind: 'soldier', row: 0, col: 2, w: 1, h: 1, name: '兵' },
       { id: 6, kind: 'guanyu', row: 0, col: 3, w: 1, h: 2, name: '关羽' },
       { id: 8, kind: 'soldier', row: 1, col: 2, w: 1, h: 1, name: '兵' },
@@ -697,7 +697,7 @@ export const LEVELS: LevelDef[] = [
     name: '屯兵东路',
     minSteps: 71,
     pieces: [
-      { id: 1, kind: 'caocao', row: 0, col: 0, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 0, w: 2, h: 2, name: '曹操' },
       { id: 2, kind: 'general', row: 0, col: 2, w: 1, h: 2, name: '张飞' },
       { id: 3, kind: 'general', row: 0, col: 3, w: 1, h: 2, name: '赵云' },
       { id: 6, kind: 'guanyu', row: 2, col: 0, w: 2, h: 1, name: '关羽' },
@@ -715,7 +715,7 @@ export const LEVELS: LevelDef[] = [
     name: '四将连关',
     minSteps: 39,
     pieces: [
-      { id: 1, kind: 'caocao', row: 0, col: 0, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 0, col: 0, w: 2, h: 2, name: '曹操' },
       { id: 4, kind: 'general', row: 0, col: 2, w: 2, h: 1, name: '马超' },
       { id: 5, kind: 'general', row: 1, col: 2, w: 2, h: 1, name: '黄忠' },
       { id: 2, kind: 'general', row: 2, col: 0, w: 1, h: 2, name: '张飞' },
@@ -737,7 +737,7 @@ export const LEVELS: LevelDef[] = [
       { id: 8, kind: 'soldier', row: 0, col: 1, w: 1, h: 1, name: '兵' },
       { id: 9, kind: 'soldier', row: 0, col: 2, w: 1, h: 1, name: '兵' },
       { id: 3, kind: 'general', row: 0, col: 3, w: 1, h: 2, name: '赵云' },
-      { id: 1, kind: 'caocao', row: 1, col: 0, w: 2, h: 2, name: '兵' },
+      { id: 1, kind: 'caocao', row: 1, col: 0, w: 2, h: 2, name: '曹操' },
       { id: 2, kind: 'general', row: 1, col: 2, w: 1, h: 2, name: '张飞' },
       { id: 4, kind: 'general', row: 2, col: 3, w: 1, h: 2, name: '马超' },
       { id: 5, kind: 'general', row: 3, col: 1, w: 2, h: 1, name: '黄忠' },

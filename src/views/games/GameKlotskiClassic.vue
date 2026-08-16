@@ -296,7 +296,6 @@ import type {
   PieceKind,
 } from '../../game/klotski-classic/types'
 import {
-  PIECE_SIZE,
   PIECE_LABEL,
   ROWS,
   COLS,
@@ -564,9 +563,9 @@ function pieceFontSize(kind: PieceKind): string {
   }
 }
 
-/** 棋子绝对定位（参照 2048 tile 公式） */
+/** 棋子绝对定位（用棋子自身的 w/h，经典布局中将军横竖不一） */
 function pieceStyle(p: Piece) {
-  const { w, h } = PIECE_SIZE[p.kind]
+  const { w, h } = p
   const g = gap.value
   const cell = `calc((100% - ${g * (COLS - 1)}px) / ${COLS})`
   const cellH = `calc((100% - ${g * (ROWS - 1)}px) / ${ROWS})`
