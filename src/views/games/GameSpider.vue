@@ -104,7 +104,7 @@
         @pointerup="onTablePointerUp"
         @pointercancel="cancelDrag"
       >
-        <div class="flex gap-1.5 min-w-max mx-auto">
+        <div class="flex min-w-max mx-auto" :style="{ gap: tableGap + 'px' }">
           <div
             v-for="(col, ci) in state.columns"
             :key="ci"
@@ -125,8 +125,8 @@
               @click.stop="onCardClick(ci, idx)"
               @dblclick.stop="onCardDblClick(ci, idx)"
             >
-              <span class="absolute top-0.5 left-0.5 text-[11px] font-bold leading-none px-0.5 rounded-sm" :class="suitColor(card) + ' bg-bg-light/70 dark:bg-bg-dark/60'">{{ rankLabel(card.rank) }}{{ SUIT_SYMBOL[card.suit] }}</span>
-              <span class="text-xl" :class="suitColor(card)">{{ SUIT_SYMBOL[card.suit] }}</span>
+              <span class="absolute top-0.5 left-0.5 text-[10px] font-bold leading-none px-0.5 rounded-sm" :class="suitColor(card) + ' bg-bg-light/70 dark:bg-bg-dark/60'">{{ rankLabel(card.rank) }}{{ SUIT_SYMBOL[card.suit] }}</span>
+              <span v-if="!isMobile" class="text-xl" :class="suitColor(card)">{{ SUIT_SYMBOL[card.suit] }}</span>
             </div>
             <!-- 空列占位 -->
             <div
@@ -290,11 +290,18 @@ const canUndo = ref(false)
 const finishedElapsed = ref(0)
 const now = ref(Date.now())
 
-/** 牌尺寸（加大，便于看清花色点数） */
-const cardW = 56
-const cardH = 76
+/** 响应式牌尺寸：移动端紧凑小牌（10 列塞进屏幕宽度），PC 大牌 */
+const isMobile = ref(false)
+const cardW = computed(() => (isMobile.value ? 32 : 56))
+const cardH = computed(() => (isMobile.value ? 44 : 76))
 /** 牌堆叠露边（露出角标） */
-const stackOffset = 28
+const stackOffset = computed(() => (isMobile.value ? 16 : 28))
+/** 列间距 */
+const tableGap = computed(() => (isMobile.value ? 2 : 6))
+
+function updateLayout() {
+  isMobile.value = window.innerWidth < 640
+}
 
 // ===== 拖拽状态 =====
 const tableRef = ref<HTMLElement | null>(null)
@@ -430,8 +437,8 @@ function onTablePointerMove(e: PointerEvent) {
     if (navigator.vibrate) navigator.vibrate(10)
   }
   if (!dragging.value) return
-  dragX.value = e.clientX - cardW / 2
-  dragY.value = e.clientY - cardH / 2
+  dragX.value = e.clientX - cardW.value / 2
+  dragY.value = e.clientY - cardH.value / 2
   // 找当前悬停列
   const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null
   const colEl = el?.closest('[data-col]') as HTMLElement | null
@@ -631,6 +638,8 @@ function onPageHide() {
 let timer: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
+  updateLayout()
+  window.addEventListener('resize', updateLayout)
   syncState()
   if (state.status === 'won') {
     finishedElapsed.value = Math.floor((Date.now() - state.startTime) / 1000)
@@ -646,6 +655,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (state.status !== 'won') persistAutosave()
   if (timer) clearInterval(timer)
+  window.removeEventListener('resize', updateLayout)
   document.removeEventListener('visibilitychange', onVisibilityChange)
   window.removeEventListener('pagehide', onPageHide)
 })
