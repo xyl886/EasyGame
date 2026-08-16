@@ -41,6 +41,15 @@
             <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark">⏱ 用时</span>
             <span class="text-lg font-bold tabular-nums text-text-light dark:text-text-dark">{{ elapsedText }}</span>
           </div>
+          <button
+            @click="flagMode = !flagMode"
+            class="px-3 py-2 rounded-xl text-sm font-medium border transition-all active:scale-95 shadow-claude"
+            :class="flagMode
+              ? 'bg-blue-500 text-white border-transparent'
+              : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-blue-400/50'"
+          >
+            🚩 旗子{{ flagMode ? '·开' : '' }}
+          </button>
         </div>
         <div class="flex items-center gap-2">
           <span class="text-xs opacity-70 text-text-muted-light dark:text-text-muted-dark">
@@ -61,6 +70,7 @@
         ref="boardRef"
         class="relative mx-auto select-none touch-none w-full rounded-lg overflow-hidden border-2 border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark shadow-inner"
         :class="{ 'board-shake': state.status === 'lost' }"
+        @pointerleave="cancelPress"
       >
         <div
           class="grid w-full"
@@ -76,7 +86,6 @@
             @pointerdown="onPointerDown(i, $event)"
             @pointerup="onPointerUp(i)"
             @pointercancel="cancelPress"
-            @pointerleave="cancelPress"
             @contextmenu.prevent="toggleFlagAt(i)"
           >{{ cellText(cell) }}</button>
         </div>
@@ -161,7 +170,8 @@
 
       <!-- 操作说明 -->
       <div class="text-center text-xs opacity-60 mt-3">
-        左键/点击翻开 · 右键/长按标记 🚩 · 双击数字快速展开
+        PC：左键翻开 · 右键标记 · 按住数字格快速展开
+        <span class="sm:hidden block mt-1">📱 手机：点击翻开 · 长按或「🚩 旗子」模式标记</span>
       </div>
     </main>
 
@@ -272,6 +282,8 @@ const finishedElapsed = ref(0)
 const now = ref(Date.now())
 /** 键盘光标位置 */
 const cursor = ref<number | null>(null)
+/** 旗子模式：点击格子=标记（移动端标记雷的可靠方式） */
+const flagMode = ref(false)
 
 const difficultyLabel = computed(() => DIFFICULTY_LABELS[settings.config.difficulty])
 
@@ -365,6 +377,11 @@ function winDelay(idx: number) {
 
 function onLeftClick(i: number) {
   if (showResume.value) return
+  // 旗子模式：点击 = 标记，不翻开
+  if (flagMode.value) {
+    toggleFlagAt(i)
+    return
+  }
   const before = state.status
   const st = engine.value.reveal(Math.floor(i / state.cols), i % state.cols)
   handleStatusChange(before, st)
@@ -418,6 +435,7 @@ function newGame() {
   finishedElapsed.value = 0
   lastSubmittedElapsed = -1
   cursor.value = null
+  flagMode.value = false
   clearAutosave(AUTOSAVE_GAME_ID)
   showResume.value = false
   sound.play('start')
@@ -429,6 +447,7 @@ function applySettings(config: MineConfig) {
   finishedElapsed.value = 0
   lastSubmittedElapsed = -1
   cursor.value = null
+  flagMode.value = false
   clearAutosave(AUTOSAVE_GAME_ID)
   showResume.value = false
 }
@@ -517,6 +536,8 @@ function onPointerDown(i: number, e: PointerEvent) {
   if (showResume.value || state.status === 'won' || state.status === 'lost') return
   // 右键不触发按压
   if (e.button === 2) return
+  // 旗子模式：点击直接标记，无需按压
+  if (flagMode.value) return
   const cell = state.cells[i]
   if (cell.revealed) {
     // 数字格 → Chord 预览
@@ -542,6 +563,15 @@ function onPointerUp(i: number) {
   if (pressTimer) {
     clearTimeout(pressTimer)
     pressTimer = null
+  }
+  // 旗子模式：点击 = 标记
+  if (flagMode.value) {
+    pressCell.value = null
+    pressChord.value = false
+    pressLongFired = false
+    if (showResume.value || state.status === 'won' || state.status === 'lost') return
+    toggleFlagAt(i)
+    return
   }
   if (pressCell.value === null) return
   const target = pressCell.value
