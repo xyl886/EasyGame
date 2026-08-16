@@ -60,6 +60,7 @@
       <div
         ref="boardRef"
         class="relative mx-auto select-none touch-none w-full rounded-lg overflow-hidden border-2 border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark shadow-inner"
+        :class="{ 'board-shake': state.status === 'lost' }"
       >
         <div
           class="grid w-full"
@@ -69,14 +70,14 @@
             v-for="(cell, i) in state.cells"
             :key="i"
             type="button"
-            class="relative flex items-center justify-center text-[13px] sm:text-base leading-none"
+            class="relative flex items-center justify-center text-[13px] sm:text-base leading-none transition-all duration-75"
             :class="cellClass(cell, i)"
-            :style="{ aspectRatio: '1 / 1' }"
-            @click="onLeftClick(i)"
+            :style="[winDelay(i), { aspectRatio: '1 / 1' }]"
+            @pointerdown="onPointerDown(i, $event)"
+            @pointerup="onPointerUp(i)"
+            @pointercancel="cancelPress"
+            @pointerleave="cancelPress"
             @contextmenu.prevent="toggleFlagAt(i)"
-            @dblclick="onChord(i)"
-            @touchstart="onTouchStart(i)"
-            @touchend="onTouchEnd(i)"
           >{{ cellText(cell) }}</button>
         </div>
 
@@ -311,7 +312,8 @@ function cellClass(cell: MineCell, i: number): string {
   const classes: string[] = []
   if (cell.revealed) {
     if (cell.isMine) {
-      classes.push('bg-red-500/20 dark:bg-red-500/30')
+      // 踩中的雷红底，其余雷灰底
+      classes.push(cell.exploded ? 'bg-red-500/50 dark:bg-red-500/60' : 'bg-card-light dark:bg-card-dark')
     } else {
       classes.push('bg-card-light dark:bg-card-dark')
     }
@@ -320,6 +322,14 @@ function cellClass(cell: MineCell, i: number): string {
     classes.push('bg-gradient-to-b from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 shadow-inner')
     if (cell.flag === 'flag') classes.push('!from-blue-200 !to-blue-300 dark:!from-blue-900 dark:!to-blue-800')
     if (cell.flag === 'question') classes.push('!from-amber-200 !to-amber-300 dark:!from-amber-900 dark:!to-amber-800')
+    // 误标的旗子：红色调
+    if (state.status === 'lost' && cell.flag === 'flag' && !cell.isMine) {
+      classes.push('!from-red-200 !to-red-300 dark:!from-red-900 dark:!to-red-800')
+    }
+  }
+  // 按压凹下 / Chord 预览
+  if (!cell.revealed && isPressed(cell, i)) {
+    classes.push('cell-pressed')
   }
   // 键盘光标
   if (cursor.value === i) {
@@ -328,17 +338,29 @@ function cellClass(cell: MineCell, i: number): string {
   if (cell.revealed && !cell.isMine && cell.adjacent > 0) {
     classes.push(NUM_COLORS[cell.adjacent] ?? '')
   }
+  // 胜利动画
+  if (state.status === 'won') classes.push('win-cell')
   return classes.join(' ')
 }
 
 function cellText(cell: MineCell): string {
+  // 失败：误标旗子显示红叉
+  if (state.status === 'lost' && cell.flag === 'flag' && !cell.isMine) return '✗'
   if (cell.revealed) {
     if (cell.isMine) return '💣'
     return cell.adjacent > 0 ? String(cell.adjacent) : ''
   }
+  // 胜利：未翻的雷自动标旗展示
+  if (state.status === 'won' && cell.isMine) return '🚩'
   if (cell.flag === 'flag') return '🚩'
   if (cell.flag === 'question') return '❓'
   return ''
+}
+
+/** 胜利动画：逐格延迟 */
+function winDelay(idx: number) {
+  if (state.status !== 'won') return {}
+  return { animationDelay: `${Math.min(idx, 40) * 20}ms` }
 }
 
 function onLeftClick(i: number) {
@@ -483,27 +505,86 @@ function onKeydown(e: KeyboardEvent) {
   }
 }
 
-// ===== 触摸：长按标记 / 短按翻开 =====
-let touchTimer: ReturnType<typeof setTimeout> | null = null
-let touchIdx = -1
-let longPressFired = false
+// ===== 按压交互（指针统一处理鼠标/触摸） =====
+/** 当前按住的格子 */
+const pressCell = ref<number | null>(null)
+/** 是否按在已翻数字格上（Chord 预览模式） */
+const pressChord = ref(false)
+let pressTimer: ReturnType<typeof setTimeout> | null = null
+let pressLongFired = false
 
-function onTouchStart(i: number) {
+function onPointerDown(i: number, e: PointerEvent) {
   if (showResume.value || state.status === 'won' || state.status === 'lost') return
-  touchIdx = i
-  longPressFired = false
-  if (touchTimer) clearTimeout(touchTimer)
-  touchTimer = setTimeout(() => {
-    longPressFired = true
-    toggleFlagAt(touchIdx)
+  // 右键不触发按压
+  if (e.button === 2) return
+  const cell = state.cells[i]
+  if (cell.revealed) {
+    // 数字格 → Chord 预览
+    if (cell.adjacent > 0) {
+      pressCell.value = i
+      pressChord.value = true
+    }
+    return
+  }
+  pressCell.value = i
+  pressChord.value = false
+  pressLongFired = false
+  if (pressTimer) clearTimeout(pressTimer)
+  pressTimer = setTimeout(() => {
+    // 长按未翻格 → 标记旗子
+    pressLongFired = true
+    toggleFlagAt(i)
     if (navigator.vibrate) navigator.vibrate(30)
   }, 420)
 }
 
-function onTouchEnd(i: number) {
-  if (touchTimer) clearTimeout(touchTimer)
-  if (longPressFired || touchIdx !== i) return
-  onLeftClick(i)
+function onPointerUp(i: number) {
+  if (pressTimer) {
+    clearTimeout(pressTimer)
+    pressTimer = null
+  }
+  if (pressCell.value === null) return
+  const target = pressCell.value
+  const chordMode = pressChord.value
+  pressCell.value = null
+  pressChord.value = false
+  if (showResume.value || state.status === 'won' || state.status === 'lost') return
+  // 长按已标记过，松手不再翻开
+  if (pressLongFired) {
+    pressLongFired = false
+    return
+  }
+  if (chordMode) {
+    onChord(target)
+    return
+  }
+  if (target === i) onLeftClick(target)
+}
+
+function cancelPress() {
+  if (pressTimer) {
+    clearTimeout(pressTimer)
+    pressTimer = null
+  }
+  pressCell.value = null
+  pressChord.value = false
+  pressLongFired = false
+}
+
+/** 该格是否处于"被按下/Chord 预览"的凹下状态 */
+function isPressed(cell: MineCell, i: number): boolean {
+  if (pressCell.value === null) return false
+  if (pressChord.value) {
+    // 预览模式：目标数字格的未翻邻居凹下
+    if (cell.revealed || i === pressCell.value) return false
+    const pc = pressCell.value
+    const r1 = Math.floor(pc / state.cols)
+    const c1 = pc % state.cols
+    const r2 = Math.floor(i / state.cols)
+    const c2 = i % state.cols
+    return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1
+  }
+  return pressCell.value === i
 }
 
 // ===== 计时器 =====
@@ -526,7 +607,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (state.status !== 'won' && state.status !== 'lost') persistAutosave()
   if (timer) clearInterval(timer)
-  if (touchTimer) clearTimeout(touchTimer)
+  if (pressTimer) clearTimeout(pressTimer)
   window.removeEventListener('keydown', onKeydown)
   document.removeEventListener('visibilitychange', onVisibilityChange)
   window.removeEventListener('pagehide', onPageHide)
@@ -534,5 +615,28 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* 扫雷不需要额外样式 */
+/* 按压凹下 */
+.cell-pressed {
+  filter: brightness(0.82);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+/* 失败抖动 */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.board-shake {
+  animation: shake 0.4s ease;
+}
+/* 胜利闪绿 */
+@keyframes winFlash {
+  0% { background-color: rgba(74, 222, 128, 0.9); transform: scale(1.06); }
+  100% { background-color: transparent; transform: scale(1); }
+}
+.win-cell {
+  animation: winFlash 0.4s ease both;
+}
 </style>

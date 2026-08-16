@@ -55,6 +55,7 @@ export class MinesweeperEngine implements BaseGame<MineState, number> {
       revealed: false,
       flag: 'none' as FlagState,
       adjacent: 0,
+      exploded: false,
     }))
     this.flags = 0
     this.status = 'ready'
@@ -150,12 +151,12 @@ export class MinesweeperEngine implements BaseGame<MineState, number> {
     }
 
     if (cell.isMine) {
-      // 踩雷：翻开所有雷，失败
+      // 踩雷：标记踩中的雷 + 翻开所有雷，失败
+      cell.exploded = true
       for (const cell2 of this.cells) {
         if (cell2.isMine) cell2.revealed = true
       }
       this.status = 'lost'
-      this.updateBestIfWon() // 无操作
       return this.status
     }
 
@@ -231,6 +232,7 @@ export class MinesweeperEngine implements BaseGame<MineState, number> {
       const nc = ni % this.cols
       if (nb.isMine) {
         // 踩雷
+        nb.exploded = true
         for (const cell2 of this.cells) {
           if (cell2.isMine) cell2.revealed = true
         }

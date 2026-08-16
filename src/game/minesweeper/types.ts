@@ -32,6 +32,8 @@ export interface MineCell {
   flag: FlagState
   /** 周围雷数（0-8，未翻开时无意义） */
   adjacent: number
+  /** 是否为踩中的那颗雷（游戏结束展示用） */
+  exploded: boolean
 }
 
 export type MineStatus = 'ready' | 'playing' | 'won' | 'lost'
