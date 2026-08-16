@@ -548,8 +548,11 @@ function scheduleTick() {
       return
     }
     const prevLines = state.lines
+    const prevLevel = state.level
     engine.value.step()
     syncState()
+    // 升级提示
+    if (state.level > prevLevel) toast(`⬆️ 升级到 Lv ${state.level}，加速了！`)
     // 音效：消行 / 通关 / 游戏结束（引擎胜利时 won=true 且 over=true，先判 won）
     if (state.lines > prevLines) {
       sound.play('line')

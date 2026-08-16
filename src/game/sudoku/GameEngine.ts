@@ -132,13 +132,36 @@ export class SudokuEngine implements BaseGame<SudokuState, number> {
     this.moves++
     // 填错计数（与答案不同）
     if (num !== this.solution[row][col]) this.mistakes++
-    // 填入后清除该格笔记
+    // 填入后清除该格笔记，并自动清理同行/同列/同宫的 num 候选
     this.notes[row][col] = []
+    this.removeNoteCandidates(row, col, num)
     if (this.isSolved()) {
       this.won = true
       this.updateBest()
     }
     return true
+  }
+
+  /** 填入 num 后，清理同行/同列/同宫空格中的 num 候选（标准数独辅助） */
+  private removeNoteCandidates(row: number, col: number, num: number): void {
+    const n = this.spec.size
+    const clear = (r: number, c: number) => {
+      if (this.grid[r][c] !== 0) return
+      const list = this.notes[r][c]
+      const idx = list.indexOf(num)
+      if (idx >= 0) list.splice(idx, 1)
+    }
+    for (let i = 0; i < n; i++) {
+      clear(row, i)
+      clear(i, col)
+    }
+    const br = Math.floor(row / this.spec.boxRows) * this.spec.boxRows
+    const bc = Math.floor(col / this.spec.boxCols) * this.spec.boxCols
+    for (let i = br; i < br + this.spec.boxRows; i++) {
+      for (let j = bc; j < bc + this.spec.boxCols; j++) {
+        clear(i, j)
+      }
+    }
   }
 
   /** BaseGame 接口：move = 在选中格填数 */
@@ -190,6 +213,7 @@ export class SudokuEngine implements BaseGame<SudokuState, number> {
           this.grid[r][c] = v
           this.moves++
           this.notes[r][c] = []
+          this.removeNoteCandidates(r, c, v)
           this.hintsUsed++
           if (this.isSolved()) {
             this.won = true
