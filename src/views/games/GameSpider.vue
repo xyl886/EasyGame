@@ -96,13 +96,14 @@
         </div>
       </div>
 
-      <!-- 牌桌 -->
+      <!-- 牌桌（深绿毛毡，参考 spidersolitaire.cn） -->
       <div
         ref="tableRef"
-        class="relative w-full rounded-xl bg-emerald-900/10 dark:bg-emerald-950/30 border border-border-light dark:border-border-dark p-2 overflow-x-auto"
+        class="relative w-full rounded-xl bg-[#017e00] dark:bg-[#016300] p-2 overflow-x-auto shadow-inner"
         @pointermove="onTablePointerMove"
         @pointerup="onTablePointerUp"
         @pointercancel="cancelDrag"
+        @wheel.prevent="onWheel"
       >
         <div class="flex min-w-max mx-auto" :style="{ gap: tableGap + 'px' }">
           <div
@@ -110,31 +111,28 @@
             :key="ci"
             :data-col="ci"
             class="relative shrink-0 rounded-md"
-            :class="[colClass(ci), { 'ring-2 ring-emerald-400 z-10': dragOverCol === ci && dragging }]"
-            :style="{ width: cardW + 'px', height: Math.max(84, col.length * stackOffset + 10) + 'px' }"
+            :class="[colClass(ci), { 'ring-2 ring-emerald-300 z-10': dragOverCol === ci && dragging }]"
+            :style="{ width: cardW + 'px', height: Math.max(84, col.length * stackOffsetView + 12) + 'px' }"
             @click="onColumnAreaClick(ci)"
             @dblclick.self="onColumnDblClick(ci)"
           >
+            <!-- 牌位占位框（白色半透明圆角） -->
+            <div
+              class="absolute top-0 w-full rounded-xl border-2 border-white/40 dark:border-white/25"
+              :style="{ height: cardH + 'px' }"
+            ></div>
             <div
               v-for="(card, idx) in col"
               :key="idx"
-              class="absolute w-full rounded-md border flex flex-col items-center justify-center leading-none shadow-sm"
+              class="absolute w-full rounded-lg border flex flex-col items-center justify-center leading-none shadow-sm"
               :class="cardClass(ci, idx)"
-              :style="{ top: idx * stackOffset + 'px', height: cardH + 'px' }"
+              :style="{ top: idx * stackOffsetView + 'px', height: cardH + 'px' }"
               @pointerdown.stop="onCardPointerDown(ci, idx, $event)"
               @click.stop="onCardClick(ci, idx)"
               @dblclick.stop="onCardDblClick(ci, idx)"
             >
               <span class="absolute top-0.5 left-0.5 text-[10px] font-bold leading-none px-0.5 rounded-sm" :class="suitColor(card) + ' bg-bg-light/70 dark:bg-bg-dark/60'">{{ rankLabel(card.rank) }}{{ SUIT_SYMBOL[card.suit] }}</span>
               <span v-if="!isMobile" class="text-xl" :class="suitColor(card)">{{ SUIT_SYMBOL[card.suit] }}</span>
-            </div>
-            <!-- 空列占位 -->
-            <div
-              v-if="col.length === 0"
-              class="absolute top-0 w-full rounded-md border-2 border-dashed border-border-light dark:border-border-dark flex items-center justify-center text-xs opacity-40"
-              :style="{ height: cardH + 'px' }"
-            >
-              ✦
             </div>
           </div>
         </div>
@@ -201,11 +199,11 @@
     <HowToPlay v-model="showHowTo" title="蜘蛛纸牌">
       <ol class="list-decimal pl-5 space-y-2 opacity-90">
         <li>两副牌（104 张）铺在 10 列上，目标：按 <strong>K→A 同花色降序</strong>收集完整序列，共 <strong>8 组</strong>全部收完即获胜</li>
-        <li><strong>点击一串牌</strong>（同花色且降序连续）选中，再<strong>点击目标列</strong>移动过去；空列可以放任意牌串</li>
-        <li>目标列顶牌必须比移动串的底牌 <strong>大 1</strong>（如 6 上面只能放 5），花色不限；但整串移动必须<strong>同花色</strong></li>
-        <li>牌堆（🃏）还有牌时点<strong>发牌</strong>，给每列各发一张</li>
-        <li>列尾凑齐 K→A 同花色序列会<strong>自动收走</strong>；单花色最容易，四花色最难</li>
-        <li>计分：起始 500，每步 −1，收一组 +100</li>
+        <li><strong>点击一串牌</strong>（同花色且降序连续）选中，再<strong>点击目标列</strong>移动；也可<strong>拖动</strong>牌串；双击自动归位</li>
+        <li>目标列顶牌必须比移动串的底牌 <strong>大 1</strong>；整串移动必须<strong>同花色</strong>；空列可放任意串</li>
+        <li>发牌规则：<strong>有空格时不能发牌</strong>；剩余不足 10 张也不能发牌（桌面少于 10 张且无牌可发即结束）</li>
+        <li>牌堆挤压时可用<strong>鼠标滚轮</strong>展开/收缩牌堆</li>
+        <li>难度：单色/双色/四色 × 简单/一般/困难/随机（洗牌方式影响难度）；计分 500 起步，每步 −1，收一组 +100</li>
       </ol>
     </HowToPlay>
 
@@ -222,8 +220,8 @@
 <script setup lang="ts">
 import { reactive, computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { SpiderEngine } from '../../game/spider/GameEngine'
-import type { SpiderState, SpiderConfig, Card, SpiderDifficulty } from '../../game/spider/types'
-import { DIFFICULTY_LABELS } from '../../game/spider/types'
+import type { SpiderState, SpiderConfig, Card } from '../../game/spider/types'
+import { DIFFICULTY_OPTIONS, difficultyId } from '../../game/spider/types'
 import { useSpiderSettingsStore } from '../../stores/spider-settings'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
@@ -249,9 +247,9 @@ const leaderboardDimensions: LeaderboardDimension[] = [
   {
     key: 'difficulty',
     label: '难度',
-    values: (['one', 'two', 'four'] as SpiderDifficulty[]).map((d) => ({
-      value: d,
-      label: DIFFICULTY_LABELS[d],
+    values: DIFFICULTY_OPTIONS.map((d) => ({
+      value: difficultyId(d),
+      label: d.label,
     })),
   },
 ]
@@ -263,7 +261,7 @@ function submitScoreIfWon() {
   lastSubmittedScore = state.score
   leaderboard.addEntry({
     score: state.score,
-    difficulty: settings.config.difficulty,
+    difficulty: difficultyId(settings.config),
     size: 10,
     moves: state.moves,
     duration: finishedElapsed.value,
@@ -277,7 +275,7 @@ const pendingAutosave = loadAutosave<SpiderState>(AUTOSAVE_GAME_ID)
 /** 引擎（蜘蛛直接自动恢复存档，无需确认弹窗） */
 let engine: SpiderEngine = (() => {
   if (pendingAutosave && pendingAutosave.status !== 'won') {
-    const e = new SpiderEngine({ difficulty: pendingAutosave.difficulty })
+    const e = new SpiderEngine({ suits: pendingAutosave.suits, mode: pendingAutosave.mode })
     e.loadState(pendingAutosave)
     return e
   }
@@ -294,14 +292,28 @@ const now = ref(Date.now())
 const isMobile = ref(false)
 const cardW = computed(() => (isMobile.value ? 32 : 56))
 const cardH = computed(() => (isMobile.value ? 44 : 76))
-/** 牌堆叠露边（露出角标） */
-const stackOffset = computed(() => (isMobile.value ? 16 : 28))
+/** 牌堆叠露边（默认值；滚轮可展开/收缩） */
+const baseOffset = computed(() => (isMobile.value ? 16 : 28))
+const stackOffsetView = ref(28)
 /** 列间距 */
 const tableGap = computed(() => (isMobile.value ? 2 : 6))
 
 function updateLayout() {
   isMobile.value = window.innerWidth < 640
+  stackOffsetView.value = baseOffset.value
 }
+
+/** 鼠标滚轮展开/收缩牌堆（参考 spidersolitaire.cn） */
+function onWheel(e: WheelEvent) {
+  const delta = e.deltaY < 0 ? 3 : -3
+  stackOffsetView.value = Math.min(48, Math.max(8, stackOffsetView.value + delta))
+}
+
+/** 当前难度标签 */
+const difficultyLabel = computed(() => {
+  const d = DIFFICULTY_OPTIONS.find((o) => o.suits === state.suits && o.mode === state.mode)
+  return d ? d.label : '蜘蛛纸牌'
+})
 
 // ===== 拖拽状态 =====
 const tableRef = ref<HTMLElement | null>(null)
@@ -344,8 +356,6 @@ function colClass(ci: number): string {
   }
   return classes.join(' ')
 }
-
-const difficultyLabel = computed(() => DIFFICULTY_LABELS[settings.config.difficulty])
 
 const elapsedText = computed(() => {
   const sec = state.status === 'won' ? finishedElapsed.value : state.startTime === 0 ? 0 : Math.floor((now.value - state.startTime) / 1000)
@@ -540,11 +550,20 @@ function onColumnAreaClick(ci: number) {
   }
 }
 
-/** 发牌 */
+/** 发牌（参考经典规则：有空列/不足 10 张不能发牌） */
 function deal() {
   if (state.status === 'won') return
   const before = state.completed
-  if (engine.deal()) {
+  const res = engine.deal()
+  if (res === 'empty-col') {
+    toast('有空列，不能发牌——先填满空列再发牌')
+    return
+  }
+  if (res === 'insufficient') {
+    toast('剩余纸牌不足 10 张，不能发牌')
+    return
+  }
+  if (res === 'ok') {
     sound.play('drop')
     syncState()
     if (state.completed > before) sound.play('line')
@@ -592,7 +611,7 @@ function handleProgress() {
 /** 分享成绩 */
 async function shareResult() {
   const result = await shareOrCopy({
-    text: `我在 EasyGame 蜘蛛纸牌以 ${state.score} 分完成了「${DIFFICULTY_LABELS[settings.config.difficulty]}」，来挑战我！🕷️`,
+    text: `我在 EasyGame 蜘蛛纸牌以 ${state.score} 分完成了「${difficultyLabel.value}」，来挑战我！🕷️`,
     url: shareUrl('/game/spider'),
   })
   toast(result === 'shared' ? '✅ 已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
@@ -609,7 +628,8 @@ function syncState() {
   state.status = s.status
   state.startTime = s.startTime
   state.bestScore = s.bestScore
-  state.difficulty = s.difficulty
+  state.suits = s.suits
+  state.mode = s.mode
   canUndo.value = engine.canUndo()
   // 收牌动画检测
   const last = engine.getLastCompleted()

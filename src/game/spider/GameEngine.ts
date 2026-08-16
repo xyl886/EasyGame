@@ -13,11 +13,13 @@ import type {
   SpiderConfig,
   Card,
   SpiderStatus,
+  DealResult,
 } from './types'
 import {
-  SUITS_BY_DIFFICULTY,
   SPIDER_TOTAL_GROUPS,
   spiderScore,
+  shuffleStrength,
+  difficultyId,
   DEFAULT_SPIDER_CONFIG,
 } from './types'
 import { StorageAdapter } from '../../adapters/StorageAdapter'
@@ -26,11 +28,14 @@ const BEST_KEY_PREFIX = 'easygame-spider-best'
 
 const COLS = 10
 
-function shuffled<T>(arr: T[]): T[] {
+function shuffled<T>(arr: T[], strength = 1): T[] {
   const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
+  // strength 控制洗牌强度：<1 只随机交换部分位置（简单档保留更多顺序）
+  const swapCount = Math.floor(a.length * strength)
+  for (let i = 0; i < swapCount; i++) {
+    const j = Math.floor(Math.random() * a.length)
+    const k = Math.floor(Math.random() * a.length)
+    ;[a[j], a[k]] = [a[k], a[j]]
   }
   return a
 }
@@ -53,7 +58,7 @@ export class SpiderEngine implements BaseGame<SpiderState, number> {
 
   constructor(config: Partial<SpiderConfig> = {}) {
     this.config = { ...DEFAULT_SPIDER_CONFIG, ...config }
-    this.bestScoreKey = `${BEST_KEY_PREFIX}-${this.config.difficulty}`
+    this.bestScoreKey = `${BEST_KEY_PREFIX}-${difficultyId(this.config)}`
     this.bestScore = StorageAdapter.get<number>(this.bestScoreKey) ?? 0
     this.init()
   }
@@ -63,8 +68,8 @@ export class SpiderEngine implements BaseGame<SpiderState, number> {
   }
 
   private init(): void {
-    // 按难度取花色，两副牌
-    const suits = SUITS_BY_DIFFICULTY[this.config.difficulty]
+    // 按花色数组牌（两副 = 104 张）
+    const suits = [0, 1, 2, 3].slice(0, this.config.suits)
     const deck: Card[] = []
     for (const suit of suits) {
       for (let copy = 0; copy < 8 / suits.length; copy++) {
@@ -73,7 +78,7 @@ export class SpiderEngine implements BaseGame<SpiderState, number> {
         }
       }
     }
-    const cards = shuffled(deck)
+    const cards = shuffled(deck, shuffleStrength(this.config.mode))
     // 发 54 张到 10 列（前 4 列 6 张、后 6 列 5 张），每列末张翻开
     this.columns = Array.from({ length: COLS }, () => [] as Card[])
     let idx = 0
@@ -244,10 +249,11 @@ export class SpiderEngine implements BaseGame<SpiderState, number> {
     return this.tryMove(col, targets[0], count)
   }
 
-  /** 发牌：给每列各发一张（牌堆剩余时） */
-  deal(): boolean {
-    if (this.status !== 'ready' && this.status !== 'playing') return false
-    if (this.stock.length === 0) return false
+  /** 发牌：参考经典规则——有空列不能发牌；剩余不足 10 张不能发牌（游戏结束） */
+  deal(): DealResult {
+    if (this.status !== 'ready' && this.status !== 'playing') return 'done'
+    if (this.stock.length < 10) return 'insufficient'
+    if (this.columns.some((c) => c.length === 0)) return 'empty-col'
     const before = this.columns.map((c) => [...c])
     const stockBefore = [...this.stock]
     for (let c = 0; c < COLS; c++) {
@@ -263,7 +269,7 @@ export class SpiderEngine implements BaseGame<SpiderState, number> {
     })
     this.completeAndCheck()
     this.updateBest()
-    return true
+    return 'ok'
   }
 
   /** 自动收走所有完整 K→A 同花色序列 */
@@ -351,7 +357,8 @@ export class SpiderEngine implements BaseGame<SpiderState, number> {
       status: this.status,
       startTime: this.startTime,
       bestScore: this.bestScore,
-      difficulty: this.config.difficulty,
+      suits: this.config.suits,
+      mode: this.config.mode,
     }
   }
 
@@ -363,8 +370,9 @@ export class SpiderEngine implements BaseGame<SpiderState, number> {
     this.selected = state.selected ? { ...state.selected } : null
     this.status = state.status
     this.startTime = state.startTime
-    this.config.difficulty = state.difficulty
-    this.bestScoreKey = `${BEST_KEY_PREFIX}-${state.difficulty}`
+    this.config.suits = state.suits
+    this.config.mode = state.mode
+    this.bestScoreKey = `${BEST_KEY_PREFIX}-${difficultyId(this.config)}`
     this.bestScore = StorageAdapter.get<number>(this.bestScoreKey) ?? 0
     // 撤销历史不跨存档
     this.history = []

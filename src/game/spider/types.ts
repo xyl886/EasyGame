@@ -1,25 +1,42 @@
 /**
- * 蜘蛛纸牌类型定义
+ * 蜘蛛纸牌类型定义（参考 zh.spidersolitaire.cn 的难度体系）
  */
 
-/** 难度：花色数（one=1 花色 / two=2 / four=4） */
-export type SpiderDifficulty = 'one' | 'two' | 'four'
+/** 洗牌方式（难度细分） */
+export type SpiderMode = 'easy' | 'normal' | 'hard' | 'random'
 
-export const DIFFICULTY_LABELS: Record<SpiderDifficulty, string> = {
-  one: '单花色',
-  two: '双花色',
-  four: '四花色',
+export const MODE_LABELS: Record<SpiderMode, string> = {
+  easy: '简单',
+  normal: '一般',
+  hard: '困难',
+  random: '随机',
 }
 
-/** 各难度使用的花色集合（0=♠ 1=♥ 2=♦ 3=♣） */
-export const SUITS_BY_DIFFICULTY: Record<SpiderDifficulty, number[]> = {
-  one: [0],
-  two: [0, 1],
-  four: [0, 1, 2, 3],
+/** 可选难度组合：单色 4 档 / 双色 3 档 / 四色 2 档 */
+export const DIFFICULTY_OPTIONS: Array<{ suits: 1 | 2 | 4; mode: SpiderMode; label: string }> = [
+  { suits: 1, mode: 'easy', label: '单色·简单' },
+  { suits: 1, mode: 'normal', label: '单色·一般' },
+  { suits: 1, mode: 'hard', label: '单色·困难' },
+  { suits: 1, mode: 'random', label: '单色·随机' },
+  { suits: 2, mode: 'normal', label: '双色·一般' },
+  { suits: 2, mode: 'hard', label: '双色·困难' },
+  { suits: 2, mode: 'random', label: '双色·随机' },
+  { suits: 4, mode: 'hard', label: '四色·困难' },
+  { suits: 4, mode: 'random', label: '四色·随机' },
+]
+
+export function difficultyId(cfg: SpiderConfig): string {
+  return `${cfg.suits}-${cfg.mode}`
+}
+
+/** 洗牌强度：简单档弱洗牌（保留部分顺序 → 更多可移动串），其余完全洗牌 */
+export function shuffleStrength(mode: SpiderMode): number {
+  return mode === 'easy' ? 0.35 : 1
 }
 
 export interface SpiderConfig {
-  difficulty: SpiderDifficulty
+  suits: 1 | 2 | 4
+  mode: SpiderMode
 }
 
 /** 牌：rank 1=A ... 13=K；suit 0=♠ 1=♥ 2=♦ 3=♣ */
@@ -31,24 +48,21 @@ export interface Card {
 export type SpiderStatus = 'ready' | 'playing' | 'won'
 
 export interface SpiderState {
-  /** 10 列牌堆（每列末尾为最上层/正面朝上） */
   columns: Card[][]
-  /** 剩余牌堆（背面朝下） */
   stock: Card[]
-  /** 已完成序列数（8 组获胜） */
   completed: number
-  /** 移动次数（含发牌） */
   moves: number
-  /** 当前得分 */
   score: number
-  /** 选中：{ col, count } 从列顶向下 count 张 */
   selected: { col: number; count: number } | null
   status: SpiderStatus
   startTime: number
-  /** 该难度历史最高分 */
   bestScore: number
-  difficulty: SpiderDifficulty
+  suits: 1 | 2 | 4
+  mode: SpiderMode
 }
+
+/** 发牌结果 */
+export type DealResult = 'ok' | 'empty-col' | 'insufficient' | 'done'
 
 /** 经典计分：起始 500，每次操作 -1，完成一组 +100 */
 export const SPIDER_SCORE_BASE = 500
@@ -62,5 +76,6 @@ export function spiderScore(moves: number, completed: number): number {
 export const SPIDER_TOTAL_GROUPS = 8
 
 export const DEFAULT_SPIDER_CONFIG: SpiderConfig = {
-  difficulty: 'one',
+  suits: 1,
+  mode: 'easy',
 }

@@ -1,22 +1,24 @@
 import { defineStore } from 'pinia'
 import { StorageAdapter } from '../adapters/StorageAdapter'
-import type { SpiderConfig, SpiderDifficulty } from '../game/spider/types'
-import { DEFAULT_SPIDER_CONFIG, DIFFICULTY_LABELS } from '../game/spider/types'
+import type { SpiderConfig } from '../game/spider/types'
+import { DEFAULT_SPIDER_CONFIG, DIFFICULTY_OPTIONS, MODE_LABELS } from '../game/spider/types'
 
 const CONFIG_KEY = 'easygame-spider-config'
-
-const validDifficulties: SpiderDifficulty[] = ['one', 'two', 'four']
 
 function loadConfig(): SpiderConfig {
   const saved = StorageAdapter.get<Partial<SpiderConfig>>(CONFIG_KEY) ?? {}
   const merged = { ...DEFAULT_SPIDER_CONFIG, ...saved }
-  if (!validDifficulties.includes(merged.difficulty)) {
-    merged.difficulty = DEFAULT_SPIDER_CONFIG.difficulty
+  // 校验：必须是可选难度组合之一，否则回默认
+  const valid = DIFFICULTY_OPTIONS.some(
+    (d) => d.suits === merged.suits && d.mode === merged.mode,
+  )
+  if (!valid) {
+    return { ...DEFAULT_SPIDER_CONFIG }
   }
   return merged
 }
 
-export { DIFFICULTY_LABELS }
+export { DIFFICULTY_OPTIONS, MODE_LABELS }
 
 export const useSpiderSettingsStore = defineStore('spider-settings', {
   state: () => ({
