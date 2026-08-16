@@ -41,6 +41,15 @@
             <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark">⏱ 用时</span>
             <span class="text-lg font-bold tabular-nums text-text-light dark:text-text-dark">{{ elapsedText }}</span>
           </div>
+          <!-- 经典笑脸重开按钮 -->
+          <button
+            @click="newGame"
+            class="w-11 h-11 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md transition-all active:scale-90 text-xl flex items-center justify-center"
+            aria-label="重新开始"
+            title="重新开始"
+          >
+            {{ smiley }}
+          </button>
           <button
             @click="showHowTo = true"
             class="px-3 py-2 rounded-xl text-sm font-medium border transition-all active:scale-95 shadow-claude bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-gray-500/50"
@@ -305,6 +314,9 @@ const cursor = ref<number | null>(null)
 /** 旗子模式：点击格子=标记（移动端标记雷的可靠方式） */
 const flagMode = ref(false)
 
+/** 经典笑脸：随游戏状态变化（玩/赢/输） */
+const smiley = computed(() => (state.status === 'won' ? '😎' : state.status === 'lost' ? '😵' : '🙂'))
+
 const difficultyLabel = computed(() => DIFFICULTY_LABELS[settings.config.difficulty])
 
 const minesLeft = computed(() => Math.max(0, state.mines - state.flags))
@@ -370,6 +382,8 @@ function cellClass(cell: MineCell, i: number): string {
   if (cell.revealed && !cell.isMine && cell.adjacent > 0) {
     classes.push(NUM_COLORS[cell.adjacent] ?? '')
   }
+  // 翻开弹出动画（非雷格首次翻开时 scale 弹一下）
+  if (cell.revealed && !cell.isMine) classes.push('reveal-pop')
   // 胜利动画
   if (state.status === 'won') classes.push('win-cell')
   return classes.join(' ')
@@ -680,6 +694,21 @@ onBeforeUnmount(() => {
 }
 .board-shake {
   animation: shake 0.4s ease;
+}
+/* 翻开弹出 */
+@keyframes revealPop {
+  0% {
+    transform: scale(0.82);
+  }
+  60% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.reveal-pop {
+  animation: revealPop 0.18s ease-out;
 }
 /* 胜利闪绿 */
 @keyframes winFlash {

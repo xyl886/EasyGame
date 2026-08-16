@@ -209,9 +209,11 @@
           :key="n"
           type="button"
           @click="inputNum(n)"
-          class="aspect-square rounded-lg bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-emerald-400/50 transition-all active:scale-95 text-base font-bold text-text-light dark:text-text-dark"
+          class="aspect-square rounded-lg bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-emerald-400/50 transition-all active:scale-95 font-bold text-text-light dark:text-text-dark flex flex-col items-center justify-center"
+          :class="remaining(n) === 0 ? 'opacity-30' : ''"
         >
-          {{ n }}
+          <span class="text-base leading-none">{{ n }}</span>
+          <span class="text-[9px] leading-none mt-0.5 opacity-60" :class="remaining(n) === 0 ? 'text-red-500' : ''">{{ remaining(n) }}</span>
         </button>
         <button
           type="button"
@@ -360,6 +362,9 @@ const now = ref(Date.now())
 const notesMode = ref(false)
 /** 最近提示的格子（短暂高亮） */
 const hintCell = ref<{ row: number; col: number } | null>(null)
+/** 最近填错的格子（短暂抖动反馈） */
+const wrongCell = ref<{ row: number; col: number } | null>(null)
+let wrongTimer: ReturnType<typeof setTimeout> | null = null
 
 const difficultyLabel = computed(() => DIFFICULTY_LABELS[settings.config.difficulty])
 const sizeLabel = computed(() => specOf(state.size).label)
@@ -395,6 +400,22 @@ const selectedNum = computed(() => {
   if (!s) return 0
   return state.grid[s.row][s.col]
 })
+
+/** 各数字在棋盘中的已填数量 */
+const numCounts = computed(() => {
+  const counts: Record<number, number> = {}
+  for (const row of state.grid) {
+    for (const v of row) {
+      if (v > 0) counts[v] = (counts[v] ?? 0) + 1
+    }
+  }
+  return counts
+})
+
+/** 数字 n 还需填入的数量 */
+function remaining(n: number): number {
+  return Math.max(0, state.size - (numCounts.value[n] ?? 0))
+}
 
 function cellValue(idx: number): string {
   const r = Math.floor(idx / state.size)
@@ -446,11 +467,14 @@ function cellClass(idx: number): string {
     if (conflictSet.value.has(key)) classes.push('text-red-500 dark:text-red-400')
     else classes.push(state.given[r][c] ? 'text-text-light dark:text-text-dark' : 'text-emerald-600 dark:text-emerald-400')
   }
+  // 填错抖动反馈
+  if (wrongCell.value && wrongCell.value.row === r && wrongCell.value.col === c) {
+    classes.push('cell-shake')
+  }
   // 提示格高亮
   if (hintCell.value && hintCell.value.row === r && hintCell.value.col === c) {
     classes.push('bg-amber-300/50 dark:bg-amber-300/40')
-  } else if (sel && sel.row === r && sel.col === c) {
-    classes.push('bg-emerald-400/30 dark:bg-emerald-400/25')
+  } else if (sel && sel.row === r && sel.col === c) {    classes.push('bg-emerald-400/30 dark:bg-emerald-400/25')
   } else if (sel && (sel.row === r || sel.col === c || inSameBox(sel.row, sel.col, r, c))) {
     classes.push('bg-emerald-400/10 dark:bg-emerald-400/8')
   } else if (sel && selectedNum.value !== 0 && v === selectedNum.value) {
@@ -502,9 +526,12 @@ function inputNum(n: number) {
       clearAutosave(AUTOSAVE_GAME_ID)
       submitScoreIfWon()
     } else {
-      // 填错提示音
+      // 填错提示音 + 抖动反馈
       if (conflictSet.value.has(`${state.selected!.row},${state.selected!.col}`)) {
         sound.play('over')
+        wrongCell.value = { row: state.selected!.row, col: state.selected!.col }
+        if (wrongTimer) clearTimeout(wrongTimer)
+        wrongTimer = setTimeout(() => (wrongCell.value = null), 420)
       }
       persistAutosave()
     }
@@ -569,6 +596,8 @@ function newGame() {
   lastSubmittedElapsed = -1
   notesMode.value = false
   hintCell.value = null
+  wrongCell.value = null
+  if (wrongTimer) clearTimeout(wrongTimer)
   clearAutosave(AUTOSAVE_GAME_ID)
   showResume.value = false
   sound.play('start')
@@ -581,6 +610,8 @@ function applySettings(config: SudokuConfig) {
   lastSubmittedElapsed = -1
   notesMode.value = false
   hintCell.value = null
+  wrongCell.value = null
+  if (wrongTimer) clearTimeout(wrongTimer)
   clearAutosave(AUTOSAVE_GAME_ID)
   showResume.value = false
 }
@@ -690,6 +721,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (!state.won) persistAutosave()
   if (timer) clearInterval(timer)
+  if (wrongTimer) clearTimeout(wrongTimer)
   window.removeEventListener('keydown', onKeydown)
   document.removeEventListener('visibilitychange', onVisibilityChange)
   window.removeEventListener('pagehide', onPageHide)
@@ -709,5 +741,21 @@ onBeforeUnmount(() => {
 }
 .win-cell {
   animation: winFlash 0.5s ease both;
+}
+/* 填错抖动 */
+@keyframes cellShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+.cell-shake {
+  animation: cellShake 0.25s ease;
 }
 </style>
