@@ -108,6 +108,31 @@
           </div>
         </div>
 
+        <!-- 自动存档恢复遮罩 -->
+        <div
+          v-if="showResume"
+          class="absolute inset-0 rounded-2xl flex items-center justify-center backdrop-blur-sm bg-bg-light/70 dark:bg-bg-dark/70"
+        >
+          <div class="text-center space-y-4 px-4">
+            <div class="text-3xl md:text-4xl font-extrabold text-text-light dark:text-text-dark">🕹️ 上次进度还在</div>
+            <p class="opacity-80 text-text-light dark:text-text-dark text-sm">上次游戏尚未完成，是否继续？</p>
+            <div class="flex gap-3 justify-center flex-wrap">
+              <button
+                @click="resumeGame"
+                class="px-5 py-2.5 rounded-xl bg-accent-light dark:bg-accent-dark hover:bg-accent-hover-light dark:hover:bg-accent-hover-dark text-white font-bold shadow-claude-md transition-all active:scale-95"
+              >
+                ▶️ 继续上次
+              </button>
+              <button
+                @click="discardAutosave"
+                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
+              >
+                🔄 重新开始
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- 游戏结束遮罩 -->
         <div
           v-if="state.over || activeWin"
@@ -176,6 +201,7 @@ import { DIFFICULTY_LABELS, CAKE_EMOJI, CAKE_OVERFLOW_EMOJI } from '../../game/2
 import { useGame2048SettingsStore, SIZE_OPTIONS } from '../../stores/game2048-settings'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { StorageAdapter } from '../../adapters/StorageAdapter'
+import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
 import { genEntryId, type LeaderboardDimension, type LeaderboardEntry } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
 import SoundToggle from '../../components/SoundToggle.vue'
@@ -260,6 +286,44 @@ const state = reactive<Game2048State>(engine.value.getState())
 const canUndo = ref(false)
 /** 胜利音效去重：每局只响一次（继续挑战后 won 仍为 true） */
 const winSoundPlayed = ref(false)
+
+// ===== 自动存档：误退/刷新后可继续上次进度 =====
+const AUTOSAVE_GAME_ID = '2048'
+const pendingAutosave = loadAutosave<Game2048State>(AUTOSAVE_GAME_ID)
+/** 是否显示「继续上次」弹窗（存在未完成存档且未结束） */
+const showResume = ref(false)
+if (pendingAutosave && !pendingAutosave.over) {
+  showResume.value = true
+}
+
+/** 保存当前局面（engine 为状态唯一来源，直接取 getState 序列化） */
+function persistAutosave() {
+  saveAutosave(AUTOSAVE_GAME_ID, engine.value.getState())
+}
+
+function resumeGame() {
+  if (!pendingAutosave) return
+  engine.value.loadState(pendingAutosave)
+  syncState()
+  updateLayout() // 存档棋盘尺寸可能与当前设置不同
+  showResume.value = false
+}
+
+function discardAutosave() {
+  clearAutosave(AUTOSAVE_GAME_ID)
+  showResume.value = false
+  engine.value.reset()
+  syncState()
+  updateLayout()
+}
+
+/** 页面切后台/关闭时兜底保存 */
+function onVisibilityChange() {
+  if (document.visibilityState === 'hidden' && !state.over) persistAutosave()
+}
+function onPageHide() {
+  if (!state.over) persistAutosave()
+}
 
 const boardRef = ref<HTMLDivElement | null>(null)
 const gap = ref(12)
@@ -408,6 +472,9 @@ function doMove(dir: Direction) {
       sound.play('win')
     }
     if (state.over) sound.play('over')
+    // 自动存档：结束清档，否则保存最新局面
+    if (state.over) clearAutosave(AUTOSAVE_GAME_ID)
+    else persistAutosave()
     // 游戏结束自动入榜（每个 game-over 只入一次，由 lastSubmittedOverScore 去重）
     submitScoreIfOver()
   }
@@ -419,6 +486,8 @@ function newGame() {
   // 重置入榜去重标记，允许本局重新入榜
   lastSubmittedOverScore = -1
   winSoundPlayed.value = false
+  clearAutosave(AUTOSAVE_GAME_ID)
+  showResume.value = false
 }
 
 function undo() {
@@ -426,12 +495,15 @@ function undo() {
     syncState()
     // 撤销可能让 game-over 状态回退，允许重新入榜
     if (!state.over) lastSubmittedOverScore = -1
+    if (state.over) clearAutosave(AUTOSAVE_GAME_ID)
+    else persistAutosave()
   }
 }
 
 function continueGame() {
   engine.value.continueAfterWin()
   syncState()
+  persistAutosave()
 }
 
 /** 应用设置：重建引擎并重新开始 */
@@ -442,6 +514,9 @@ function applySettings(config: Game2048Config) {
   updateLayout()
   lastSubmittedOverScore = -1
   winSoundPlayed.value = false
+  // 设置变更视为放弃旧局面
+  clearAutosave(AUTOSAVE_GAME_ID)
+  showResume.value = false
 }
 
 /** 分享本局成绩 */
@@ -521,6 +596,8 @@ onMounted(() => {
   submitScoreIfOver()
   window.addEventListener('keydown', onKeydown)
   window.addEventListener('resize', updateLayout)
+  document.addEventListener('visibilitychange', onVisibilityChange)
+  window.addEventListener('pagehide', onPageHide)
   const el = boardRef.value
   if (el) {
     el.addEventListener('touchstart', onTouchStart, { passive: true })
@@ -529,8 +606,12 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  // 离开页面兜底保存
+  if (!state.over) persistAutosave()
   window.removeEventListener('keydown', onKeydown)
   window.removeEventListener('resize', updateLayout)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+  window.removeEventListener('pagehide', onPageHide)
   const el = boardRef.value
   if (el) {
     el.removeEventListener('touchstart', onTouchStart)

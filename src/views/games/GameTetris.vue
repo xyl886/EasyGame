@@ -164,7 +164,29 @@
             v-if="!started && !state.over"
             class="absolute inset-0 rounded-2xl flex items-center justify-center bg-bg-light/70 dark:bg-bg-dark/70 backdrop-blur-sm"
           >
-            <div class="text-center space-y-3 px-4">
+            <!-- 有自动存档：提供继续/重开 -->
+            <div v-if="showResume" class="text-center space-y-3 px-4">
+              <div class="text-3xl md:text-4xl font-extrabold text-cyan-600 dark:text-cyan-300">🕹️ 上次进度还在</div>
+              <p class="text-sm opacity-70 text-text-light dark:text-text-dark">
+                得分 {{ pendingAutosave?.score }} · {{ pendingAutosave?.lines }} 行 · Lv {{ pendingAutosave?.level }}，继续挑战？
+              </p>
+              <div class="flex gap-3 justify-center flex-wrap">
+                <button
+                  @click="resumeGame"
+                  class="px-6 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-500 text-gray-900 font-bold shadow-claude-md transition-all active:scale-95"
+                >
+                  ▶️ 继续上次
+                </button>
+                <button
+                  @click="discardAutosave"
+                  class="px-6 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
+                >
+                  🔄 重新开始
+                </button>
+              </div>
+            </div>
+            <!-- 全新开局 -->
+            <div v-else class="text-center space-y-3 px-4">
               <div class="text-3xl md:text-4xl font-extrabold text-cyan-600 dark:text-cyan-300">▶️ 准备好了吗？</div>
               <p class="text-sm opacity-70 text-text-light dark:text-text-dark">
                 按 <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">方向键</kbd>
@@ -241,6 +263,7 @@ import type { TetrisState, TetrisConfig, SpeedTier, Direction, Rotation } from '
 import { SPEED_LABELS, TETROMINOES } from '../../game/tetris/types'
 import { useTetrisSettingsStore } from '../../stores/tetris-settings'
 import { useLeaderboardStore } from '../../stores/leaderboard'
+import { loadAutosave, saveAutosave, clearAutosave, throttledSaver } from '../../utils/autosave'
 import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
 import SoundToggle from '../../components/SoundToggle.vue'
@@ -295,6 +318,47 @@ function submitScoreIfOver() {
     duration,
     won: state.won,
   })
+}
+
+// ===== 自动存档：误退/刷新后可继续上次进度 =====
+const AUTOSAVE_GAME_ID = 'tetris'
+const pendingAutosave = loadAutosave<TetrisState>(AUTOSAVE_GAME_ID)
+/** 是否显示「继续上次」弹窗（存在未完成且未结束的存档） */
+const showResume = ref(false)
+if (pendingAutosave && !pendingAutosave.over && !pendingAutosave.won) {
+  showResume.value = true
+}
+/** tick 型游戏：节流保存，间隔内最多落盘一次 */
+const autosaver = throttledSaver(() => saveAutosave(AUTOSAVE_GAME_ID, engine.value.getState()))
+
+function resumeGame() {
+  if (!pendingAutosave) return
+  engine.value.loadState(pendingAutosave)
+  syncState()
+  showResume.value = false
+  started.value = true
+  sound.play('start')
+  if (!state.over && !state.paused) scheduleTick()
+}
+
+function discardAutosave() {
+  clearAutosave(AUTOSAVE_GAME_ID)
+  showResume.value = false
+  engine.value.reset()
+  syncState()
+}
+
+/** 就绪态下：有存档则恢复，否则新开局（键盘/触摸首次操作共用） */
+function beginOrResume() {
+  if (showResume.value) resumeGame()
+  else start()
+}
+
+function onVisibilityChange() {
+  if (document.visibilityState === 'hidden' && !state.over) autosaver.flush()
+}
+function onPageHide() {
+  if (!state.over) autosaver.flush()
 }
 
 // ===== 引擎与状态 =====
@@ -455,9 +519,12 @@ function scheduleTick() {
     else if (state.over) sound.play('over')
     submitScoreIfOver()
     if (!state.over) {
+      // 自动存档（节流）
+      autosaver.save()
       scheduleTick()
     } else {
       tickTimer = null
+      clearAutosave(AUTOSAVE_GAME_ID)
     }
   }, engine.value.getTickInterval())
 }
@@ -491,12 +558,17 @@ function newGame() {
   lastSubmittedOverScore = -1
   stopTick()
   started.value = false
+  // 新开局清除旧存档
+  clearAutosave(AUTOSAVE_GAME_ID)
+  showResume.value = false
 }
 
 function togglePause() {
   engine.value.togglePause()
   sound.play('pause')
   syncState()
+  // 暂停瞬间也落盘，暂停后离开页面可原样恢复
+  if (!state.over) autosaver.flush()
   if (!state.paused && !state.over && !tickTimer) {
     scheduleTick()
   }
@@ -508,6 +580,9 @@ function applySettings(config: TetrisConfig) {
   lastSubmittedOverScore = -1
   stopTick()
   started.value = false
+  // 设置变更视为放弃旧局面
+  clearAutosave(AUTOSAVE_GAME_ID)
+  showResume.value = false
 }
 
 function hold() {
@@ -531,7 +606,7 @@ function onKeydown(e: KeyboardEvent) {
   if (moveMap[k]) {
     e.preventDefault()
     if (state.over) return
-    if (!started.value) start()
+    if (!started.value) beginOrResume()
     if (engine.value.move(moveMap[k])) sound.play('move')
     syncState()
     return
@@ -539,7 +614,7 @@ function onKeydown(e: KeyboardEvent) {
   if (rotateMap[k]) {
     e.preventDefault()
     if (state.over) return
-    if (!started.value) start()
+    if (!started.value) beginOrResume()
     if (engine.value.rotate(rotateMap[k])) sound.play('rotate')
     syncState()
     return
@@ -548,7 +623,7 @@ function onKeydown(e: KeyboardEvent) {
     e.preventDefault()
     if (state.over) return
     if (!started.value) {
-      start()
+      beginOrResume()
       return
     }
     if (settings.config.hardDrop) {
@@ -569,7 +644,7 @@ function onKeydown(e: KeyboardEvent) {
   if (k === 'p' || k === 'P' || k === 'Escape') {
     e.preventDefault()
     if (!started.value) {
-      start()
+      beginOrResume()
       return
     }
     togglePause()
@@ -598,7 +673,7 @@ function onTouchEnd(e: TouchEvent) {
   touchStart = null
   if (state.over) return
   if (!started.value) {
-    start()
+    beginOrResume()
     return
   }
   const adx = Math.abs(dx)
@@ -652,6 +727,8 @@ onMounted(() => {
   submitScoreIfOver()
   window.addEventListener('keydown', onKeydown)
   window.addEventListener('resize', updateLayout)
+  document.addEventListener('visibilitychange', onVisibilityChange)
+  window.addEventListener('pagehide', onPageHide)
   const el = boardRef.value
   if (el) {
     el.addEventListener('touchstart', onTouchStart, { passive: true })
@@ -661,8 +738,13 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   stopTick()
+  // 离开页面兜底保存
+  if (!state.over) autosaver.flush()
+  autosaver.dispose()
   window.removeEventListener('keydown', onKeydown)
   window.removeEventListener('resize', updateLayout)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+  window.removeEventListener('pagehide', onPageHide)
   const el = boardRef.value
   if (el) {
     el.removeEventListener('touchstart', onTouchStart)
