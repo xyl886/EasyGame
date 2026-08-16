@@ -73,6 +73,13 @@
           >
             {{ demoActive ? '⏹ 停止演示' : '▶️ 自动演示' }}
           </button>
+          <button
+            v-if="demoActive"
+            @click="toggleDemoPause"
+            class="px-3 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-gray-900 shadow-claude-md transition-all active:scale-95 text-sm font-bold"
+          >
+            {{ demoPaused ? '▶️ 继续' : '⏸️ 暂停' }}
+          </button>
         </div>
         <div class="flex gap-2 w-full sm:w-auto justify-end">
           <button
@@ -124,7 +131,7 @@
           <div
             v-for="p in state.pieces"
             :key="p.id"
-            class="absolute rounded-lg cursor-pointer flex items-center justify-center font-bold transition-all duration-75 select-none"
+            class="absolute rounded-lg cursor-pointer flex items-center justify-center font-bold transition-all duration-150 select-none"
             :class="[pieceClass(p.kind), { 'ring-2 ring-amber-300 dark:ring-amber-200 z-10 shadow-claude-lg': p.id === state.selectedId }]"
             :style="pieceStyle(p)"
             @click="onPieceClick(p.id)"
@@ -455,6 +462,7 @@ function chooseLevel(id: string) {
 
 // ===== 自动演示 =====
 const demoActive = ref(false)
+const demoPaused = ref(false)
 let demoTimer: ReturnType<typeof setInterval> | null = null
 let demoSchedule: number[] = []
 let demoIdx = 0
@@ -467,10 +475,16 @@ const canDemo = computed(() => {
 
 function stopDemo() {
   demoActive.value = false
+  demoPaused.value = false
   if (demoTimer) {
     clearInterval(demoTimer)
     demoTimer = null
   }
+}
+
+function toggleDemoPause() {
+  demoPaused.value = !demoPaused.value
+  sound.play('click')
 }
 
 function autoshow() {
@@ -492,10 +506,12 @@ function autoshow() {
   showResume.value = false
   showDirOverlay(null)
   demoActive.value = true
+  demoPaused.value = false
   demoSchedule = lv.steps
   demoIdx = 0
   sound.play('start')
   demoTimer = setInterval(() => {
+    if (demoPaused.value) return
     if (demoIdx >= demoSchedule.length) {
       stopDemo()
       return

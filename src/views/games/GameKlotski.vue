@@ -339,7 +339,7 @@ const elapsedText = computed(() => {
 
 function tileClass(v: number): string {
   if (v === 0) return 'bg-transparent'
-  return 'bg-rose-400 dark:bg-rose-500 text-white shadow-claude-md hover:bg-rose-500 dark:hover:bg-rose-400'
+  return 'bg-gradient-to-br from-rose-400 to-rose-600 dark:from-rose-500 dark:to-rose-700 text-white shadow-claude-md hover:from-rose-500 hover:to-rose-700 dark:hover:from-rose-400 dark:hover:to-rose-600 transition-transform active:scale-95'
 }
 
 function syncState() {
