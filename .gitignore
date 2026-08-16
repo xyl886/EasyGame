@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# pnpm 项目本地 store（pnpm 10 可能生成）
+.pnpm-store
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

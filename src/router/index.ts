@@ -27,7 +27,9 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/',
+    name: 'NotFound',
+    component: () => import('../views/NotFound.vue'),
+    meta: { title: '404 · EasyGame' },
   },
 ]
 
