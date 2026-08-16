@@ -539,6 +539,11 @@ function onKeydown(e: KeyboardEvent) {
   const dir = map[e.key]
   if (dir) {
     e.preventDefault()
+    // 有「继续上次」弹窗时，方向键 = 继续上次（与贪吃蛇/俄罗斯方块行为一致）
+    if (showResume.value) {
+      resumeGame()
+      return
+    }
     doMove(dir)
   }
 }
