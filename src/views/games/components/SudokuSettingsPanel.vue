@@ -23,6 +23,25 @@
           </button>
         </div>
 
+        <!-- 尺寸 -->
+        <div class="space-y-2">
+          <label class="text-sm font-semibold block">棋盘尺寸</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button
+              v-for="s in SIZES"
+              :key="s.size"
+              @click="localConfig.size = s.size"
+              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              :class="localConfig.size === s.size
+                ? 'bg-emerald-400 text-white border-transparent shadow-claude'
+                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-emerald-400/50'"
+            >
+              {{ s.label }}
+            </button>
+          </div>
+          <p class="text-xs opacity-60">4×4 入门 · 6×6 中阶 · 9×9 标准</p>
+        </div>
+
         <!-- 难度 -->
         <div class="space-y-2">
           <label class="text-sm font-semibold block">难度（挖空格数）</label>
@@ -39,7 +58,7 @@
               {{ opt.label }}
             </button>
           </div>
-          <p class="text-xs opacity-60">简单 35 空 · 普通 45 空 · 困难 55 空（全部唯一解）</p>
+          <p class="text-xs opacity-60">所有题面均为唯一解</p>
         </div>
 
         <!-- 底部按钮 -->
@@ -64,7 +83,7 @@
 
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
-import { useSudokuSettingsStore, DIFFICULTY_LABELS } from '../../../stores/sudoku-settings'
+import { useSudokuSettingsStore, DIFFICULTY_LABELS, SIZES } from '../../../stores/sudoku-settings'
 import type { SudokuConfig, SudokuDifficulty } from '../../../game/sudoku/types'
 
 const settings = useSudokuSettingsStore()
