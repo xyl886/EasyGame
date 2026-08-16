@@ -45,21 +45,13 @@
         </div>
 
         <!-- 按钮 -->
-        <div class="flex flex-col sm:flex-row gap-2">
-          <button
-            @click="copyUrl"
-            class="flex-1 inline-flex items-center justify-center gap-1 rounded-lg px-3 py-2 bg-bg-light dark:bg-bg-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark text-sm font-medium shadow-claude transition-all active:scale-[0.98] hover:border-accent-light/40 dark:hover:border-accent-dark/40"
-          >
-            {{ copied ? '✓ 已复制' : '📋 复制链接' }}
-          </button>
-          <button
-            @click="shareHome"
-            class="flex-1 inline-flex items-center justify-center gap-1 rounded-lg px-3 py-2 bg-accent-light hover:bg-accent-hover-light dark:bg-accent-dark dark:hover:bg-accent-hover-dark text-white text-sm font-medium shadow-claude transition-all active:scale-[0.98]"
-          >
-            <span>📤</span>
-            <span>分享给朋友</span>
-          </button>
-        </div>
+        <button
+          @click="shareHome"
+          class="w-full inline-flex items-center justify-center gap-1 rounded-lg px-3 py-2 bg-accent-light hover:bg-accent-hover-light dark:bg-accent-dark dark:hover:bg-accent-hover-dark text-white text-sm font-medium shadow-claude transition-all active:scale-[0.98]"
+        >
+          <span>📤</span>
+          <span>分享给朋友</span>
+        </button>
 
         <p class="text-xs opacity-60 text-text-muted-light dark:text-text-muted-dark">
           即开即玩、离线可用；部署更新后请刷新页面，已安装 PWA 的用户会自动更新
@@ -72,12 +64,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import QRCode from 'qrcode'
-import { PlatformAdapter } from '../adapters/PlatformAdapter'
 import { shareOrCopy, shareUrl } from '../utils/share'
 import { toast } from '../utils/toast'
 
 const qrDataUrl = ref<string>('')
-const copied = ref(false)
 
 /** 线上地址：自动取当前部署域名 + 子路径（GitHub Pages / 自定义域名均正确） */
 const accessUrl = computed(() => `${location.origin}${location.pathname}`)
@@ -96,17 +86,6 @@ onMounted(async () => {
     console.warn('生成二维码失败', e)
   }
 })
-
-async function copyUrl() {
-  const ok = await PlatformAdapter.copyToClipboard(accessUrl.value)
-  if (ok) {
-    copied.value = true
-    PlatformAdapter.toast('线上链接已复制')
-    setTimeout(() => (copied.value = false), 1800)
-  } else {
-    PlatformAdapter.toast('复制失败，请手动复制')
-  }
-}
 
 async function shareHome() {
   const result = await shareOrCopy({
