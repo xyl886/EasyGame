@@ -106,6 +106,19 @@
           </div>
         </div>
 
+        <!-- 吃到食物加分飘字 -->
+        <div
+          v-if="foodPop"
+          :key="foodPop.id"
+          class="absolute pointer-events-none select-none z-20 food-pop font-extrabold text-lg text-amber-500 dark:text-amber-300 drop-shadow"
+          :style="{
+            left: `${((foodPop.x + 0.5) / state.size) * 100}%`,
+            top: `${((foodPop.y + 0.5) / state.size) * 100}%`,
+          }"
+        >
+          {{ foodPop.text }}
+        </div>
+
         <!-- 游戏结束遮罩 -->
         <div
           v-if="state.over || state.won"
@@ -455,6 +468,11 @@ function syncState() {
 // ===== Tick 循环（setTimeout 递归，支持动态间隔） =====
 let tickTimer: ReturnType<typeof setTimeout> | null = null
 
+/** 吃到食物的加分飘字（在食物原位置短暂显示 +1/+5） */
+const foodPop = ref<{ x: number; y: number; text: string; id: number } | null>(null)
+let foodPopId = 0
+let foodPopTimer: ReturnType<typeof setTimeout> | null = null
+
 function scheduleTick() {
   if (tickTimer) clearTimeout(tickTimer)
   tickTimer = setTimeout(() => {
@@ -462,11 +480,26 @@ function scheduleTick() {
       tickTimer = null
       return
     }
+    // tick 前记录食物位置（用于定位被吃的那个）
+    const prevFoodKeys = new Map<string, string>(state.foods.map((f) => [`${f.pos.x},${f.pos.y}`, f.type]))
     const prevScore = state.score
     engine.value.step()
     syncState()
-    // 音效：吃到食物 / 通关 / 游戏结束（引擎胜利时 over 同步为 true，先判 won）
-    if (state.score > prevScore) sound.play('eat')
+    // 音效 + 飘字：吃到食物
+    if (state.score > prevScore) {
+      sound.play('eat')
+      const curKeys = new Set(state.foods.map((f) => `${f.pos.x},${f.pos.y}`))
+      for (const [k, type] of prevFoodKeys) {
+        if (!curKeys.has(k)) {
+          const [x, y] = k.split(',').map(Number)
+          foodPop.value = { x, y, text: type === 'bonus' ? '+5' : '+1', id: ++foodPopId }
+          if (foodPopTimer) clearTimeout(foodPopTimer)
+          foodPopTimer = setTimeout(() => (foodPop.value = null), 650)
+          break
+        }
+      }
+    }
+    // 音效：通关 / 游戏结束（引擎胜利时 over 同步为 true，先判 won）
     if (state.won) sound.play('win')
     else if (state.over) sound.play('over')
     submitScoreIfOver()
@@ -514,6 +547,8 @@ function newGame() {
   // 新开局清除旧存档
   clearAutosave(AUTOSAVE_GAME_ID)
   showResume.value = false
+  if (foodPopTimer) clearTimeout(foodPopTimer)
+  foodPop.value = null
 }
 
 function togglePause() {
@@ -632,6 +667,7 @@ onBeforeUnmount(() => {
   // 离开页面兜底保存
   if (!state.over) autosaver.flush()
   autosaver.dispose()
+  if (foodPopTimer) clearTimeout(foodPopTimer)
   window.removeEventListener('keydown', onKeydown)
   window.removeEventListener('resize', updateLayout)
   document.removeEventListener('visibilitychange', onVisibilityChange)
@@ -645,5 +681,18 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* snake 暂不需要额外样式 */
+/* 吃到食物加分飘字 */
+@keyframes foodPopUp {
+  0% {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, calc(-50% - 22px));
+    opacity: 0;
+  }
+}
+.food-pop {
+  animation: foodPopUp 0.6s ease-out forwards;
+}
 </style>

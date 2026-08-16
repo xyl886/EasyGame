@@ -251,6 +251,41 @@
       <div class="text-center text-xs opacity-60 mt-4 sm:hidden">
         👆 点击棋盘旋转 · 左右滑动移动 · 下滑软降 · 上滑硬降
       </div>
+
+      <!-- 移动端触控按钮 -->
+      <div class="grid grid-cols-6 gap-2 mt-3 sm:hidden max-w-[380px] mx-auto w-full">
+        <button
+          @click="touchMove('left')"
+          class="aspect-square rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude active:scale-90 active:bg-cyan-100 dark:active:bg-cyan-900/40 transition-all text-xl font-bold text-text-light dark:text-text-dark flex items-center justify-center"
+          aria-label="左移"
+        >◀</button>
+        <button
+          @click="touchMove('right')"
+          class="aspect-square rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude active:scale-90 active:bg-cyan-100 dark:active:bg-cyan-900/40 transition-all text-xl font-bold text-text-light dark:text-text-dark flex items-center justify-center"
+          aria-label="右移"
+        >▶</button>
+        <button
+          @click="touchRotate"
+          class="aspect-square rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude active:scale-90 active:bg-cyan-100 dark:active:bg-cyan-900/40 transition-all text-xl font-bold text-text-light dark:text-text-dark flex items-center justify-center"
+          aria-label="旋转"
+        >↻</button>
+        <button
+          @click="touchSoftDrop"
+          class="aspect-square rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude active:scale-90 active:bg-cyan-100 dark:active:bg-cyan-900/40 transition-all text-xl font-bold text-text-light dark:text-text-dark flex items-center justify-center"
+          aria-label="软降"
+        >▼</button>
+        <button
+          @click="touchHardDrop"
+          class="aspect-square rounded-xl bg-cyan-400 hover:bg-cyan-500 text-gray-900 shadow-claude-md active:scale-90 transition-all text-xl font-bold flex items-center justify-center"
+          aria-label="硬降"
+        >⏬</button>
+        <button
+          @click="touchHold"
+          :disabled="state.over || !started || !state.canHold"
+          class="aspect-square rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude active:scale-90 active:bg-cyan-100 dark:active:bg-cyan-900/40 transition-all text-xl font-bold text-text-light dark:text-text-dark disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+          aria-label="暂存"
+        >🤚</button>
+      </div>
     </main>
 
     <footer class="max-w-3xl w-full mx-auto mt-6 py-3 text-center text-xs opacity-40">
@@ -743,6 +778,46 @@ function onTouchEnd(e: TouchEvent) {
     // 上滑 → 硬降
     if (engine.value.hardDrop()) sound.play('drop')
   }
+  syncState()
+}
+
+// ===== 移动端触控按钮（小屏专用，与键盘/滑动等价） =====
+function touchEnsureStarted(): boolean {
+  if (state.over) return false
+  if (!started.value) {
+    beginOrResume()
+    return started.value
+  }
+  return true
+}
+
+function touchMove(dir: Direction) {
+  if (!touchEnsureStarted()) return
+  if (engine.value.move(dir)) sound.play('move')
+  syncState()
+}
+
+function touchRotate() {
+  if (!touchEnsureStarted()) return
+  if (engine.value.rotate('cw')) sound.play('rotate')
+  syncState()
+}
+
+function touchSoftDrop() {
+  if (!touchEnsureStarted()) return
+  if (engine.value.move('down')) sound.play('move')
+  syncState()
+}
+
+function touchHardDrop() {
+  if (!touchEnsureStarted()) return
+  if (engine.value.hardDrop()) sound.play('drop')
+  syncState()
+}
+
+function touchHold() {
+  if (state.over || !started.value) return
+  if (engine.value.hold()) sound.play('click')
   syncState()
 }
 
