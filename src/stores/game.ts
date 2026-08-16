@@ -43,11 +43,11 @@ export const useGameStore = defineStore('game', {
       {
         id: 'sudoku',
         name: '数独',
-        description: '9x9 数字挑战，敬请期待',
+        description: '9x9 数字挑战，每行每列每宫不重复',
         icon: '🔢',
         accent: 'from-emerald-400 to-green-600',
-        route: '#',
-        status: 'coming-soon',
+        route: '/game/sudoku',
+        status: 'available',
       },
       {
         id: 'snake',

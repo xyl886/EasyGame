@@ -38,6 +38,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '三国华容道 · EasyGame' },
   },
   {
+    path: '/game/sudoku',
+    name: 'GameSudoku',
+    component: () => import('../views/games/GameSudoku.vue'),
+    meta: { title: '数独 · EasyGame' },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('../views/NotFound.vue'),
