@@ -223,6 +223,15 @@ export class ClassicKlotskiEngine implements BaseGame<ClassicState, ClassicDirec
     }
   }
 
+  /** 查询某个棋子当前可移动的方向列表（视图点击交互用） */
+  movableDirs(pieceId: number): ClassicDirection[] {
+    const p = this.pieces.find((x) => x.id === pieceId)
+    if (!p) return []
+    return (['up', 'down', 'left', 'right'] as ClassicDirection[]).filter((d) =>
+      this.canMove(p, d),
+    )
+  }
+
   getSelectedId(): number | null {
     return this.selectedId
   }

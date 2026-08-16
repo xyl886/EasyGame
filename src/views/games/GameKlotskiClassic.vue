@@ -54,7 +54,7 @@
       <!-- 操作按钮 -->
       <div class="flex items-center justify-between mb-4 gap-2">
         <div class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark">
-          <span class="opacity-80">点击棋子选中</span> · 方向键 / <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">WASD</kbd> 移动
+          <span class="opacity-80">点击棋子直接移动</span> · 方向键 / <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">WASD</kbd> 微调 · 目标：曹操移到下方出口
         </div>
         <div class="flex gap-2 w-full sm:w-auto justify-end">
           <button
@@ -174,7 +174,7 @@
 
       <!-- 操作说明（小屏） -->
       <div class="text-center text-xs opacity-60 mt-4 sm:hidden">
-        👆 点击棋子选中，滑动/方向键移动 · 目标：把曹操移到下方出口
+        👆 点击棋子直接移动（多方向可动时滑动选择）· 目标：把曹操移到下方出口
       </div>
     </main>
 
@@ -413,9 +413,22 @@ function doMove(dir: ClassicDirection) {
 
 function onPieceClick(id: number) {
   if (state.won || showResume.value) return
-  // 点击已选中棋子 = 取消选中
-  engine.value.select(state.selectedId === id ? null : id)
-  syncState()
+  const engineInst = engine.value
+  const dirs = engineInst.movableDirs(id)
+  if (dirs.length === 1) {
+    // 唯一可动方向 → 点击直接移动（并保持选中，方便连续推动）
+    engineInst.select(id)
+    doMove(dirs[0])
+  } else if (dirs.length > 1) {
+    // 多个方向可动 → 选中，等待方向键/滑动选择方向
+    engineInst.select(state.selectedId === id ? null : id)
+    syncState()
+  } else {
+    // 被卡死 → 选中展示 + 提示先移开阻挡的棋子
+    engineInst.select(id)
+    syncState()
+    toast('该棋子被挡住了，先移动其他棋子为它让路')
+  }
 }
 
 function undo() {
