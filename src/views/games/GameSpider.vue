@@ -1,196 +1,189 @@
 <template>
-  <div class="min-h-screen w-full py-4 px-2 md:px-6 flex flex-col">
-    <!-- 顶部栏 -->
-    <header class="max-w-3xl w-full mx-auto flex items-center justify-between mb-4">
-      <RouterLink to="/" class="flex items-center gap-2 group">
-        <button class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-purple-400/40 transition-all duration-200 group-hover:-translate-x-0.5 text-lg flex items-center justify-center">
-          ←
-        </button>
-      </RouterLink>
-      <div class="text-lg font-bold text-text-light dark:text-text-dark">🕷️ 蜘蛛纸牌</div>
-      <div class="flex gap-2">
-        <button
-          @click="showLeaderboard = true"
-          class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-purple-400/40 transition-all active:scale-95 flex items-center justify-center"
-          aria-label="排行榜"
-        >
-          🏆
-        </button>
-        <button
-          @click="settings.openSettings()"
-          class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-purple-400/40 transition-all active:scale-95 flex items-center justify-center"
-          aria-label="设置"
-        >
-          ⚙️
-        </button>
-        <SoundToggle />
-        <ThemeToggle />
-      </div>
-    </header>
+  <div class="min-h-screen w-full flex flex-col" :class="{ 'landscape-root': landscape }">
+    <div v-if="landscape" class="landscape-scrim" @click.self="landscape = false"></div>
 
-    <!-- 游戏主体 -->
-    <main class="max-w-3xl w-full mx-auto flex-1 flex flex-col">
-      <!-- 信息栏 -->
-      <div class="flex items-center justify-between mb-3 gap-2 flex-wrap">
-        <div class="flex items-center gap-2 flex-wrap">
-          <div class="flex flex-col items-center justify-center px-3 py-1 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[64px]">
-            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark">分数</span>
-            <span class="text-lg font-bold tabular-nums text-purple-600 dark:text-purple-400">{{ state.score }}</span>
-          </div>
-          <div class="flex flex-col items-center justify-center px-3 py-1 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[64px]">
-            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark">完成</span>
-            <span class="text-lg font-bold tabular-nums text-emerald-600 dark:text-emerald-400">{{ state.completed }}/8</span>
-          </div>
-          <div class="flex flex-col items-center justify-center px-3 py-1 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[72px]">
-            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark">⏱ 用时</span>
-            <span class="text-lg font-bold tabular-nums text-text-light dark:text-text-dark">{{ elapsedText }}</span>
-          </div>
-        </div>
-        <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-xs opacity-70 text-text-muted-light dark:text-text-muted-dark">
-            {{ difficultyLabel }}
-            <span v-if="state.bestScore > 0"> · 最高 {{ state.bestScore }}</span>
-          </span>
-          <button
-            @click="newGame"
-            class="px-4 py-2 rounded-xl bg-purple-500 hover:bg-purple-600 text-white shadow-claude-md transition-all active:scale-95 text-sm font-bold"
-          >
-            🔄 新游戏
+    <div class="game-shell flex flex-col min-h-screen w-full" :class="{ 'landscape-rotated bg-bg-light dark:bg-bg-dark': landscape }">
+      <!-- 顶部栏 -->
+      <header class="max-w-5xl w-full mx-auto flex items-center justify-between mb-3 px-2">
+        <RouterLink to="/" class="flex items-center gap-2 group">
+          <button class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md transition-all duration-200 group-hover:-translate-x-0.5 text-lg flex items-center justify-center">
+            ←
           </button>
-        </div>
-      </div>
-
-      <!-- 操作区 -->
-      <div class="flex items-center justify-between mb-3 gap-2">
+        </RouterLink>
+        <div class="text-lg font-bold text-text-light dark:text-text-dark">🕷️ 蜘蛛纸牌</div>
         <div class="flex gap-2">
           <button
-            @click="showHowTo = true"
-            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-purple-400/40 transition-all active:scale-95 text-sm font-medium text-text-light dark:text-text-dark"
+            v-if="isMobile"
+            @click="toggleLandscape"
+            class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md transition-all active:scale-95 flex items-center justify-center text-base"
+            :aria-label="landscape ? '切回竖屏' : '翻转横屏'"
           >
-            ❓ 玩法
+            {{ landscape ? '🔃' : '🔄' }}
           </button>
           <button
-            @click="doHint"
-            :disabled="state.status === 'won'"
-            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-purple-400/40 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-text-light dark:text-text-dark"
+            @click="showLeaderboard = true"
+            class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md transition-all active:scale-95 flex items-center justify-center"
+            aria-label="排行榜"
           >
-            💡 提示
+            🏆
           </button>
           <button
-            @click="undo"
-            :disabled="!canUndo"
-            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-purple-400/40 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-text-light dark:text-text-dark"
+            @click="settings.openSettings()"
+            class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md transition-all active:scale-95 flex items-center justify-center"
+            aria-label="设置"
           >
-            ↩️ 撤销
+            ⚙️
           </button>
-          <button
-            @click="deal"
-            :disabled="state.stock.length === 0"
-            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-purple-400/40 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-text-light dark:text-text-dark"
-          >
-            🃏 发牌<span v-if="state.stock.length > 0" class="opacity-60 ml-1">×{{ state.stock.length }}</span>
-          </button>
+          <SoundToggle />
+          <ThemeToggle />
         </div>
-        <div class="text-xs opacity-60 text-text-muted-light dark:text-text-muted-dark hidden sm:block">
-          点击/拖动牌串 → 目标列 · 双击自动归位 · 同花色降序才能整串移动
-        </div>
-      </div>
+      </header>
 
-      <!-- 牌桌（深绿毛毡，参考 spidersolitaire.cn） -->
-      <div
-        ref="tableRef"
-        class="relative w-full rounded-xl bg-[#017e00] dark:bg-[#016300] p-2 overflow-x-auto shadow-inner"
-        @pointermove="onTablePointerMove"
-        @pointerup="onTablePointerUp"
-        @pointercancel="cancelDrag"
-        @wheel.prevent="onWheel"
-      >
-        <div class="flex min-w-max mx-auto" :style="{ gap: tableGap + 'px' }">
+      <!-- 游戏主体 -->
+      <main class="max-w-5xl w-full mx-auto flex-1 flex flex-col px-2">
+        <!-- 牌桌舞台（固定设计尺寸 + 等比缩放） -->
+        <div
+          ref="wrapRef"
+          class="relative w-full overflow-hidden rounded-xl bg-[#017e00] dark:bg-[#016300] shadow-inner"
+          :style="{ height: wrapHeight + 'px' }"
+          @wheel.prevent="onWheel"
+          @pointermove="onTablePointerMove"
+          @pointerup="onTablePointerUp"
+          @pointercancel="cancelDrag"
+        >
           <div
-            v-for="(col, ci) in state.columns"
-            :key="ci"
-            :data-col="ci"
-            class="relative shrink-0 rounded-md"
-            :class="[colClass(ci), { 'ring-2 ring-emerald-300 z-10': dragOverCol === ci && dragging }]"
-            :style="{ width: cardW + 'px', height: Math.max(84, col.length * stackOffsetView + 12) + 'px' }"
-            @click="onColumnAreaClick(ci)"
-            @dblclick.self="onColumnDblClick(ci)"
+            class="relative"
+            :style="stageStyle"
           >
-            <!-- 牌位占位框（白色半透明圆角） -->
+            <!-- 10 列 -->
             <div
-              class="absolute top-0 w-full rounded-xl border-2 border-white/40 dark:border-white/25"
-              :style="{ height: cardH + 'px' }"
-            ></div>
-            <div
-              v-for="(card, idx) in col"
-              :key="idx"
-              class="absolute w-full rounded-lg border flex flex-col items-center justify-center leading-none shadow-sm"
-              :class="cardClass(ci, idx)"
-              :style="{ top: idx * stackOffsetView + 'px', height: cardH + 'px' }"
-              @pointerdown.stop="onCardPointerDown(ci, idx, $event)"
-              @click.stop="onCardClick(ci, idx)"
-              @dblclick.stop="onCardDblClick(ci, idx)"
+              v-for="(col, ci) in state.columns"
+              :key="ci"
+              :data-col="ci"
+              class="absolute rounded-lg"
+              :class="[colClass(ci), { 'ring-4 ring-emerald-300 z-30': dragOverCol === ci && dragging }]"
+              :style="colStyle(ci)"
+              @click="onColumnAreaClick(ci)"
+              @dblclick.self="onColumnDblClick(ci)"
             >
-              <span class="absolute top-0.5 left-0.5 text-[10px] font-bold leading-none px-0.5 rounded-sm" :class="suitColor(card) + ' bg-bg-light/70 dark:bg-bg-dark/60'">{{ rankLabel(card.rank) }}{{ SUIT_SYMBOL[card.suit] }}</span>
-              <span v-if="!isMobile" class="text-xl" :class="suitColor(card)">{{ SUIT_SYMBOL[card.suit] }}</span>
+              <!-- 牌位占位框 -->
+              <div class="absolute pad-slot" :style="padStyle"></div>
+
+              <!-- 牌 -->
+              <div
+                v-for="(card, idx) in col"
+                :key="idx"
+                class="absolute cursor-pointer"
+                :class="cardWrapClass(ci, idx)"
+                :style="cardStyle(ci, idx)"
+                @pointerdown.stop="onCardPointerDown(ci, idx, $event)"
+                @click.stop="onCardClick(ci, idx)"
+                @dblclick.stop="onCardDblClick(ci, idx)"
+              >
+                <div
+                  class="card3d"
+                  :class="{ 'card-dealing': dealing }"
+                  :style="{ animationDelay: (flipDelay + idx * 0.03) + 's' }"
+                >
+                  <!-- 牌面 -->
+                  <div class="card-face card-front rounded-xl bg-white dark:bg-gray-700 border shadow-sm">
+                    <span class="absolute top-1 left-1 text-sm font-bold leading-none" :class="suitColor(card)">{{ rankLabel(card.rank) }}{{ SUIT_SYMBOL[card.suit] }}</span>
+                    <span class="text-4xl" :class="suitColor(card)">{{ SUIT_SYMBOL[card.suit] }}</span>
+                  </div>
+                  <!-- 牌背 -->
+                  <div class="card-face card-back rounded-xl"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <!-- 拖拽跟随指示 -->
-        <div
-          v-if="dragging && dragPreview"
-          class="fixed z-50 pointer-events-none rounded-md border bg-white dark:bg-gray-800 shadow-claude-lg flex flex-col items-center justify-center"
-          :style="{ width: cardW + 'px', height: cardH + 'px', left: dragX + 'px', top: dragY + 'px' }"
-        >
-          <span class="absolute top-0.5 left-0.5 text-[11px] font-bold px-0.5 rounded-sm bg-bg-light/70 dark:bg-bg-dark/60">{{ dragPreview }}</span>
-          <span class="text-xl">♠</span>
-        </div>
-      </div>
 
-      <!-- 移动端提示 -->
-      <div class="text-center text-xs opacity-60 mt-3 sm:hidden">
-        👆 点牌串选中 → 点目标列移动（牌桌可左右滑动）
-      </div>
+        <!-- 信息栏（牌桌下方）：牌堆/发牌 + 得分操作时间 + 按钮 -->
+        <div class="mt-2 rounded-xl bg-black/45 text-white p-2 flex items-center justify-between gap-2 flex-wrap">
+          <!-- 牌堆：点击发牌 -->
+          <button
+            class="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-white/10 transition-colors"
+            :class="{ 'opacity-40 cursor-not-allowed': state.stock.length === 0 }"
+            :disabled="state.stock.length === 0"
+            @click="deal"
+            :title="'剩余 ' + state.stock.length + ' 张，点击发牌'"
+          >
+            <span class="relative inline-block w-7 h-10">
+              <span class="absolute inset-0 rounded-md border-2 border-white/50 bg-[#1e3a6e] translate-x-1 translate-y-1"></span>
+              <span class="absolute inset-0 rounded-md border-2 border-white/60 bg-[#1e3a6e] translate-x-0.5 translate-y-0.5"></span>
+              <span class="absolute inset-0 rounded-md border-2 border-white/70 bg-[#1e3a6e] flex items-center justify-center text-white text-[10px]">🕷️</span>
+            </span>
+            <span class="text-sm font-bold tabular-nums">{{ state.stock.length }}</span>
+          </button>
 
-      <!-- 胜利遮罩 -->
-      <div
-        v-if="state.status === 'won'"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-      >
-        <div class="relative w-full max-w-md rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude-lg p-8 text-center space-y-4">
-          <div class="text-5xl">🕷️</div>
-          <div class="text-3xl md:text-4xl font-extrabold text-purple-600 dark:text-purple-400">🎉 全部清空！</div>
-          <p class="text-text-light dark:text-text-dark opacity-80">
-            分数 <strong>{{ state.score }}</strong> · 用时 {{ elapsedText }}
-            <span v-if="state.score === state.bestScore" class="ml-1">🏅 新纪录！</span>
-          </p>
-          <div class="flex gap-3 justify-center flex-wrap">
-            <button
-              @click="showLeaderboard = true"
-              class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-            >
-              🏆 查看排行榜
-            </button>
-            <button
-              @click="shareResult"
-              class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-            >
-              📤 分享成绩
-            </button>
+          <div class="flex gap-4 text-sm">
+            <div><span class="opacity-70 text-xs">得分</span> <b class="tabular-nums">{{ state.score }}</b></div>
+            <div><span class="opacity-70 text-xs">操作</span> <b class="tabular-nums">{{ state.moves }}</b></div>
+            <div><span class="opacity-70 text-xs">时间</span> <b class="tabular-nums">{{ elapsedText }}</b></div>
+          </div>
+
+          <div class="flex gap-1.5 flex-wrap">
             <button
               @click="newGame"
-              class="px-5 py-2.5 rounded-xl bg-purple-500 hover:bg-purple-600 text-white font-bold shadow-claude-md transition-all active:scale-95"
+              class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium transition-colors"
             >
-              🔄 再来一局
+              开局
+            </button>
+            <button
+              @click="settings.openSettings()"
+              class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium transition-colors"
+            >
+              难度选择
+            </button>
+            <button
+              @click="toggleSound"
+              class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium transition-colors"
+            >
+              声音 : {{ soundOn ? '开' : '关' }}
+            </button>
+            <button
+              @click="doHint"
+              class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium transition-colors"
+            >
+              提示
+            </button>
+            <button
+              @click="undo"
+              :disabled="!canUndo"
+              class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              撤销
+            </button>
+            <button
+              @click="showHowTo = true"
+              class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium transition-colors"
+            >
+              ❓
             </button>
           </div>
         </div>
-      </div>
-    </main>
 
-    <footer class="max-w-3xl w-full mx-auto mt-4 py-3 text-center text-xs opacity-40">
-      <RouterLink to="/" class="hover:opacity-100">← 返回游戏大厅</RouterLink>
-    </footer>
+        <!-- 移动端提示 -->
+        <div class="text-center text-xs opacity-60 mt-2">
+          点击/拖动牌串移动 · 双击自动归位 · 滚轮展开牌堆 · {{ difficultyLabel }}
+        </div>
+      </main>
+
+      <footer class="max-w-5xl w-full mx-auto mt-3 py-2 text-center text-xs opacity-40">
+        <RouterLink to="/" class="hover:opacity-100">← 返回游戏大厅</RouterLink>
+      </footer>
+    </div>
+
+    <!-- 胜利全屏 -->
+    <div
+      v-if="state.status === 'won'"
+      class="fixed inset-0 z-[70] flex flex-col items-center justify-center bg-[#017e00] text-white cursor-pointer"
+      @click="newGame"
+    >
+      <div class="text-6xl mb-4">🕷️</div>
+      <div class="text-5xl font-extrabold tracking-wide">你赢了</div>
+      <div class="mt-3 opacity-70 text-sm">任意点击屏幕开始下一局</div>
+    </div>
 
     <!-- 设置面板 -->
     <SpiderSettingsPanel @apply="applySettings" />
@@ -199,11 +192,11 @@
     <HowToPlay v-model="showHowTo" title="蜘蛛纸牌">
       <ol class="list-decimal pl-5 space-y-2 opacity-90">
         <li>两副牌（104 张）铺在 10 列上，目标：按 <strong>K→A 同花色降序</strong>收集完整序列，共 <strong>8 组</strong>全部收完即获胜</li>
-        <li><strong>点击一串牌</strong>（同花色且降序连续）选中，再<strong>点击目标列</strong>移动；也可<strong>拖动</strong>牌串；双击自动归位</li>
-        <li>目标列顶牌必须比移动串的底牌 <strong>大 1</strong>；整串移动必须<strong>同花色</strong>；空列可放任意串</li>
-        <li>发牌规则：<strong>有空格时不能发牌</strong>；剩余不足 10 张也不能发牌（桌面少于 10 张且无牌可发即结束）</li>
-        <li>牌堆挤压时可用<strong>鼠标滚轮</strong>展开/收缩牌堆</li>
-        <li>难度：单色/双色/四色 × 简单/一般/困难/随机（洗牌方式影响难度）；计分 500 起步，每步 −1，收一组 +100</li>
+        <li><strong>点击一串牌</strong>（同花色且降序连续）选中，再<strong>点击目标列</strong>移动；也可<strong>拖动</strong>；双击自动归位</li>
+        <li>目标列顶牌必须比移动串底牌<strong>大 1</strong>；整串移动必须<strong>同花色</strong>；空列可放任意串</li>
+        <li>发牌：<strong>点击左下角牌堆</strong>；有空列不能发牌、剩余不足 10 张不能发牌</li>
+        <li>牌堆挤压时可用<strong>鼠标滚轮</strong>展开/收缩</li>
+        <li>难度：单色/双色/四色 × 简单/一般/困难/随机；计分 500 起步，每步 −1，收一组 +100</li>
       </ol>
     </HowToPlay>
 
@@ -218,7 +211,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, onMounted, onBeforeUnmount, ref } from 'vue'
+import { reactive, computed, onMounted, onBeforeUnmount, ref, nextTick } from 'vue'
 import { SpiderEngine } from '../../game/spider/GameEngine'
 import type { SpiderState, SpiderConfig, Card } from '../../game/spider/types'
 import { DIFFICULTY_OPTIONS, difficultyId } from '../../game/spider/types'
@@ -226,7 +219,6 @@ import { useSpiderSettingsStore } from '../../stores/spider-settings'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
 import { sound } from '../../utils/sound'
-import { shareOrCopy, shareUrl } from '../../utils/share'
 import { toast } from '../../utils/toast'
 import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
@@ -235,13 +227,20 @@ import HowToPlay from '../../components/HowToPlay.vue'
 import SpiderSettingsPanel from './components/SpiderSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
 
+// ===== 设计尺寸（参考 spidersolitaire.cn：固定设计 + 等比缩放） =====
+const PAD_W = 225
+const PAD_H = 315
+const CARD_W = 200
+const CARD_H = 280
+const COL_GAP = 40
+const STAGE_W = 10 * PAD_W + 9 * COL_GAP // 2610
+
 const settings = useSpiderSettingsStore()
 
 // ===== 排行榜 =====
 const LEADERBOARD_GAME_ID = 'spider'
 const leaderboard = useLeaderboardStore(LEADERBOARD_GAME_ID)
 const showLeaderboard = ref(false)
-/** 玩法说明弹层 */
 const showHowTo = ref(false)
 const leaderboardDimensions: LeaderboardDimension[] = [
   {
@@ -272,7 +271,6 @@ function submitScoreIfWon() {
 // ===== 自动存档 =====
 const AUTOSAVE_GAME_ID = 'spider'
 const pendingAutosave = loadAutosave<SpiderState>(AUTOSAVE_GAME_ID)
-/** 引擎（蜘蛛直接自动恢复存档，无需确认弹窗） */
 let engine: SpiderEngine = (() => {
   if (pendingAutosave && pendingAutosave.status !== 'won') {
     const e = new SpiderEngine({ suits: pendingAutosave.suits, mode: pendingAutosave.mode })
@@ -288,46 +286,151 @@ const canUndo = ref(false)
 const finishedElapsed = ref(0)
 const now = ref(Date.now())
 
-/** 响应式牌尺寸：移动端紧凑小牌（10 列塞进屏幕宽度），PC 大牌 */
-const isMobile = ref(false)
-const cardW = computed(() => (isMobile.value ? 32 : 56))
-const cardH = computed(() => (isMobile.value ? 44 : 76))
-/** 牌堆叠露边（默认值；滚轮可展开/收缩） */
-const baseOffset = computed(() => (isMobile.value ? 16 : 28))
-const stackOffsetView = ref(28)
-/** 列间距 */
-const tableGap = computed(() => (isMobile.value ? 2 : 6))
+// ===== 舞台缩放 =====
+const wrapRef = ref<HTMLElement | null>(null)
+const scale = ref(0.3)
+const stageH = ref(400)
+const wrapHeight = ref(150)
+/** 堆叠露边（设计尺寸，滚轮可调） */
+const offsetView = ref(30)
 
-function updateLayout() {
-  isMobile.value = window.innerWidth < 640
-  stackOffsetView.value = baseOffset.value
+const stageStyle = computed(() => ({
+  width: STAGE_W + 'px',
+  height: stageH.value + 'px',
+  transform: `scale(${scale.value})`,
+  transformOrigin: 'top left',
+}))
+
+function colStyle(ci: number): Record<string, string> {
+  const col = state.columns[ci]
+  return {
+    left: ci * (PAD_W + COL_GAP) + 'px',
+    top: '0px',
+    width: PAD_W + 'px',
+    height: Math.max(PAD_H, col.length * offsetView.value + 40) + 'px',
+  }
 }
 
-/** 鼠标滚轮展开/收缩牌堆（参考 spidersolitaire.cn） */
+const padStyle = computed(() => ({
+  width: PAD_W + 'px',
+  height: PAD_H + 'px',
+}))
+
+function cardStyle(ci: number, idx: number): Record<string, string> {
+  const sel = state.selected
+  const inSel = !!sel && sel.col === ci && idx >= state.columns[ci].length - sel.count
+  return {
+    top: idx * offsetView.value + 12 + 'px',
+    left: (PAD_W - CARD_W) / 2 + 'px',
+    width: CARD_W + 'px',
+    height: CARD_H + 'px',
+    zIndex: String(inSel ? 100 + idx : idx + 1),
+  }
+}
+
+/** 重算 scale 与舞台高度（窗口/横屏/堆叠变化时） */
+function updateScale() {
+  const wrap = wrapRef.value
+  if (!wrap) return
+  const avail = (landscape.value ? window.innerHeight : wrap.clientWidth) - 20
+  scale.value = Math.max(0.05, Math.min(1, avail / STAGE_W))
+  let maxLen = 0
+  for (const col of state.columns) maxLen = Math.max(maxLen, col.length)
+  stageH.value = maxLen * offsetView.value + PAD_H + 40
+  wrapHeight.value = stageH.value * scale.value
+}
+
+let ro: ResizeObserver | null = null
+function observeWrap() {
+  ro?.disconnect()
+  ro = new ResizeObserver(() => updateScale())
+  if (wrapRef.value) ro.observe(wrapRef.value)
+}
+
+/** 鼠标滚轮展开/收缩牌堆 */
 function onWheel(e: WheelEvent) {
   const delta = e.deltaY < 0 ? 3 : -3
-  stackOffsetView.value = Math.min(48, Math.max(8, stackOffsetView.value + delta))
+  offsetView.value = Math.min(60, Math.max(8, offsetView.value + delta))
+  updateScale()
 }
 
-/** 当前难度标签 */
+// ===== 横屏翻转（移动端） =====
+const isMobile = ref(false)
+const landscape = ref(false)
+function updateLayout() {
+  isMobile.value = window.innerWidth < 640
+  nextTick(updateScale)
+}
+function toggleLandscape() {
+  landscape.value = !landscape.value
+  updateScale()
+}
+
+// ===== 声音（信息栏按钮） =====
+const soundOn = ref(sound.enabled)
+function toggleSound() {
+  sound.toggle()
+  soundOn.value = sound.enabled
+}
+
+// ===== 入场翻牌动画 =====
+const dealing = ref(false)
+const flipDelay = ref(0.2)
+function startDealAnimation() {
+  dealing.value = false
+  flipDelay.value = 0.2
+  nextTick(() => {
+    dealing.value = true
+    flipDelay.value = 0.2
+  })
+}
+
+// ===== 难度标签 =====
 const difficultyLabel = computed(() => {
   const d = DIFFICULTY_OPTIONS.find((o) => o.suits === state.suits && o.mode === state.mode)
   return d ? d.label : '蜘蛛纸牌'
 })
 
-// ===== 拖拽状态 =====
-const tableRef = ref<HTMLElement | null>(null)
-const dragging = ref(false)
-const dragX = ref(0)
-const dragY = ref(0)
-const dragPreview = ref('')
-const dragOverCol = ref<number | null>(null)
-/** 拖拽源：{ col, count, startX, startY } */
-const dragSource = ref<{ col: number; count: number; startX: number; startY: number } | null>(null)
-/** 提示高亮的列 */
-const hintCol = ref<number | null>(null)
-/** 收牌动画的列 */
-const flashCol = ref<number | null>(null)
+const elapsedText = computed(() => {
+  const sec = state.status === 'won' ? finishedElapsed.value : state.startTime === 0 ? 0 : Math.floor((now.value - state.startTime) / 1000)
+  const m = Math.floor(sec / 60)
+  const s = sec % 60
+  return m > 0 ? `${m}分${s}秒` : `${s}秒`
+})
+
+const SUIT_SYMBOL = ['♠', '♥', '♦', '♣']
+const SUIT_RED = [false, true, true, false]
+
+function suitColor(card: Card): string {
+  return SUIT_RED[card.suit] ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'
+}
+
+function rankLabel(rank: number): string {
+  if (rank === 1) return 'A'
+  if (rank === 11) return 'J'
+  if (rank === 12) return 'Q'
+  if (rank === 13) return 'K'
+  return String(rank)
+}
+
+function cardWrapClass(ci: number, idx: number): string {
+  const classes: string[] = []
+  const sel = state.selected
+  if (sel && sel.col === ci && idx >= state.columns[ci].length - sel.count) {
+    classes.push('z-40')
+  }
+  return classes.join(' ')
+}
+
+function colClass(ci: number): string {
+  const classes: string[] = []
+  if (state.selected && validTargets.value.includes(ci)) {
+    classes.push('ring-4 ring-emerald-300/80')
+  }
+  if (hintCol.value === ci) classes.push('hint-flash')
+  if (flashCol.value === ci) classes.push('complete-flash')
+  return classes.join(' ')
+}
 
 /** 选中串后所有合法目标列 */
 const validTargets = computed<number[]>(() => {
@@ -340,66 +443,35 @@ const validTargets = computed<number[]>(() => {
   return list
 })
 
-function colClass(ci: number): string {
-  const classes: string[] = []
-  // 合法目标列高亮（选中后）
-  if (state.selected && validTargets.value.includes(ci)) {
-    classes.push('ring-2 ring-emerald-400/70')
+// ===== 拖拽状态 =====
+const dragging = ref(false)
+const dragX = ref(0)
+const dragY = ref(0)
+const dragOverCol = ref<number | null>(null)
+const dragSource = ref<{ col: number; count: number; startX: number; startY: number } | null>(null)
+const hintCol = ref<number | null>(null)
+const flashCol = ref<number | null>(null)
+
+// ===== 交互 =====
+function onCardPointerDown(ci: number, idx: number, e: PointerEvent) {
+  if (state.status === 'won') return
+  if (e.button === 2) return
+  const eng = engine
+  if (!eng.getSelected()) {
+    eng.selectAt(ci, idx)
   }
-  // 提示高亮
-  if (hintCol.value === ci) {
-    classes.push('hint-flash')
-  }
-  // 收牌闪光
-  if (flashCol.value === ci) {
-    classes.push('complete-flash')
-  }
-  return classes.join(' ')
+  const sel = eng.getSelected()
+  if (!sel) return
+  syncState()
+  dragSource.value = { col: ci, count: sel.count, startX: e.clientX, startY: e.clientY }
+  dragging.value = false
+  dragOverCol.value = null
 }
 
-const elapsedText = computed(() => {
-  const sec = state.status === 'won' ? finishedElapsed.value : state.startTime === 0 ? 0 : Math.floor((now.value - state.startTime) / 1000)
-  const m = Math.floor(sec / 60)
-  const s = sec % 60
-  return m > 0 ? `${m}分${s}秒` : `${s}秒`
-})
-
-const SUIT_SYMBOL = ['♠', '♥', '♦', '♣']
-const SUIT_RED = [false, true, true, false]
-
-/** 花色颜色类（红桃/方块红，黑桃/梅花黑） */
-function suitColor(card: Card): string {
-  return SUIT_RED[card.suit]
-    ? 'text-red-600 dark:text-red-400'
-    : 'text-text-light dark:text-text-dark'
-}
-
-function rankLabel(rank: number): string {
-  if (rank === 1) return 'A'
-  if (rank === 11) return 'J'
-  if (rank === 12) return 'Q'
-  if (rank === 13) return 'K'
-  return String(rank)
-}
-
-function cardClass(ci: number, idx: number): string {
-  const classes: string[] = []
-  // 牌面底色
-  classes.push('bg-white dark:bg-gray-800')
-  // 选中高亮（选中串范围）
-  const sel = state.selected
-  if (sel && sel.col === ci && idx >= state.columns[ci].length - sel.count) {
-    classes.push('ring-2 ring-purple-400 shadow-claude-md z-10 -translate-y-1')
-  }
-  return classes.join(' ')
-}
-
-/** 点击列中某张牌 */
 function onCardClick(ci: number, idx: number) {
   if (state.status === 'won') return
   const eng = engine
   if (eng.getSelected()) {
-    // 有选中：点击自己列的牌 = 重新选择
     if (eng.getSelected()!.col === ci) {
       eng.clearSelection()
       syncState()
@@ -418,25 +490,6 @@ function onCardClick(ci: number, idx: number) {
   }
 }
 
-// ===== 拖拽 =====
-function onCardPointerDown(ci: number, idx: number, e: PointerEvent) {
-  if (state.status === 'won') return
-  if (e.button === 2) return
-  const eng = engine
-  // 无选中时先选中（点击逻辑也会做，这里为拖拽记录起点）
-  if (!eng.getSelected()) {
-    eng.selectAt(ci, idx)
-  }
-  const sel = eng.getSelected()
-  if (!sel) return
-  syncState()
-  dragSource.value = { col: ci, count: sel.count, startX: e.clientX, startY: e.clientY }
-  dragging.value = false
-  dragOverCol.value = null
-  const card = state.columns[ci][idx]
-  dragPreview.value = rankLabel(card.rank) + SUIT_SYMBOL[card.suit]
-}
-
 function onTablePointerMove(e: PointerEvent) {
   const src = dragSource.value
   if (!src) return
@@ -447,9 +500,8 @@ function onTablePointerMove(e: PointerEvent) {
     if (navigator.vibrate) navigator.vibrate(10)
   }
   if (!dragging.value) return
-  dragX.value = e.clientX - cardW.value / 2
-  dragY.value = e.clientY - cardH.value / 2
-  // 找当前悬停列
+  dragX.value = e.clientX - (CARD_W * scale.value) / 2
+  dragY.value = e.clientY - (CARD_H * scale.value) / 2
   const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null
   const colEl = el?.closest('[data-col]') as HTMLElement | null
   dragOverCol.value = colEl ? Number(colEl.dataset.col) : null
@@ -461,7 +513,6 @@ function onTablePointerUp(e: PointerEvent) {
   dragSource.value = null
   if (dragging.value) {
     dragging.value = false
-    // 拖到目标列 → 移动
     const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null
     const colEl = el?.closest('[data-col]') as HTMLElement | null
     const target = colEl ? Number(colEl.dataset.col) : null
@@ -475,7 +526,6 @@ function onTablePointerUp(e: PointerEvent) {
       }
     }
     dragOverCol.value = null
-    // 拖动未成功：保持选中
     syncState()
   }
 }
@@ -486,7 +536,26 @@ function cancelDrag() {
   dragOverCol.value = null
 }
 
-// ===== 双击自动移动 =====
+function onColumnAreaClick(ci: number) {
+  if (state.status === 'won') return
+  const eng = engine
+  const col = state.columns[ci]
+  if (col.length === 0) {
+    if (eng.getSelected()) {
+      eng.moveSelected(ci)
+      sound.play('move')
+      syncState()
+      handleProgress()
+    }
+    return
+  }
+  const count = eng.selectTop(ci)
+  if (count > 0) {
+    sound.play('click')
+    syncState()
+  }
+}
+
 function onCardDblClick(ci: number, idx: number) {
   if (state.status === 'won') return
   const count = engine.selectAt(ci, idx)
@@ -502,8 +571,7 @@ function onCardDblClick(ci: number, idx: number) {
 
 function onColumnDblClick(ci: number) {
   if (state.status === 'won') return
-  const moves = engine.findMoves()
-  const m = moves.find((x) => x.col === ci)
+  const m = engine.findMoves().find((x) => x.col === ci)
   if (m && engine.autoMove(ci, m.count)) {
     sound.play('move')
     syncState()
@@ -511,46 +579,21 @@ function onColumnDblClick(ci: number) {
   }
 }
 
-// ===== 提示 =====
 function doHint() {
   if (state.status === 'won') return
   const moves = engine.findMoves()
   if (moves.length === 0) {
-    toast(state.stock.length > 0 ? '没有可用移动，试试发牌 🃏' : '没有可用移动了')
+    toast(state.stock.length > 0 ? '没有可用移动，试试点击牌堆发牌' : '没有可用移动了')
     return
   }
-  const m = moves[0]
-  hintCol.value = m.col
+  hintCol.value = moves[0].col
   sound.play('start')
   setTimeout(() => {
     hintCol.value = null
   }, 1500)
 }
 
-/** 点击列（空白区域/列顶上方） */
-function onColumnAreaClick(ci: number) {
-  if (state.status === 'won') return
-  const eng = engine
-  const col = state.columns[ci]
-  if (col.length === 0) {
-    // 空列：有选中则移动过去
-    if (eng.getSelected()) {
-      eng.moveSelected(ci)
-      sound.play('move')
-      syncState()
-      handleProgress()
-    }
-    return
-  }
-  // 点击列顶牌 = 选中最大可移动串
-  const count = eng.selectTop(ci)
-  if (count > 0) {
-    sound.play('click')
-    syncState()
-  }
-}
-
-/** 发牌（参考经典规则：有空列/不足 10 张不能发牌） */
+/** 点击牌堆发牌 */
 function deal() {
   if (state.status === 'won') return
   const before = state.completed
@@ -566,6 +609,7 @@ function deal() {
   if (res === 'ok') {
     sound.play('drop')
     syncState()
+    updateScale()
     if (state.completed > before) sound.play('line')
     persistAutosave()
   }
@@ -585,6 +629,8 @@ function newGame() {
   finishedElapsed.value = 0
   lastSubmittedScore = -1
   clearAutosave(AUTOSAVE_GAME_ID)
+  startDealAnimation()
+  updateScale()
   sound.play('start')
 }
 
@@ -594,9 +640,10 @@ function applySettings(config: SpiderConfig) {
   finishedElapsed.value = 0
   lastSubmittedScore = -1
   clearAutosave(AUTOSAVE_GAME_ID)
+  startDealAnimation()
+  updateScale()
 }
 
-/** 移动/发牌后的进度处理（收牌音效 / 胜利） */
 function handleProgress() {
   if (state.status === 'won') {
     finishedElapsed.value = Math.floor((Date.now() - engine.getState().startTime) / 1000)
@@ -606,15 +653,6 @@ function handleProgress() {
   } else {
     persistAutosave()
   }
-}
-
-/** 分享成绩 */
-async function shareResult() {
-  const result = await shareOrCopy({
-    text: `我在 EasyGame 蜘蛛纸牌以 ${state.score} 分完成了「${difficultyLabel.value}」，来挑战我！🕷️`,
-    url: shareUrl('/game/spider'),
-  })
-  toast(result === 'shared' ? '✅ 已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
 }
 
 function syncState() {
@@ -631,14 +669,13 @@ function syncState() {
   state.suits = s.suits
   state.mode = s.mode
   canUndo.value = engine.canUndo()
-  // 收牌动画检测
   const last = engine.getLastCompleted()
   if (last) {
     flashCol.value = last.col
     sound.play('line')
     setTimeout(() => {
       flashCol.value = null
-    }, 800)
+    }, 900)
   }
   engine.clearLastCompleted()
 }
@@ -654,16 +691,20 @@ function onPageHide() {
   if (state.status !== 'won') persistAutosave()
 }
 
-// ===== 计时器 =====
+// ===== 生命周期 =====
 let timer: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
   updateLayout()
   window.addEventListener('resize', updateLayout)
   syncState()
+  observeWrap()
   if (state.status === 'won') {
     finishedElapsed.value = Math.floor((Date.now() - state.startTime) / 1000)
     submitScoreIfWon()
+  } else if (state.moves === 0) {
+    // 新局入场翻牌动画
+    startDealAnimation()
   }
   document.addEventListener('visibilitychange', onVisibilityChange)
   window.addEventListener('pagehide', onPageHide)
@@ -674,6 +715,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (state.status !== 'won') persistAutosave()
+  ro?.disconnect()
   if (timer) clearInterval(timer)
   window.removeEventListener('resize', updateLayout)
   document.removeEventListener('visibilitychange', onVisibilityChange)
@@ -682,20 +724,94 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* 舞台占位框 */
+.pad-slot {
+  border: 3px solid rgba(255, 255, 255, 0.55);
+  border-radius: 18px;
+}
+
+/* 牌 3D 结构 */
+.card3d {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+.card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.card-back {
+  transform: rotateY(180deg);
+  background: linear-gradient(135deg, #1e3a6e, #0f2447);
+  border: 7px solid #fff;
+  box-shadow: inset 0 0 0 3px #1e3a6e, 0 2px 6px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.card-back::after {
+  content: '🕷️';
+  font-size: 56px;
+  opacity: 0.45;
+}
+@keyframes dealFlip {
+  from {
+    transform: rotateY(180deg);
+  }
+  to {
+    transform: rotateY(0deg);
+  }
+}
+.card-dealing {
+  animation: dealFlip 0.45s ease both;
+}
+
 /* 提示高亮闪烁 */
 @keyframes hintFlash {
-  0%, 100% { box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.8); }
-  50% { box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.2); }
+  0%, 100% {
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.15);
+  }
 }
 .hint-flash {
   animation: hintFlash 0.6s ease-in-out 2;
 }
 /* 收牌闪光 */
 @keyframes completeFlash {
-  0% { background-color: rgba(52, 211, 153, 0.85); }
-  100% { background-color: transparent; }
+  0% {
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 .complete-flash {
-  animation: completeFlash 0.7s ease;
+  animation: completeFlash 0.9s ease;
+}
+
+/* 横屏翻转 */
+.landscape-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: #0f1115;
+}
+.landscape-rotated {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 100vh;
+  height: 100vw;
+  transform: translate(-50%, -50%) rotate(90deg);
+  overflow-y: auto;
+  z-index: 60;
 }
 </style>
