@@ -593,7 +593,7 @@ function hold() {
 // ===== 键盘操作 =====
 function onKeydown(e: KeyboardEvent) {
   // 设置/排行榜弹窗打开时忽略游戏按键，避免误操作背后的棋盘
-  if (settings.showSettings || showLeaderboard) return
+  if (settings.showSettings || showLeaderboard.value) return
   const moveMap: Record<string, Direction> = {
     ArrowLeft: 'left', ArrowRight: 'right', ArrowDown: 'down',
     a: 'left', A: 'left', d: 'right', D: 'right', s: 'down', S: 'down',
