@@ -3,6 +3,7 @@
  *
  * 规则：4×5 棋盘上放置曹操（2×2）、关羽（2×1 横）、五虎将（1×2 竖）、小兵（1×1），
  * 通过腾挪把曹操移动到棋盘底部中央的出口即获胜（曹操败走华容道）。
+ * 注：内置 40 种经典布局中将军有横有竖，棋子尺寸以实际占格（w/h）为准。
  */
 
 /** 移动方向：指棋子移动的方向 */
@@ -10,17 +11,20 @@ export type ClassicDirection = 'up' | 'down' | 'left' | 'right'
 
 export type PieceKind = 'caocao' | 'guanyu' | 'general' | 'soldier'
 
-/** 棋子：id 用于选中/撤销；row/col 为左上角坐标 */
+/** 棋子：id 用于选中/撤销/演示；row/col 为左上角坐标；w/h 为占格尺寸 */
 export interface Piece {
   id: number
   kind: PieceKind
   row: number
   col: number
-  /** 显示名（经典布局可指定，随机局为空则用 kind 默认名） */
+  /** 占格宽/高（经典布局的将军横竖不一，以此为准；缺省用 kind 默认） */
+  w: number
+  h: number
+  /** 显示名 */
   name?: string
 }
 
-/** 棋子尺寸（宽×高，单位：格） */
+/** 棋子默认尺寸（宽×高，单位：格） */
 export const PIECE_SIZE: Record<PieceKind, { w: number; h: number }> = {
   caocao: { w: 2, h: 2 },
   guanyu: { w: 2, h: 1 },
@@ -29,8 +33,8 @@ export const PIECE_SIZE: Record<PieceKind, { w: number; h: number }> = {
 }
 
 /** 棋盘规格 */
-export const ROWS = 4
-export const COLS = 5
+export const ROWS = 5
+export const COLS = 4
 
 /** 棋子默认显示名 */
 export const PIECE_LABEL: Record<PieceKind, string> = {
@@ -40,41 +44,8 @@ export const PIECE_LABEL: Record<PieceKind, string> = {
   soldier: '兵',
 }
 
-export type ClassicLayoutId = 'hengdaolima' | 'random'
-
-export interface LayoutDef {
-  id: ClassicLayoutId
-  name: string
-  pieces: Array<{ kind: PieceKind; row: number; col: number; name?: string }>
-}
-
-/**
- * 内置经典布局（坐标：row 0~3 上→下，col 0~4 左→右）
- * 横刀立马：曹操居上，关羽横刀当道，经典残局
- */
-export const LAYOUTS: LayoutDef[] = [
-  {
-    id: 'hengdaolima',
-    name: '横刀立马',
-    pieces: [
-      { kind: 'general', row: 0, col: 0, name: '张飞' },
-      { kind: 'caocao', row: 0, col: 1, name: '曹操' },
-      { kind: 'general', row: 0, col: 3, name: '赵云' },
-      { kind: 'soldier', row: 0, col: 4, name: '兵' },
-      { kind: 'general', row: 2, col: 0, name: '马超' },
-      { kind: 'guanyu', row: 2, col: 1, name: '关羽' },
-      { kind: 'general', row: 2, col: 3, name: '黄忠' },
-      { kind: 'soldier', row: 3, col: 1, name: '兵' },
-      { kind: 'soldier', row: 3, col: 2, name: '兵' },
-      { kind: 'soldier', row: 3, col: 4, name: '兵' },
-    ],
-  },
-]
-
-export function layoutName(id: ClassicLayoutId): string {
-  const def = LAYOUTS.find((l) => l.id === id)
-  return def ? def.name : id === 'random' ? '随机开局' : id
-}
+/** 布局 id：内置 40 种经典布局用中文名，另有 'random' 随机开局 */
+export type ClassicLayoutId = string
 
 export interface ClassicConfig {
   layout: ClassicLayoutId
@@ -100,5 +71,5 @@ export function classicScoreForMoves(moves: number): number {
 }
 
 export const DEFAULT_CLASSIC_CONFIG: ClassicConfig = {
-  layout: 'hengdaolima',
+  layout: '横刀立马',
 }

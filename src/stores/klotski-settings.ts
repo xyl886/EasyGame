@@ -26,12 +26,16 @@ function loadConfig(): KlotskiConfig {
 
 export { SIZE_OPTIONS, DIFFICULTY_LABELS }
 
+/** 旧版布局 id 迁移（hengdaolima → 中文布局名） */
+const savedLayout = StorageAdapter.get<ClassicLayoutId>('easygame-klotski-classic-layout')
+const legacyLayout = savedLayout === 'hengdaolima' ? '横刀立马' : savedLayout
+
 export const useKlotskiSettingsStore = defineStore('klotski-settings', {
   state: () => ({
     config: loadConfig(),
     showSettings: false,
-    /** 三国版布局（独立持久化） */
-    classicLayout: StorageAdapter.get<ClassicLayoutId>('easygame-klotski-classic-layout') ?? 'hengdaolima',
+    /** 三国版布局（独立持久化；内置 40 布局用中文名，'random' 随机） */
+    classicLayout: legacyLayout ?? '横刀立马',
   }),
 
   actions: {

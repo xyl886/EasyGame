@@ -43,21 +43,22 @@
 
         <!-- 经典布局 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">经典布局</label>
-          <div class="grid grid-cols-2 gap-2">
+          <label class="text-sm font-semibold block">经典布局（40 残局）</label>
+          <div class="grid grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1">
             <button
               v-for="opt in LAYOUT_OPTIONS"
               :key="opt.value"
               @click="localLayout = opt.value"
-              class="py-2 px-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="px-2 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95 border flex items-center justify-between gap-1"
               :class="localLayout === opt.value
                 ? 'bg-amber-400 text-gray-900 border-transparent shadow-claude'
                 : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-amber-400/50'"
             >
-              {{ opt.label }}
+              <span class="truncate">{{ opt.label }}</span>
+              <span class="shrink-0 opacity-60">{{ opt.minSteps > 0 ? opt.minSteps + '步' : '无解' }}</span>
             </button>
           </div>
-          <p class="text-xs opacity-60">「横刀立马」为经典残局；「随机开局」每次生成可解新局面</p>
+          <p class="text-xs opacity-60">每个经典布局附带最少步数，游戏页可一键「自动演示」解法</p>
         </div>
 
         <!-- 底部按钮 -->
@@ -84,16 +85,16 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useKlotskiSettingsStore } from '../../../stores/klotski-settings'
-import { LAYOUTS } from '../../../game/klotski-classic/types'
+import { LEVELS } from '../../../game/klotski-classic/levels'
 import type { ClassicConfig, ClassicLayoutId } from '../../../game/klotski-classic/types'
 
 const settings = useKlotskiSettingsStore()
 const router = useRouter()
 
-const LAYOUT_OPTIONS: Array<{ value: ClassicLayoutId; label: string }> = LAYOUTS.map((l) => ({
-  value: l.id,
-  label: l.name,
-})).concat([{ value: 'random', label: '随机开局' }])
+const LAYOUT_OPTIONS: Array<{ value: ClassicLayoutId; label: string; minSteps: number }> = [
+  ...LEVELS.map((l) => ({ value: l.id, label: l.name, minSteps: l.minSteps })),
+  { value: 'random', label: '随机开局', minSteps: 0 },
+]
 
 const localLayout = ref<ClassicLayoutId>(settings.classicLayout)
 
