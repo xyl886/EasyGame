@@ -52,10 +52,18 @@
 
       <!-- 操作按钮 -->
       <div class="flex items-center justify-between mb-4 gap-2">
-        <div class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark">
-          键盘 <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">↑↓←→</kbd>
-          或 <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">WASD</kbd> ·
-          <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">空格</kbd> 暂停
+        <div class="flex items-center gap-2">
+          <button
+            @click="showHowTo = true"
+            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-lime-400/40 transition-all active:scale-95 text-sm font-medium text-text-light dark:text-text-dark"
+          >
+            ❓ 玩法
+          </button>
+          <div class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark">
+            键盘 <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">↑↓←→</kbd>
+            或 <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">WASD</kbd> ·
+            <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">空格</kbd> 暂停
+          </div>
         </div>
         <div class="flex gap-2 w-full sm:w-auto justify-end">
           <button
@@ -194,6 +202,17 @@
     <!-- 设置面板 -->
     <SnakeSettingsPanel @apply="applySettings" />
 
+    <!-- 玩法说明 -->
+    <HowToPlay v-model="showHowTo" title="贪吃蛇">
+      <ol class="list-decimal pl-5 space-y-2 opacity-90">
+        <li>用 <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">方向键</kbd> / <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">WASD</kbd> 或<strong>滑动屏幕</strong>控制蛇的移动方向</li>
+        <li>吃到食物得分并<strong>变长</strong>；金色 bonus 食物 +5 分</li>
+        <li>撞墙、撞到自己或障碍物即失败（设置里开启<strong>穿墙</strong>可绕到对面）</li>
+        <li>蛇身达到目标长度即<strong>获胜</strong>（设置里可调，0 为无尽模式）</li>
+        <li><kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">空格</kbd> 暂停 / 继续</li>
+      </ol>
+    </HowToPlay>
+
     <!-- 排行榜面板 -->
     <LeaderboardPanel
       v-model="showLeaderboard"
@@ -216,6 +235,7 @@ import { loadAutosave, saveAutosave, clearAutosave, throttledSaver } from '../..
 import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
 import SoundToggle from '../../components/SoundToggle.vue'
+import HowToPlay from '../../components/HowToPlay.vue'
 import { sound } from '../../utils/sound'
 import { shareOrCopy, shareUrl, gameShareText } from '../../utils/share'
 import { toast } from '../../utils/toast'
@@ -229,6 +249,8 @@ const settings = useSnakeSettingsStore()
 const LEADERBOARD_GAME_ID = 'snake'
 const leaderboard = useLeaderboardStore(LEADERBOARD_GAME_ID)
 const showLeaderboard = ref(false)
+/** 玩法说明弹层 */
+const showHowTo = ref(false)
 /** 是否已开始（未开始时显示就绪遮罩，等待玩家按键/点击才开始 tick） */
 const started = ref(false)
 // 排行榜维度：speed 映射到 difficulty 字段，size 单独维度

@@ -42,6 +42,12 @@
             <span class="text-lg font-bold tabular-nums text-text-light dark:text-text-dark">{{ elapsedText }}</span>
           </div>
           <button
+            @click="showHowTo = true"
+            class="px-3 py-2 rounded-xl text-sm font-medium border transition-all active:scale-95 shadow-claude bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-gray-500/50"
+          >
+            ❓ 玩法
+          </button>
+          <button
             @click="flagMode = !flagMode"
             class="px-3 py-2 rounded-xl text-sm font-medium border transition-all active:scale-95 shadow-claude"
             :class="flagMode
@@ -182,6 +188,17 @@
     <!-- 设置面板 -->
     <MinesweeperSettingsPanel @apply="applySettings" />
 
+    <!-- 玩法说明 -->
+    <HowToPlay v-model="showHowTo" title="扫雷">
+      <ol class="list-decimal pl-5 space-y-2 opacity-90">
+        <li><strong>点击翻开</strong>格子；数字表示它周围 8 格里的<strong>地雷数量</strong></li>
+        <li>根据数字推理出雷的位置，用 🚩 <strong>标记</strong>（PC 右键 / 手机长按或旗子模式）</li>
+        <li><strong>首次点击必定安全</strong>；翻开所有非雷格即获胜</li>
+        <li>踩到雷游戏结束——标错的旗子会显示<strong>红叉 ✗</strong></li>
+        <li>💡 按住已翻开的数字格可<strong>快速展开</strong>周围区域（旗子数匹配时）</li>
+      </ol>
+    </HowToPlay>
+
     <!-- 排行榜面板 -->
     <LeaderboardPanel
       v-model="showLeaderboard"
@@ -206,6 +223,7 @@ import { toast } from '../../utils/toast'
 import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
 import SoundToggle from '../../components/SoundToggle.vue'
+import HowToPlay from '../../components/HowToPlay.vue'
 import MinesweeperSettingsPanel from './components/MinesweeperSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
 
@@ -215,6 +233,8 @@ const settings = useMinesweeperSettingsStore()
 const LEADERBOARD_GAME_ID = 'minesweeper'
 const leaderboard = useLeaderboardStore(LEADERBOARD_GAME_ID)
 const showLeaderboard = ref(false)
+/** 玩法说明弹层 */
+const showHowTo = ref(false)
 const leaderboardDimensions: LeaderboardDimension[] = [
   {
     key: 'difficulty',

@@ -49,11 +49,17 @@
 
       <!-- 操作按钮 -->
       <div class="flex items-center justify-between mb-4 gap-2">
-        <!-- 小屏：键盘提示隐藏，按钮组占满整行 -->
-        <!-- 大屏：左侧提示，右侧按钮 -->
-        <div class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark">
-          键盘 <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">↑↓←→</kbd>
-          或手机滑动操作
+        <div class="flex items-center gap-2">
+          <button
+            @click="showHowTo = true"
+            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-accent-light/40 dark:hover:border-accent-dark/40 transition-all active:scale-95 text-sm font-medium text-text-light dark:text-text-dark"
+          >
+            ❓ 玩法
+          </button>
+          <div class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark">
+            键盘 <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">↑↓←→</kbd>
+            或手机滑动操作
+          </div>
         </div>
         <div class="flex gap-2 w-full sm:w-auto justify-end">
           <button
@@ -182,6 +188,18 @@
     <!-- 设置面板 -->
     <SettingsPanel @apply="applySettings" />
 
+    <!-- 玩法说明 -->
+    <HowToPlay v-model="showHowTo" title="2048">
+      <ol class="list-decimal pl-5 space-y-2 opacity-90">
+        <li>用 <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">方向键</kbd> / <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">WASD</kbd> 或<strong>滑动屏幕</strong>，让所有方块整体移动</li>
+        <li>相同的数字撞在一起会<strong>合并</strong>（2+2=4、4+4=8…），合并计入得分</li>
+        <li>每次移动后棋盘会随机生成一个新方块（2 或 4）</li>
+        <li>合成目标数字（默认 2048）即<strong>获胜</strong>，之后可继续挑战更高分</li>
+        <li>棋盘被填满且无法再合并时，游戏结束</li>
+        <li>💡 手滑了？<strong>撤销</strong>按钮可以退回一步</li>
+      </ol>
+    </HowToPlay>
+
     <!-- 排行榜面板 -->
     <LeaderboardPanel
       v-model="showLeaderboard"
@@ -205,6 +223,7 @@ import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
 import { genEntryId, type LeaderboardDimension, type LeaderboardEntry } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
 import SoundToggle from '../../components/SoundToggle.vue'
+import HowToPlay from '../../components/HowToPlay.vue'
 import { sound } from '../../utils/sound'
 import { shareOrCopy, shareUrl, gameShareText } from '../../utils/share'
 import { toast } from '../../utils/toast'
@@ -218,6 +237,8 @@ const settings = useGame2048SettingsStore()
 const LEADERBOARD_GAME_ID = '2048'
 const leaderboard = useLeaderboardStore(LEADERBOARD_GAME_ID)
 const showLeaderboard = ref(false)
+/** 玩法说明弹层 */
+const showHowTo = ref(false)
 // 排行榜维度配置：与 2048 的设置项保持一致
 const leaderboardDimensions: LeaderboardDimension[] = [
   {

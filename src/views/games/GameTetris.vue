@@ -51,13 +51,21 @@
 
       <!-- 操作按钮 -->
       <div class="flex items-center justify-between mb-4 gap-2 flex-wrap">
-        <div class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark">
-          <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">←→</kbd> 移动 ·
-          <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">↑/W</kbd> 旋转 ·
-          <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">↓</kbd> 软降 ·
-          <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">空格</kbd> 硬降 ·
-          <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">C</kbd> Hold ·
-          <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">P</kbd> 暂停
+        <div class="flex items-center gap-2">
+          <button
+            @click="showHowTo = true"
+            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-cyan-400/40 transition-all active:scale-95 text-sm font-medium text-text-light dark:text-text-dark"
+          >
+            ❓ 玩法
+          </button>
+          <div class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark">
+            <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">←→</kbd> 移动 ·
+            <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">↑/W</kbd> 旋转 ·
+            <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">↓</kbd> 软降 ·
+            <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">空格</kbd> 硬降 ·
+            <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">C</kbd> Hold ·
+            <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">P</kbd> 暂停
+          </div>
         </div>
         <div class="flex gap-2 w-full sm:w-auto justify-end">
           <button
@@ -246,6 +254,17 @@
     <!-- 设置面板 -->
     <TetrisSettingsPanel @apply="applySettings" />
 
+    <!-- 玩法说明 -->
+    <HowToPlay v-model="showHowTo" title="俄罗斯方块">
+      <ol class="list-decimal pl-5 space-y-2 opacity-90">
+        <li><kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">←→</kbd>/<kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">A D</kbd> 左右移动，<kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">↑/W/X</kbd> 旋转，<kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">↓</kbd> 软降，<kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">空格</kbd> 硬降，<kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">C</kbd> 暂存，<kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">P</kbd> 暂停</li>
+        <li>七种方块依次下落（Bag-7 随机），填满一整行即<strong>消除得分</strong></li>
+        <li>消行越多等级越高、下落越快、得分越多</li>
+        <li>达到目标行数即<strong>获胜</strong>（设置里可调）；方块堆到顶部则失败</li>
+        <li>💡 <strong>鬼影</strong>显示落点，<strong>Hold</strong> 可暂存当前方块备用</li>
+      </ol>
+    </HowToPlay>
+
     <!-- 排行榜面板 -->
     <LeaderboardPanel
       v-model="showLeaderboard"
@@ -267,6 +286,7 @@ import { loadAutosave, saveAutosave, clearAutosave, throttledSaver } from '../..
 import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
 import SoundToggle from '../../components/SoundToggle.vue'
+import HowToPlay from '../../components/HowToPlay.vue'
 import { sound } from '../../utils/sound'
 import { shareOrCopy, shareUrl, gameShareText } from '../../utils/share'
 import { toast } from '../../utils/toast'
@@ -281,6 +301,8 @@ const LEADERBOARD_GAME_ID = 'tetris'
 const leaderboard = useLeaderboardStore(LEADERBOARD_GAME_ID)
 const showLeaderboard = ref(false)
 const started = ref(false)
+/** 玩法说明弹层 */
+const showHowTo = ref(false)
 // 维度：speed 映射到 difficulty 字段，targetLines 作为「尺寸」维度（影响难度）
 const leaderboardDimensions: LeaderboardDimension[] = [
   {

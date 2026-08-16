@@ -55,6 +55,12 @@
       <div class="flex items-center justify-between mb-2 gap-2 flex-wrap">
         <div class="flex gap-2">
           <button
+            @click="showHowTo = true"
+            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-amber-400/40 transition-all active:scale-95 text-sm font-medium text-text-light dark:text-text-dark"
+          >
+            ❓ 玩法
+          </button>
+          <button
             @click="showLevelMenu = !showLevelMenu"
             class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-amber-400/40 transition-all active:scale-95 text-sm font-medium text-text-light dark:text-text-dark"
           >
@@ -274,6 +280,16 @@
     <!-- 设置面板 -->
     <KlotskiClassicSettingsPanel @apply="applySettings" />
 
+    <!-- 玩法说明 -->
+    <HowToPlay v-model="showHowTo" title="华容道 · 三国版">
+      <ol class="list-decimal pl-5 space-y-2 opacity-90">
+        <li><strong>点击棋子</strong>直接移动（多方向时弹出方向按钮），或用方向键 / <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">WASD</kbd> 微调</li>
+        <li>目标：把<strong>曹操</strong>（红色大方块）移到棋盘下方中央的<strong>出口</strong>（虚线框）</li>
+        <li>棋子被挡住时，先移动小兵和将领为曹操<strong>让路</strong></li>
+        <li>共 <strong>40 种经典布局</strong>（附最少步数），顶栏可切换；「▶️ 自动演示」可播放解法</li>
+      </ol>
+    </HowToPlay>
+
     <!-- 排行榜面板 -->
     <LeaderboardPanel
       v-model="showLeaderboard"
@@ -311,11 +327,15 @@ import { toast } from '../../utils/toast'
 import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
 import SoundToggle from '../../components/SoundToggle.vue'
+import HowToPlay from '../../components/HowToPlay.vue'
 import ScoreBox from './components/ScoreBox.vue'
 import KlotskiClassicSettingsPanel from './components/KlotskiClassicSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
 
 const settings = useKlotskiSettingsStore()
+
+/** 玩法说明弹层 */
+const showHowTo = ref(false)
 
 /** 演示步骤方向码：1上 2右 3下 4左 */
 const DEMO_DIR_MAP: Record<number, ClassicDirection | undefined> = {

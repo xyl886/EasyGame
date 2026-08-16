@@ -53,9 +53,17 @@
 
       <!-- 操作按钮 -->
       <div class="flex items-center justify-between mb-4 gap-2">
-        <div class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark">
-          方向键 / <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">WASD</kbd>
-          或点击数字移动 · 目标：数字按顺序排好，空格在右下角
+        <div class="flex items-center gap-2">
+          <button
+            @click="showHowTo = true"
+            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-rose-400/40 transition-all active:scale-95 text-sm font-medium text-text-light dark:text-text-dark"
+          >
+            ❓ 玩法
+          </button>
+          <div class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark">
+            方向键 / <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">WASD</kbd>
+            或点击数字移动 · 目标：数字按顺序排好，空格在右下角
+          </div>
         </div>
         <div class="flex gap-2 w-full sm:w-auto justify-end">
           <button
@@ -172,6 +180,16 @@
     <!-- 设置面板 -->
     <KlotskiSettingsPanel @apply="applySettings" />
 
+    <!-- 玩法说明 -->
+    <HowToPlay v-model="showHowTo" title="华容道 · 数字版">
+      <ol class="list-decimal pl-5 space-y-2 opacity-90">
+        <li><strong>点击数字</strong>或<strong>滑动屏幕</strong> / 方向键，把数字移入空格</li>
+        <li>目标：数字按 <strong>1 → N²-1 顺序</strong>排好，空格在右下角</li>
+        <li>支持 <strong>撤销</strong>；误退/刷新后自动存档可一键继续</li>
+        <li>棋盘越大（3×3 / 4×4 / 5×5）难度越高；同一布局可挑战最少步数</li>
+      </ol>
+    </HowToPlay>
+
     <!-- 排行榜面板 -->
     <LeaderboardPanel
       v-model="showLeaderboard"
@@ -197,6 +215,7 @@ import { toast } from '../../utils/toast'
 import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
 import SoundToggle from '../../components/SoundToggle.vue'
+import HowToPlay from '../../components/HowToPlay.vue'
 import ScoreBox from './components/ScoreBox.vue'
 import KlotskiSettingsPanel from './components/KlotskiSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
@@ -207,6 +226,8 @@ const settings = useKlotskiSettingsStore()
 const LEADERBOARD_GAME_ID = 'klotski'
 const leaderboard = useLeaderboardStore(LEADERBOARD_GAME_ID)
 const showLeaderboard = ref(false)
+/** 玩法说明弹层 */
+const showHowTo = ref(false)
 // 维度：difficulty = 难度，size = 尺寸
 const leaderboardDimensions: LeaderboardDimension[] = [
   {

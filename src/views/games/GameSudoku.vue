@@ -58,6 +58,12 @@
       <div class="flex items-center justify-between mb-4 gap-2 flex-wrap">
         <div class="flex gap-2">
           <button
+            @click="showHowTo = true"
+            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-emerald-400/40 transition-all active:scale-95 text-sm font-medium text-text-light dark:text-text-dark"
+          >
+            ❓ 玩法
+          </button>
+          <button
             @click="toggleNotesMode"
             class="px-3 py-2 rounded-xl text-sm font-medium border transition-all active:scale-95 shadow-claude"
             :class="notesMode
@@ -230,6 +236,16 @@
     <!-- 设置面板 -->
     <SudokuSettingsPanel @apply="applySettings" />
 
+    <!-- 玩法说明 -->
+    <HowToPlay v-model="showHowTo" title="数独">
+      <ol class="list-decimal pl-5 space-y-2 opacity-90">
+        <li>每行、每列、每个粗线宫（4×4 为 2×2 宫，6×6 为 2×3 宫，9×9 为 3×3 宫）都填入 <strong>1-N 且不重复</strong></li>
+        <li><strong>点击格子选中</strong>，用数字键或下方数字面板填数；填错会变红并计入错误数</li>
+        <li>✏️ <strong>笔记</strong>：标记候选数字辅助推理；✅ <strong>检查</strong>：校验冲突与完成度；💡 <strong>提示</strong>：自动填入正确数字（每局限 3 次）</li>
+        <li>所有格子填对即<strong>获胜</strong>，用时越短成绩越高</li>
+      </ol>
+    </HowToPlay>
+
     <!-- 排行榜面板 -->
     <LeaderboardPanel
       v-model="showLeaderboard"
@@ -255,6 +271,7 @@ import { toast } from '../../utils/toast'
 import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
 import SoundToggle from '../../components/SoundToggle.vue'
+import HowToPlay from '../../components/HowToPlay.vue'
 import SudokuSettingsPanel from './components/SudokuSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
 
@@ -264,6 +281,8 @@ const settings = useSudokuSettingsStore()
 const LEADERBOARD_GAME_ID = 'sudoku'
 const leaderboard = useLeaderboardStore(LEADERBOARD_GAME_ID)
 const showLeaderboard = ref(false)
+/** 玩法说明弹层 */
+const showHowTo = ref(false)
 // 维度：difficulty = 难度，size = 尺寸
 const leaderboardDimensions: LeaderboardDimension[] = [
   {
