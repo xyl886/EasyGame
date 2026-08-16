@@ -32,15 +32,6 @@ export const useGameStore = defineStore('game', {
         status: 'available',
       },
       {
-        id: 'spider',
-        name: '蜘蛛纸牌',
-        description: '经典纸牌接龙，同花色降序收完全部牌',
-        icon: '🕷️',
-        accent: 'from-purple-500 to-indigo-600',
-        route: '/game/spider',
-        status: 'available',
-      },
-      {
         id: 'minesweeper',
         name: '扫雷',
         description: '经典益智游戏，点击翻格避开所有地雷',
