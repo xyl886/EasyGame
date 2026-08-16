@@ -11,7 +11,10 @@
           <div class="text-xs text-text-muted-light dark:text-text-muted-dark -mt-0.5">轻松玩，随时乐</div>
         </div>
       </RouterLink>
-      <ThemeToggle />
+      <div class="flex items-center gap-2">
+        <SoundToggle />
+        <ThemeToggle />
+      </div>
     </header>
 
     <!-- 主内容 -->
@@ -71,6 +74,13 @@
               <span>支持撤销一步，手滑也不怕</span>
             </li>
           </ul>
+          <button
+            @click="shareHome"
+            class="claude-btn-primary w-full mt-4"
+          >
+            <span>📤</span>
+            <span>分享给朋友</span>
+          </button>
         </div>
       </section>
     </main>
@@ -84,9 +94,20 @@
 
 <script setup lang="ts">
 import { useGameStore } from '../stores/game'
+import { shareOrCopy, shareUrl } from '../utils/share'
+import { toast } from '../utils/toast'
 import ThemeToggle from '../components/ThemeToggle.vue'
+import SoundToggle from '../components/SoundToggle.vue'
 import GameCard from '../components/GameCard.vue'
 import LanPanel from '../components/LanPanel.vue'
 
 const gameStore = useGameStore()
+
+async function shareHome() {
+  const result = await shareOrCopy({
+    text: '🎮 EasyGame：经典益智小游戏合集（2048/贪吃蛇/俄罗斯方块），即开即玩、离线可用，来一起玩！',
+    url: shareUrl('/'),
+  })
+  toast(result === 'shared' ? '✅ 已分享' : result === 'copied' ? '📋 链接已复制，快发给朋友吧' : '❌ 分享失败')
+}
 </script>

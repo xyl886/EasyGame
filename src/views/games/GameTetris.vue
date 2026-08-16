@@ -23,7 +23,8 @@
         >
           ⚙️
         </button>
-        <ThemeToggle />
+          <SoundToggle />
+          <ThemeToggle />
       </div>
     </header>
 
@@ -143,6 +144,12 @@
                   🏆 查看排行榜
                 </button>
                 <button
+                  @click="shareResult"
+                  class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
+                >
+                  📤 分享成绩
+                </button>
+                <button
                   @click="newGame"
                   class="px-5 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-500 text-gray-900 font-bold shadow-claude-md transition-all active:scale-95"
                 >
@@ -236,6 +243,10 @@ import { useTetrisSettingsStore } from '../../stores/tetris-settings'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
+import SoundToggle from '../../components/SoundToggle.vue'
+import { sound } from '../../utils/sound'
+import { shareOrCopy, shareUrl, gameShareText } from '../../utils/share'
+import { toast } from '../../utils/toast'
 import ScoreBox from './components/ScoreBox.vue'
 import TetrisSettingsPanel from './components/TetrisSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
@@ -435,8 +446,13 @@ function scheduleTick() {
       tickTimer = null
       return
     }
+    const prevLines = state.lines
     engine.value.step()
     syncState()
+    // 音效：消行 / 通关 / 游戏结束（引擎胜利时 won=true 且 over=true，先判 won）
+    if (state.lines > prevLines) sound.play('line')
+    if (state.won) sound.play('win')
+    else if (state.over) sound.play('over')
     submitScoreIfOver()
     if (!state.over) {
       scheduleTick()
@@ -456,7 +472,17 @@ function stopTick() {
 function start() {
   if (started.value || state.over) return
   started.value = true
+  sound.play('start')
   scheduleTick()
+}
+
+/** 分享本局成绩 */
+async function shareResult() {
+  const result = await shareOrCopy({
+    text: gameShareText('tetris', state.score, state.lines, state.won),
+    url: shareUrl('/game/tetris'),
+  })
+  toast(result === 'shared' ? '✅ 已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
 }
 
 function newGame() {
@@ -469,6 +495,7 @@ function newGame() {
 
 function togglePause() {
   engine.value.togglePause()
+  sound.play('pause')
   syncState()
   if (!state.paused && !state.over && !tickTimer) {
     scheduleTick()
@@ -490,6 +517,8 @@ function hold() {
 
 // ===== 键盘操作 =====
 function onKeydown(e: KeyboardEvent) {
+  // 设置/排行榜弹窗打开时忽略游戏按键，避免误操作背后的棋盘
+  if (settings.showSettings || showLeaderboard) return
   const moveMap: Record<string, Direction> = {
     ArrowLeft: 'left', ArrowRight: 'right', ArrowDown: 'down',
     a: 'left', A: 'left', d: 'right', D: 'right', s: 'down', S: 'down',
@@ -503,7 +532,7 @@ function onKeydown(e: KeyboardEvent) {
     e.preventDefault()
     if (state.over) return
     if (!started.value) start()
-    engine.value.move(moveMap[k])
+    if (engine.value.move(moveMap[k])) sound.play('move')
     syncState()
     return
   }
@@ -511,7 +540,7 @@ function onKeydown(e: KeyboardEvent) {
     e.preventDefault()
     if (state.over) return
     if (!started.value) start()
-    engine.value.rotate(rotateMap[k])
+    if (engine.value.rotate(rotateMap[k])) sound.play('rotate')
     syncState()
     return
   }
@@ -523,18 +552,17 @@ function onKeydown(e: KeyboardEvent) {
       return
     }
     if (settings.config.hardDrop) {
-      engine.value.hardDrop()
-      syncState()
+      if (engine.value.hardDrop()) sound.play('drop')
     } else {
-      engine.value.move('down')
-      syncState()
+      if (engine.value.move('down')) sound.play('move')
     }
+    syncState()
     return
   }
   if (k === 'c' || k === 'C' || k === 'Shift') {
     e.preventDefault()
     if (state.over || !started.value) return
-    engine.value.hold()
+    if (engine.value.hold()) sound.play('click')
     syncState()
     return
   }
@@ -577,25 +605,25 @@ function onTouchEnd(e: TouchEvent) {
   const ady = Math.abs(dy)
   // 点击（短距离）→ 旋转
   if (Math.max(adx, ady) < TAP_MAX) {
-    engine.value.rotate('cw')
+    if (engine.value.rotate('cw')) sound.play('rotate')
     syncState()
     return
   }
   // 长按 → hold
   if (elapsed > LONG_PRESS_MS && Math.max(adx, ady) < TAP_MAX * 2) {
-    engine.value.hold()
+    if (engine.value.hold()) sound.play('click')
     syncState()
     return
   }
   if (Math.max(adx, ady) < SWIPE_MIN) return
   if (adx > ady) {
-    engine.value.move(dx > 0 ? 'right' : 'left')
+    if (engine.value.move(dx > 0 ? 'right' : 'left')) sound.play('move')
   } else if (dy > 0) {
     // 下滑 → 软降 1 格
-    engine.value.move('down')
+    if (engine.value.move('down')) sound.play('move')
   } else {
     // 上滑 → 硬降
-    engine.value.hardDrop()
+    if (engine.value.hardDrop()) sound.play('drop')
   }
   syncState()
 }

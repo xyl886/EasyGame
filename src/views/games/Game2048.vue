@@ -23,7 +23,8 @@
         >
           ⚙️
         </button>
-        <ThemeToggle />
+          <SoundToggle />
+          <ThemeToggle />
       </div>
     </header>
 
@@ -127,6 +128,12 @@
                 继续挑战
               </button>
               <button
+                @click="shareResult"
+                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
+              >
+                📤 分享成绩
+              </button>
+              <button
                 @click="newGame"
                 class="px-5 py-2.5 rounded-xl bg-accent-light dark:bg-accent-dark hover:bg-accent-hover-light dark:hover:bg-accent-hover-dark text-white font-bold shadow-claude-md transition-all active:scale-95"
               >
@@ -171,6 +178,10 @@ import { useLeaderboardStore } from '../../stores/leaderboard'
 import { StorageAdapter } from '../../adapters/StorageAdapter'
 import { genEntryId, type LeaderboardDimension, type LeaderboardEntry } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
+import SoundToggle from '../../components/SoundToggle.vue'
+import { sound } from '../../utils/sound'
+import { shareOrCopy, shareUrl, gameShareText } from '../../utils/share'
+import { toast } from '../../utils/toast'
 import ScoreBox from './components/ScoreBox.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
@@ -247,6 +258,8 @@ function submitScoreIfOver() {
 const engine = shallowRef(new Game2048Engine(settings.config))
 const state = reactive<Game2048State>(engine.value.getState())
 const canUndo = ref(false)
+/** 胜利音效去重：每局只响一次（继续挑战后 won 仍为 true） */
+const winSoundPlayed = ref(false)
 
 const boardRef = ref<HTMLDivElement | null>(null)
 const gap = ref(12)
@@ -385,7 +398,16 @@ function doMove(dir: Direction) {
   if (state.won && !state.keepPlaying) return
   const moved = engine.value.move(dir)
   if (moved) {
+    const prevScore = state.score
     syncState()
+    // 音效：本步发生合并（分数增加）播 merge，否则播 move
+    if (state.score > prevScore) sound.play('merge')
+    else sound.play('move')
+    if (state.won && !winSoundPlayed.value) {
+      winSoundPlayed.value = true
+      sound.play('win')
+    }
+    if (state.over) sound.play('over')
     // 游戏结束自动入榜（每个 game-over 只入一次，由 lastSubmittedOverScore 去重）
     submitScoreIfOver()
   }
@@ -396,6 +418,7 @@ function newGame() {
   syncState()
   // 重置入榜去重标记，允许本局重新入榜
   lastSubmittedOverScore = -1
+  winSoundPlayed.value = false
 }
 
 function undo() {
@@ -418,10 +441,22 @@ function applySettings(config: Game2048Config) {
   // 尺寸变化时 gap/padding 需要按新尺寸重算
   updateLayout()
   lastSubmittedOverScore = -1
+  winSoundPlayed.value = false
+}
+
+/** 分享本局成绩 */
+async function shareResult() {
+  const result = await shareOrCopy({
+    text: gameShareText('2048', state.score, undefined, state.won),
+    url: shareUrl('/game/2048'),
+  })
+  toast(result === 'shared' ? '✅ 已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
 }
 
 // ===== 键盘操作 =====
 function onKeydown(e: KeyboardEvent) {
+  // 设置/排行榜弹窗打开时忽略游戏按键，避免误操作背后的棋盘
+  if (settings.showSettings || showLeaderboard) return
   const map: Record<string, Direction> = {
     ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
     w: 'up', W: 'up', s: 'down', S: 'down', a: 'left', A: 'left', d: 'right', D: 'right',

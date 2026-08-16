@@ -23,7 +23,8 @@
         >
           ⚙️
         </button>
-        <ThemeToggle />
+          <SoundToggle />
+          <ThemeToggle />
       </div>
     </header>
 
@@ -113,6 +114,12 @@
                 🏆 查看排行榜
               </button>
               <button
+                @click="shareResult"
+                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
+              >
+                📤 分享成绩
+              </button>
+              <button
                 @click="newGame"
                 class="px-5 py-2.5 rounded-xl bg-lime-400 hover:bg-lime-500 text-gray-900 font-bold shadow-claude-md transition-all active:scale-95"
               >
@@ -185,6 +192,10 @@ import { useSnakeSettingsStore } from '../../stores/snake-settings'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
+import SoundToggle from '../../components/SoundToggle.vue'
+import { sound } from '../../utils/sound'
+import { shareOrCopy, shareUrl, gameShareText } from '../../utils/share'
+import { toast } from '../../utils/toast'
 import ScoreBox from './components/ScoreBox.vue'
 import SnakeSettingsPanel from './components/SnakeSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
@@ -329,8 +340,13 @@ function scheduleTick() {
       tickTimer = null
       return
     }
+    const prevScore = state.score
     engine.value.step()
     syncState()
+    // 音效：吃到食物 / 通关 / 游戏结束（引擎胜利时 over 同步为 true，先判 won）
+    if (state.score > prevScore) sound.play('eat')
+    if (state.won) sound.play('win')
+    else if (state.over) sound.play('over')
     submitScoreIfOver()
     if (!state.over) {
       scheduleTick()
@@ -351,7 +367,17 @@ function stopTick() {
 function start() {
   if (started.value || state.over) return
   started.value = true
+  sound.play('start')
   scheduleTick()
+}
+
+/** 分享本局成绩 */
+async function shareResult() {
+  const result = await shareOrCopy({
+    text: gameShareText('snake', state.score, undefined, state.won),
+    url: shareUrl('/game/snake'),
+  })
+  toast(result === 'shared' ? '✅ 已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
 }
 
 function newGame() {
@@ -404,7 +430,7 @@ function onKeydown(e: KeyboardEvent) {
   if (!started.value) {
     start()
   }
-  engine.value.move(action as Direction)
+  if (engine.value.move(action as Direction)) sound.play('move')
 }
 
 // ===== 触摸滑动 =====
@@ -429,9 +455,9 @@ function onTouchEnd(e: TouchEvent) {
     start()
   }
   if (Math.abs(dx) > Math.abs(dy)) {
-    engine.value.move(dx > 0 ? 'right' : 'left')
+    if (engine.value.move(dx > 0 ? 'right' : 'left')) sound.play('move')
   } else {
-    engine.value.move(dy > 0 ? 'down' : 'up')
+    if (engine.value.move(dy > 0 ? 'down' : 'up')) sound.play('move')
   }
 }
 
