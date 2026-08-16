@@ -2,7 +2,7 @@
   <div class="min-h-screen w-full flex flex-col" :class="{ 'landscape-root': landscape }">
     <div v-if="landscape" class="landscape-scrim" @click.self="landscape = false"></div>
 
-    <div class="game-shell flex flex-col min-h-screen w-full" :class="{ 'landscape-rotated bg-bg-light dark:bg-bg-dark': landscape }">
+    <div class="game-shell flex flex-col h-screen w-full" :class="{ 'landscape-rotated bg-bg-light dark:bg-bg-dark': landscape }">
       <!-- 顶部栏 -->
       <header class="max-w-5xl w-full mx-auto flex items-center justify-between mb-3 px-2">
         <RouterLink to="/" class="flex items-center gap-2 group">
@@ -41,11 +41,10 @@
 
       <!-- 游戏主体 -->
       <main class="max-w-5xl w-full mx-auto flex-1 flex flex-col px-2">
-        <!-- 牌桌舞台（固定设计尺寸 + 等比缩放；竖屏保底尺寸可横向滚动） -->
+        <!-- 牌桌舞台（flex 占满可用高度，牌堆自动铺满） -->
         <div
           ref="wrapRef"
-          class="relative w-full overflow-x-auto overflow-y-hidden rounded-xl bg-[#017e00] dark:bg-[#016300] shadow-inner"
-          :style="{ height: wrapHeight + 'px' }"
+          class="relative w-full flex-1 min-h-0 overflow-x-auto overflow-y-hidden rounded-xl bg-[#017e00] dark:bg-[#016300] shadow-inner"
           @wheel.prevent="onWheel"
           @pointermove="onTablePointerMove"
           @pointerup="onTablePointerUp"
@@ -86,8 +85,8 @@
                 >
                   <!-- 牌面 -->
                   <div class="card-face card-front rounded-xl bg-white dark:bg-gray-700 border shadow-sm">
-                    <span class="absolute top-1 left-1 text-sm font-bold leading-none" :class="suitColor(card)">{{ rankLabel(card.rank) }}{{ SUIT_SYMBOL[card.suit] }}</span>
-                    <span class="text-4xl" :class="suitColor(card)">{{ SUIT_SYMBOL[card.suit] }}</span>
+                    <span class="absolute top-1.5 left-1.5 font-bold leading-none" :class="suitColor(card)" :style="{ fontSize: '42px' }">{{ rankLabel(card.rank) }}{{ SUIT_SYMBOL[card.suit] }}</span>
+                    <span :class="suitColor(card)" :style="{ fontSize: '130px', lineHeight: 1 }">{{ SUIT_SYMBOL[card.suit] }}</span>
                   </div>
                   <!-- 牌背 -->
                   <div class="card-face card-back rounded-xl"></div>
@@ -227,12 +226,12 @@ import SpiderSettingsPanel from './components/SpiderSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
 
 // ===== 设计尺寸（参考 spidersolitaire.cn：固定设计 + 等比缩放） =====
-const PAD_W = 225
-const PAD_H = 315
-const CARD_W = 200
-const CARD_H = 280
+const PAD_W = 240
+const PAD_H = 340
+const CARD_W = 232
+const CARD_H = 326
 const COL_GAP = 40
-const STAGE_W = 10 * PAD_W + 9 * COL_GAP // 2610
+const STAGE_W = 10 * PAD_W + 9 * COL_GAP // 2760
 
 const settings = useSpiderSettingsStore()
 
@@ -288,10 +287,11 @@ const now = ref(Date.now())
 // ===== 舞台缩放 =====
 const wrapRef = ref<HTMLElement | null>(null)
 const scale = ref(0.3)
-const stageH = ref(400)
-const wrapHeight = ref(150)
-/** 堆叠露边（设计尺寸，滚轮可调） */
-const offsetView = ref(30)
+const stageH = ref(500)
+/** 堆叠露边（设计尺寸；0=自动铺满高度） */
+const offsetView = ref(40)
+/** 用户滚轮手动设置的露边（0 = 自动） */
+const offsetManual = ref(0)
 
 const stageStyle = computed(() => ({
   width: STAGE_W + 'px',
@@ -319,7 +319,7 @@ function cardStyle(ci: number, idx: number): Record<string, string> {
   const sel = state.selected
   const inSel = !!sel && sel.col === ci && idx >= state.columns[ci].length - sel.count
   return {
-    top: idx * offsetView.value + 12 + 'px',
+    top: idx * offsetView.value + 14 + 'px',
     left: (PAD_W - CARD_W) / 2 + 'px',
     width: CARD_W + 'px',
     height: CARD_H + 'px',
@@ -327,18 +327,30 @@ function cardStyle(ci: number, idx: number): Record<string, string> {
   }
 }
 
-/** 重算 scale 与舞台高度（窗口/横屏/堆叠变化时） */
+/** 重算 scale 与堆叠露边（深绿牌桌占满屏幕，牌堆顶部舒展） */
 function updateScale() {
   const wrap = wrapRef.value
   if (!wrap) return
-  const avail = (landscape.value ? window.innerHeight : wrap.clientWidth) - 20
-  // 竖屏保底尺寸（牌 ≥ 约 52px），超出部分横向滚动；横屏/PC 填满宽度
-  const minScale = isMobile.value && !landscape.value ? 0.26 : 0.05
-  scale.value = Math.max(minScale, Math.min(1, avail / STAGE_W))
+  const availW = (landscape.value ? window.innerHeight : wrap.clientWidth) - 20
+  const minScale = isMobile.value && !landscape.value ? 0.24 : 0.05
+  const s = Math.max(minScale, Math.min(1, availW / STAGE_W))
+  scale.value = s
+  // 可用高度（视口 - 顶栏/信息栏/页脚等固定占用）
+  const viewH = landscape.value ? window.innerWidth : window.innerHeight
+  const availHpx = viewH - 200
   let maxLen = 0
   for (const col of state.columns) maxLen = Math.max(maxLen, col.length)
-  stageH.value = maxLen * offsetView.value + PAD_H + 40
-  wrapHeight.value = stageH.value * scale.value
+  if (offsetManual.value > 0) {
+    offsetView.value = offsetManual.value
+  } else if (maxLen > 1) {
+    // 牌堆舒展铺满舞台设计高（上限 80 防止过度拉开）
+    const usable = availHpx / s - PAD_H - 90
+    offsetView.value = Math.max(14, Math.min(80, usable / (maxLen - 1)))
+  } else {
+    offsetView.value = 40
+  }
+  // 舞台高度 = 内容实际高（避免撑爆外层布局）
+  stageH.value = maxLen * offsetView.value + PAD_H + 60
 }
 
 let ro: ResizeObserver | null = null
@@ -351,7 +363,7 @@ function observeWrap() {
 /** 鼠标滚轮展开/收缩牌堆 */
 function onWheel(e: WheelEvent) {
   const delta = e.deltaY < 0 ? 3 : -3
-  offsetView.value = Math.min(60, Math.max(8, offsetView.value + delta))
+  offsetManual.value = Math.max(10, Math.min(110, (offsetManual.value || offsetView.value) + delta))
   updateScale()
 }
 
