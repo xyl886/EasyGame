@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { StorageAdapter } from '../adapters/StorageAdapter'
 import type { KlotskiConfig, KlotskiDifficulty } from '../game/klotski/types'
+import type { ClassicLayoutId } from '../game/klotski-classic/types'
 import {
   DEFAULT_CONFIG,
   SIZE_OPTIONS,
@@ -29,12 +30,20 @@ export const useKlotskiSettingsStore = defineStore('klotski-settings', {
   state: () => ({
     config: loadConfig(),
     showSettings: false,
+    /** 三国版布局（独立持久化） */
+    classicLayout: StorageAdapter.get<ClassicLayoutId>('easygame-klotski-classic-layout') ?? 'hengdaolima',
   }),
 
   actions: {
     setConfig(partial: Partial<KlotskiConfig>) {
       this.config = { ...this.config, ...partial }
       StorageAdapter.set(CONFIG_KEY, this.config)
+    },
+
+    /** 设置三国版布局并持久化 */
+    setClassicLayout(layout: ClassicLayoutId) {
+      this.classicLayout = layout
+      StorageAdapter.set('easygame-klotski-classic-layout', layout)
     },
 
     openSettings() {

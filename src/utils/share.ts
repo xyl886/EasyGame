@@ -22,7 +22,7 @@ export function shareUrl(route: string): string {
 
 /** 各游戏的分享文案（带成绩） */
 export function gameShareText(
-  gameId: '2048' | 'snake' | 'tetris' | 'klotski',
+  gameId: '2048' | 'snake' | 'tetris' | 'klotski' | 'klotski-classic',
   score: number,
   lines?: number,
   won?: boolean,
@@ -38,6 +38,8 @@ export function gameShareText(
       return `我在 EasyGame 俄罗斯方块消了 ${lines ?? 0} 行、${score} 分，来挑战我！🧱`
     case 'klotski':
       return `我在 EasyGame 华容道用 ${score} 步解出了 ${lines ?? 4}×${lines ?? 4}，来挑战我！🧩`
+    case 'klotski-classic':
+      return `我在 EasyGame 三国华容道用 ${score} 步救出了曹操，来挑战我！🧩`
   }
 }
 

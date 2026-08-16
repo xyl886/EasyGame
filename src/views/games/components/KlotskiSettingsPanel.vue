@@ -23,6 +23,25 @@
           </button>
         </div>
 
+        <!-- 玩法切换 -->
+        <div class="space-y-2">
+          <label class="text-sm font-semibold block">玩法</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              class="py-2 rounded-lg text-sm font-medium transition-all border bg-rose-400 text-white border-transparent shadow-claude"
+            >
+              🔢 数字版
+            </button>
+            <button
+              @click="goClassic"
+              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-rose-400/50"
+            >
+              🧩 三国版
+            </button>
+          </div>
+          <p class="text-xs opacity-60">三国版为经典滑块：曹操 2×2 + 关羽 + 五虎将 + 小兵，4×5 棋盘</p>
+        </div>
+
         <!-- 棋盘尺寸 -->
         <div class="space-y-2">
           <div class="flex items-center justify-between">
@@ -86,11 +105,19 @@
 
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useKlotskiSettingsStore, SIZE_OPTIONS, DIFFICULTY_LABELS } from '../../../stores/klotski-settings'
 import { DEFAULT_CONFIG } from '../../../game/klotski/types'
 import type { KlotskiConfig, KlotskiDifficulty } from '../../../game/klotski/types'
 
 const settings = useKlotskiSettingsStore()
+const router = useRouter()
+
+/** 切换到三国版 */
+function goClassic() {
+  settings.closeSettings()
+  router.push('/game/klotski-classic')
+}
 
 const DIFFICULTY_OPTIONS: Array<{ value: KlotskiDifficulty; label: string }> = (
   ['easy', 'normal', 'hard'] as KlotskiDifficulty[]
