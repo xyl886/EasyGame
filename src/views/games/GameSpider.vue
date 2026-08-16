@@ -111,7 +111,7 @@
             :data-col="ci"
             class="relative shrink-0 rounded-md"
             :class="[colClass(ci), { 'ring-2 ring-emerald-400 z-10': dragOverCol === ci && dragging }]"
-            :style="{ width: cardW + 'px', height: Math.max(70, col.length * 20 + 10) + 'px' }"
+            :style="{ width: cardW + 'px', height: Math.max(84, col.length * stackOffset + 10) + 'px' }"
             @click="onColumnAreaClick(ci)"
             @dblclick.self="onColumnDblClick(ci)"
           >
@@ -119,14 +119,14 @@
               v-for="(card, idx) in col"
               :key="idx"
               class="absolute w-full rounded-md border flex flex-col items-center justify-center leading-none shadow-sm"
-              :class="cardClass(card, ci, idx)"
-              :style="{ top: idx * 20 + 'px', height: cardH + 'px' }"
+              :class="cardClass(ci, idx)"
+              :style="{ top: idx * stackOffset + 'px', height: cardH + 'px' }"
               @pointerdown.stop="onCardPointerDown(ci, idx, $event)"
               @click.stop="onCardClick(ci, idx)"
               @dblclick.stop="onCardDblClick(ci, idx)"
             >
-              <span class="absolute top-0.5 left-1 text-[10px] font-bold leading-none">{{ rankLabel(card.rank) }}{{ SUIT_SYMBOL[card.suit] }}</span>
-              <span class="text-base">{{ SUIT_SYMBOL[card.suit] }}</span>
+              <span class="absolute top-0.5 left-0.5 text-[11px] font-bold leading-none px-0.5 rounded-sm" :class="suitColor(card) + ' bg-bg-light/70 dark:bg-bg-dark/60'">{{ rankLabel(card.rank) }}{{ SUIT_SYMBOL[card.suit] }}</span>
+              <span class="text-xl" :class="suitColor(card)">{{ SUIT_SYMBOL[card.suit] }}</span>
             </div>
             <!-- 空列占位 -->
             <div
@@ -141,11 +141,11 @@
         <!-- 拖拽跟随指示 -->
         <div
           v-if="dragging && dragPreview"
-          class="fixed z-50 pointer-events-none w-11 rounded-md border bg-white dark:bg-gray-800 shadow-claude-lg flex flex-col items-center justify-center text-purple-600"
-          :style="{ left: dragX + 'px', top: dragY + 'px' }"
+          class="fixed z-50 pointer-events-none rounded-md border bg-white dark:bg-gray-800 shadow-claude-lg flex flex-col items-center justify-center"
+          :style="{ width: cardW + 'px', height: cardH + 'px', left: dragX + 'px', top: dragY + 'px' }"
         >
-          <span class="absolute top-0.5 left-1 text-[10px] font-bold">{{ dragPreview }}</span>
-          <span class="text-base">♠</span>
+          <span class="absolute top-0.5 left-0.5 text-[11px] font-bold px-0.5 rounded-sm bg-bg-light/70 dark:bg-bg-dark/60">{{ dragPreview }}</span>
+          <span class="text-xl">♠</span>
         </div>
       </div>
 
@@ -290,9 +290,11 @@ const canUndo = ref(false)
 const finishedElapsed = ref(0)
 const now = ref(Date.now())
 
-/** 牌尺寸 */
-const cardW = 46
-const cardH = 62
+/** 牌尺寸（加大，便于看清花色点数） */
+const cardW = 56
+const cardH = 76
+/** 牌堆叠露边（露出角标） */
+const stackOffset = 28
 
 // ===== 拖拽状态 =====
 const tableRef = ref<HTMLElement | null>(null)
@@ -348,6 +350,13 @@ const elapsedText = computed(() => {
 const SUIT_SYMBOL = ['♠', '♥', '♦', '♣']
 const SUIT_RED = [false, true, true, false]
 
+/** 花色颜色类（红桃/方块红，黑桃/梅花黑） */
+function suitColor(card: Card): string {
+  return SUIT_RED[card.suit]
+    ? 'text-red-600 dark:text-red-400'
+    : 'text-text-light dark:text-text-dark'
+}
+
 function rankLabel(rank: number): string {
   if (rank === 1) return 'A'
   if (rank === 11) return 'J'
@@ -356,11 +365,9 @@ function rankLabel(rank: number): string {
   return String(rank)
 }
 
-function cardClass(card: Card, ci: number, idx: number): string {
+function cardClass(ci: number, idx: number): string {
   const classes: string[] = []
-  // 牌面颜色
-  if (SUIT_RED[card.suit]) classes.push('text-red-600 dark:text-red-400')
-  else classes.push('text-text-light dark:text-text-dark')
+  // 牌面底色
   classes.push('bg-white dark:bg-gray-800')
   // 选中高亮（选中串范围）
   const sel = state.selected
@@ -423,8 +430,8 @@ function onTablePointerMove(e: PointerEvent) {
     if (navigator.vibrate) navigator.vibrate(10)
   }
   if (!dragging.value) return
-  dragX.value = e.clientX - 22
-  dragY.value = e.clientY - 30
+  dragX.value = e.clientX - cardW / 2
+  dragY.value = e.clientY - cardH / 2
   // 找当前悬停列
   const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null
   const colEl = el?.closest('[data-col]') as HTMLElement | null
