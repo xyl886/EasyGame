@@ -44,6 +44,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '数独 · EasyGame' },
   },
   {
+    path: '/game/minesweeper',
+    name: 'GameMinesweeper',
+    component: () => import('../views/games/GameMinesweeper.vue'),
+    meta: { title: '扫雷 · EasyGame' },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('../views/NotFound.vue'),

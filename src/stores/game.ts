@@ -34,11 +34,11 @@ export const useGameStore = defineStore('game', {
       {
         id: 'minesweeper',
         name: '扫雷',
-        description: '经典益智游戏，敬请期待',
+        description: '经典益智游戏，点击翻格避开所有地雷',
         icon: '💣',
         accent: 'from-gray-500 to-gray-700',
-        route: '#',
-        status: 'coming-soon',
+        route: '/game/minesweeper',
+        status: 'available',
       },
       {
         id: 'sudoku',
