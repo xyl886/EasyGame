@@ -49,9 +49,9 @@
         </div>
       </section>
 
-      <!-- 局域网面板 + 说明 -->
+      <!-- 扫码面板 + 说明 -->
       <section class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <LanPanel />
+        <OnlinePanel />
         <div class="claude-card p-5 space-y-4">
           <h3 class="font-semibold text-text-light dark:text-text-dark flex items-center gap-2">
             <span class="text-accent-light dark:text-accent-dark">⌨️</span>
@@ -100,7 +100,7 @@ import { toast } from '../utils/toast'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import SoundToggle from '../components/SoundToggle.vue'
 import GameCard from '../components/GameCard.vue'
-import LanPanel from '../components/LanPanel.vue'
+import OnlinePanel from '../components/OnlinePanel.vue'
 
 const gameStore = useGameStore()
 

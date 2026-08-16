@@ -1,24 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
-import os from 'os'
-
-// 获取本机局域网 IPv4 地址
-function getLocalIPv4(): string {
-  const interfaces = os.networkInterfaces()
-  for (const name of Object.keys(interfaces)) {
-    const iface = interfaces[name]
-    if (!iface) continue
-    for (const alias of iface) {
-      if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
-        return alias.address
-      }
-    }
-  }
-  return '127.0.0.1'
-}
-
-const localIP = getLocalIPv4()
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -30,7 +12,7 @@ export default defineConfig({
       manifest: {
         name: 'EasyGame · 益智小游戏集合',
         short_name: 'EasyGame',
-        description: '轻量级益智小游戏集合：2048、贪吃蛇、俄罗斯方块，即开即玩、离线可用。',
+        description: '轻量级益智小游戏集合：2048、贪吃蛇、俄罗斯方块、华容道，即开即玩、离线可用。',
         theme_color: '#F7F3EE',
         background_color: '#F7F3EE',
         display: 'standalone',
@@ -66,9 +48,5 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     strictPort: true,
-  },
-  define: {
-    __LOCAL_IP__: JSON.stringify(localIP),
-    __SERVER_PORT__: 5173,
   },
 })

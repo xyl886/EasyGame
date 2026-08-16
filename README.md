@@ -2,7 +2,7 @@
 
 **轻量级益智小游戏集合** —— 即开即玩、无需安装、全家同乐。
 
-基于 Vue 3 + Vite + TailwindCSS 构建的纯前端 Web 应用，首期包含 2048、贪吃蛇、俄罗斯方块三款经典益智游戏，支持 PC / 手机浏览器，同一 WiFi 局域网内扫码即玩。
+基于 Vue 3 + Vite + TailwindCSS 构建的纯前端 Web 应用，已上线 2048、贪吃蛇、俄罗斯方块、华容道四款经典益智游戏，支持 PC / 手机浏览器，手机扫码即玩、离线可用。
 
 > 🕹️ **在线体验**：https://xyl886.github.io/EasyGame/
 
@@ -13,7 +13,7 @@
 ## ✨ 功能特性
 
 - 🎯 **四款经典游戏**：2048、贪吃蛇（Snake）、俄罗斯方块（Tetris）、华容道（数字滑块）
-- 📱 **局域网即开即玩**：启动后自动注入本机局域网 IP，手机扫码（二维码）即可加入
+- 📱 **扫码即玩**：首页「扫码即玩」面板生成线上地址二维码，手机扫码直达游戏大厅
 - 📲 **PWA 离线可用**：可安装到桌面（添加到主屏幕），断网也能玩
 - 🔊 **游戏音效**：Web Audio 合成音效（合并 / 吃食物 / 消行 / 通关等），顶栏一键开关
 - 📤 **成绩分享**：Web Share API 分享成绩，自动降级为复制链接
@@ -34,7 +34,7 @@
 | 状态管理 | [Pinia](https://pinia.vuejs.org/) |
 | 路由 | [Vue Router 4](https://router.vuejs.org/) |
 | 语言 | TypeScript |
-| 其他 | qrcode（局域网扫码）、os（局域网 IP 探测） |
+| 其他 | qrcode（扫码）、Workbox（PWA 离线缓存） |
 
 ## 🚀 快速开始
 
@@ -52,13 +52,10 @@ pnpm build
 pnpm preview
 ```
 
-### 📡 局域网访问
+### 📱 手机访问
 
-开发服务器已配置监听 `0.0.0.0:5173`，启动后：
-
-1. 终端会打印本机局域网 IP
-2. 打开页面左上角/侧边的 **局域网面板（LanPanel）**，会显示当前局域网访问地址 + 二维码
-3. 同一 WiFi 下的手机/平板扫码即可访问
+- **线上**：https://xyl886.github.io/EasyGame/（首页「扫码即玩」面板生成二维码，手机扫码直达）
+- **本地开发**：`pnpm dev` 已监听 `0.0.0.0:5173`，同一 WiFi 下手机访问 `http://局域网IP:5173/`（需放行 Windows 防火墙 5173 端口）
 
 ### 🌐 在线部署
 
@@ -81,7 +78,7 @@ EasyGame/
 │   ├── assets/styles/       # 全局样式
 │   ├── components/          # 通用组件
 │   │   ├── GameCard.vue     # 游戏入口卡片
-│   │   ├── LanPanel.vue     # 局域网访问面板
+│   │   ├── OnlinePanel.vue    # 扫码即玩面板（线上二维码 + 复制链接）
 │   │   └── ThemeToggle.vue  # 主题切换
 │   ├── game/                # 游戏引擎（纯逻辑，与视图解耦）
 │   │   ├── base/            # BaseGame 抽象基类 + 排行榜
@@ -96,7 +93,7 @@ EasyGame/
 │   ├── App.vue
 │   └── main.ts
 ├── index.html
-├── vite.config.ts           # 含局域网 IP 自动注入
+├── vite.config.ts           # 含 PWA 配置
 ├── tailwind.config.ts
 └── package.json
 ```
