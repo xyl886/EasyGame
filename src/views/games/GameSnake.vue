@@ -311,6 +311,12 @@ function syncState() {
   state.moveCount = s.moveCount
   state.startTime = s.startTime
   state.size = s.size
+  // 同步配置快照字段，避免改设置后标题徽标（穿墙/多食物/障碍/目标）残留旧值
+  state.speed = s.speed
+  state.wallThrough = s.wallThrough
+  state.multiFood = s.multiFood
+  state.obstacleCount = s.obstacleCount
+  state.winLength = s.winLength
 }
 
 // ===== Tick 循环（setTimeout 递归，支持动态间隔） =====
@@ -376,6 +382,8 @@ function applySettings(config: SnakeConfig) {
 
 // ===== 键盘操作 =====
 function onKeydown(e: KeyboardEvent) {
+  // 设置/排行榜弹窗打开时忽略游戏按键，避免误操作背后的棋盘
+  if (settings.showSettings || showLeaderboard) return
   const map: Record<string, SnakeConfig['speed'] | Direction | 'pause'> = {
     ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
     w: 'up', W: 'up', s: 'down', S: 'down', a: 'left', A: 'left', d: 'right', D: 'right',
