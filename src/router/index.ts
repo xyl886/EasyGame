@@ -26,6 +26,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '俄罗斯方块 · EasyGame' },
   },
   {
+    path: '/game/klotski',
+    name: 'GameKlotski',
+    component: () => import('../views/games/GameKlotski.vue'),
+    meta: { title: '华容道 · EasyGame' },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('../views/NotFound.vue'),
