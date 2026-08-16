@@ -37,7 +37,8 @@
             <strong class="text-text-light dark:text-text-dark font-medium">俄罗斯方块</strong>、
             <strong class="text-text-light dark:text-text-dark font-medium">华容道</strong>、
             <strong class="text-text-light dark:text-text-dark font-medium">数独</strong>、
-            <strong class="text-text-light dark:text-text-dark font-medium">扫雷</strong>，
+            <strong class="text-text-light dark:text-text-dark font-medium">扫雷</strong>、
+            <strong class="text-text-light dark:text-text-dark font-medium">蜘蛛纸牌</strong>，
             支持手机扫码畅玩、离线使用。
           </p>
         </div>
