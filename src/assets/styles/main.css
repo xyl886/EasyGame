@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #app {
+    @apply h-full w-full m-0 p-0;
+  }
+  body {
+    @apply font-sans bg-bg-light text-text-light antialiased transition-colors duration-300;
+    -webkit-tap-highlight-color: transparent;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+  .dark body {
+    @apply bg-bg-dark text-text-dark;
+  }
+  ::selection {
+    background-color: rgba(232, 106, 91, 0.2);
+    @apply text-text-light;
+  }
+  .dark ::selection {
+    background-color: rgba(240, 122, 107, 0.2);
+    @apply text-text-dark;
+  }
+}
+
+@layer components {
+  .claude-card {
+    @apply rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude transition-all duration-200;
+  }
+  .claude-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-[0.98];
+  }
+  .claude-btn-primary {
+    @apply claude-btn bg-accent-light hover:bg-accent-hover-light text-white shadow-claude-md;
+  }
+  .dark .claude-btn-primary {
+    @apply bg-accent-dark hover:bg-accent-hover-dark text-bg-dark;
+  }
+  .claude-btn-secondary {
+    @apply claude-btn bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark hover:shadow-claude text-text-light dark:text-text-dark;
+  }
+  .claude-input {
+    @apply w-full rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark px-3 py-2 text-sm text-text-light dark:text-text-dark placeholder:text-text-muted-light dark:placeholder:text-text-muted-dark focus:outline-none focus:ring-2 transition-all;
+  }
+  .claude-input:focus {
+    --tw-ring-color: rgba(232, 106, 91, 0.3);
+  }
+  .dark .claude-input:focus {
+    --tw-ring-color: rgba(240, 122, 107, 0.3);
+  }
+}
+
+@layer utilities {
+  .tile-text-light {
+    color: #4A4238;
+  }
+  .tile-text-dark {
+    color: #F7F3EE;
+  }
+  .board-bg-light {
+    background-color: #E8E2D9;
+  }
+  .board-bg-dark {
+    background-color: #252830;
+  }
+  .cell-bg-light {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+  .cell-bg-dark {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}
