@@ -470,10 +470,9 @@ function tileAnimClass(tile: Tile): string {
 }
 
 function syncState() {
+  // getState 已返回独立拷贝；再换新 tile 引用以触发响应式与位置动画
   const s = engine.value.getState()
-  // 深拷贝 grid：引擎直接操作原始对象绕过了 Vue reactive 代理，
-  // 必须创建新的 tile 引用才能触发响应式更新与位置动画
-  state.grid = s.grid.map((row) => row.map((t) => (t ? { ...t } : null)))
+  state.grid = s.grid
   state.score = s.score
   state.bestScore = s.bestScore
   state.won = s.won

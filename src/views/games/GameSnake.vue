@@ -370,31 +370,29 @@ const gapPx = computed(() => `${gap.value}px`)
 
 const speedLabel = computed(() => SPEED_LABELS[settings.config.speed])
 
-/** 单元格类型查表：每次 syncState 后重算 */
+/** 单元格类型查表：key 为行优先 idx（y*size+x），每次 syncState 后重算 */
 const cellMap = computed(() => {
-  const m = new Map<string, 'head' | 'body' | 'food' | 'bonus' | 'obstacle'>()
+  const size = state.size
+  const m = new Map<number, 'head' | 'body' | 'food' | 'bonus' | 'obstacle'>()
   if (state.snake.length > 0) {
     const h = state.snake[0]
-    m.set(`${h.x},${h.y}`, 'head')
+    m.set(h.y * size + h.x, 'head')
   }
   for (let i = 1; i < state.snake.length; i++) {
     const p = state.snake[i]
-    m.set(`${p.x},${p.y}`, 'body')
+    m.set(p.y * size + p.x, 'body')
   }
   for (const f of state.foods) {
-    m.set(`${f.pos.x},${f.pos.y}`, f.type === 'bonus' ? 'bonus' : 'food')
+    m.set(f.pos.y * size + f.pos.x, f.type === 'bonus' ? 'bonus' : 'food')
   }
   for (const o of state.obstacles) {
-    m.set(`${o.pos.x},${o.pos.y}`, 'obstacle')
+    m.set(o.pos.y * size + o.pos.x, 'obstacle')
   }
   return m
 })
 
 function cellClass(idx: number): string {
-  const x = idx % state.size
-  const y = Math.floor(idx / state.size)
-  const type = cellMap.value.get(`${x},${y}`)
-  switch (type) {
+  switch (cellMap.value.get(idx)) {
     case 'head':
       return 'bg-lime-600 dark:bg-lime-300 shadow-sm'
     case 'body':
@@ -412,7 +410,7 @@ function cellClass(idx: number): string {
 
 /** 该格是否为蛇头 */
 function isHead(idx: number): boolean {
-  return cellMap.value.get(`${idx % state.size},${Math.floor(idx / state.size)}`) === 'head'
+  return cellMap.value.get(idx) === 'head'
 }
 
 /** 蛇头眼睛位置：按移动方向分布（百分比定位，随格子缩放） */
@@ -441,11 +439,11 @@ function eyeStyle(which: 0 | 1) {
 }
 
 function syncState() {
+  // getState 已返回深拷贝，直接赋值触发响应式即可
   const s = engine.value.getState()
-  // 深拷贝触发响应式
-  state.snake = s.snake.map((p) => ({ ...p }))
-  state.foods = s.foods.map((f) => ({ ...f, pos: { ...f.pos } }))
-  state.obstacles = s.obstacles.map((o) => ({ ...o, pos: { ...o.pos } }))
+  state.snake = s.snake
+  state.foods = s.foods
+  state.obstacles = s.obstacles
   state.direction = s.direction
   state.nextDirection = s.nextDirection
   state.score = s.score

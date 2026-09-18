@@ -468,47 +468,49 @@ const previewPieces = computed(() => state.next.slice(0, state.previewCount))
 /**
  * 计算 (row, col) 处单元格应使用的 CSS 类
  * 优先级：当前活动方块 > 鬼影 > 已锁定格 > 空
+ * key 为行优先 idx（y*width+x），避免每格拼接字符串
  */
 const cellMap = computed(() => {
+  const w = state.width
   // 已锁定格
-  const locked = new Map<string, number>()
+  const locked = new Map<number, number>()
   for (let y = 0; y < state.height; y++) {
-    for (let x = 0; x < state.width; x++) {
-      if (state.grid[y][x] !== 0) locked.set(`${x},${y}`, state.grid[y][x])
+    const row = state.grid[y]
+    for (let x = 0; x < w; x++) {
+      if (row[x] !== 0) locked.set(y * w + x, row[x])
     }
   }
   // 当前活动方块
-  const active = new Set<string>()
+  const active = new Set<number>()
   if (state.current) {
     for (const [dx, dy] of TETROMINOES[state.current.type].rotations[state.current.rotation]) {
       const x = state.current.x + dx
       const y = state.current.y + dy
-      if (y >= 0) active.add(`${x},${y}`)
+      if (y >= 0) active.add(y * w + x)
     }
   }
   // 鬼影
-  const ghost = new Set<string>()
+  const ghost = new Set<number>()
   if (state.current && state.ghostY >= 0) {
     for (const [dx, dy] of TETROMINOES[state.current.type].rotations[state.current.rotation]) {
       const x = state.current.x + dx
       const y = state.ghostY + dy
-      if (y >= 0 && !active.has(`${x},${y}`)) ghost.add(`${x},${y}`)
+      if (y >= 0 && !active.has(y * w + x)) ghost.add(y * w + x)
     }
   }
   return { locked, active, ghost }
 })
 
 function cellClass(idx: number): string {
-  const x = idx % state.width
-  const y = Math.floor(idx / state.width)
   const { locked, active, ghost } = cellMap.value
-  if (active.has(`${x},${y}`)) {
+  if (active.has(idx)) {
     return pieceColorClass(state.current!.type, true)
   }
-  if (locked.has(`${x},${y}`)) {
-    return pieceColorClass(locked.get(`${x},${y}`)!, true)
+  const lockedVal = locked.get(idx)
+  if (lockedVal !== undefined) {
+    return pieceColorClass(lockedVal, true)
   }
-  if (ghost.has(`${x},${y}`)) {
+  if (ghost.has(idx)) {
     return pieceColorClass(state.current!.type, false)
   }
   return 'cell-bg-light dark:cell-bg-dark'
@@ -553,10 +555,11 @@ function pieceColorClass(typeId: number, solid: boolean): string {
 }
 
 function syncState() {
+  // getState 已拷贝 grid/current，直接赋值触发响应式
   const s = engine.value.getState()
-  state.grid = s.grid.map((row) => [...row])
-  state.current = s.current ? { ...s.current } : null
-  state.next = [...s.next]
+  state.grid = s.grid
+  state.current = s.current
+  state.next = s.next
   state.hold = s.hold
   state.canHold = s.canHold
   state.ghostY = s.ghostY

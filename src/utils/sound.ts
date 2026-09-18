@@ -22,8 +22,12 @@ export type SoundName =
     | 'over' // 游戏结束
     | 'start' // 开局
     | 'pause' // 暂停
+    | 'chain' // 数字连连：连上一格的递进音（音调随链长升高）
 
 const ENABLED_KEY = 'easygame-sound-enabled'
+
+/** 连链递进音的频率上限（Hz）：超过就停在最高音级，避免大棋盘上越来越尖 */
+const MAX_CHAIN_FREQ = 1400
 
 /** 单音定义：频率 / 相对延迟 / 时长 / 波形 / 音量 / 终点频率（扫频） */
 interface ToneSpec {
@@ -68,6 +72,8 @@ const EFFECTS: Record<SoundName, EffectSpec> = {
         {freq: 500, delay: 0, dur: 0.06, type: 'sine', vol: 0.1},
         {freq: 350, delay: 0.08, dur: 0.08, type: 'sine', vol: 0.1},
     ],
+    // 基准音；实际播放时由 playChain 按链长把频率整体上移
+    chain: [{freq: 300, delay: 0, dur: 0.055, type: 'triangle', vol: 0.1}],
 }
 
 class SoundManager {
@@ -120,6 +126,44 @@ class SoundManager {
             for (const t of spec) {
                 this.tone(ctx, t, t0)
             }
+        } catch {
+            // 音效失败不影响游戏
+        }
+    }
+
+    /**
+     * 数字连连专用：连上一格时播放递进音，**音调随链长升高**。
+     *
+     * 用五声音阶（大调 pentatonic）逐级上行，而不是线性加频率——
+     * 线性加频率听感很"吵"，音阶才有"连成一条链"的愉悦感。
+     *
+     * 封顶策略：频率**绝对上限 1400Hz**，超过就停在最高那个音级上。
+     * （不能靠"限制八度层数"来封顶：那样音阶回绕时会出现音调突然掉下来。）
+     * 于是链越长音越高，到顶后稳定在高音区重复，大棋盘也不会刺耳。
+     *
+     * @param step 已经连上的格子数（1 起）。step=1 是基准音。
+     */
+    playChain(step: number): void {
+        const ctx = this.ensureCtx()
+        if (!ctx) return
+        const base = EFFECTS.chain[0]
+        if (!base) return
+        try {
+            // 大调五声音阶（半音偏移）
+            const scale = [0, 2, 4, 7, 9]
+            const idx = Math.max(0, step - 1)
+            const degree = idx % scale.length
+            const octave = Math.floor(idx / scale.length)
+            const raw = base.freq * Math.pow(2, (scale[degree] + 12 * octave) / 12)
+            const freq = Math.min(MAX_CHAIN_FREQ, raw)
+            const tone: ToneSpec = {
+                freq,
+                delay: base.delay,
+                dur: base.dur,
+                type: base.type,
+                vol: base.vol,
+            }
+            this.tone(ctx, tone, ctx.currentTime)
         } catch {
             // 音效失败不影响游戏
         }

@@ -7,12 +7,12 @@ export default defineConfig({
   plugins: [
     vue(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'EasyGame · 益智小游戏集合',
         short_name: 'EasyGame',
-        description: '轻量级益智小游戏集合：2048、贪吃蛇、俄罗斯方块、华容道，即开即玩、离线可用。',
+        description: '轻量级益智小游戏集合：2048、贪吃蛇、俄罗斯方块、华容道、数独、扫雷、连连看、消消乐、数字连连，即开即玩、离线可用。',
         theme_color: '#F7F3EE',
         background_color: '#F7F3EE',
         display: 'standalone',

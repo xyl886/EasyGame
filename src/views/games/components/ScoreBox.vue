@@ -19,18 +19,20 @@ import { computed, ref, watch } from 'vue'
 
 const props = defineProps<{
   label: string
-  value: number
+  value: number | string
   accent?: boolean
 }>()
 
-const formatted = computed(() => props.value.toLocaleString('zh-CN'))
+const formatted = computed(() =>
+  typeof props.value === 'number' ? props.value.toLocaleString('zh-CN') : props.value,
+)
 
 /** 数值变化时短暂弹跳（加分/刷新反馈） */
 const pop = ref(false)
 watch(
   () => props.value,
   () => {
-    if (props.value > 0) pop.value = true
+    if (typeof props.value === 'number' && props.value > 0) pop.value = true
   },
 )
 </script>

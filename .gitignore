@@ -29,6 +29,10 @@ dist-ssr
 # Tailwind test output
 test-tailwind-output.css
 
+# 本地临时调试产物
+tmp-*/
+tmp-*/**
+
 # OS
 Thumbs.db
 Desktop.ini
@@ -38,3 +42,6 @@ Desktop.ini
 .env.local
 .env.*.local
 .dsh
+
+# 本地 AI 工具的计划笔记（非项目文档）
+.trae

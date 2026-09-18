@@ -27,36 +27,97 @@ export function canPlace(board: Board, spec: SudokuSpec, r: number, c: number, v
   return true
 }
 
-/** 回溯求解放数量（limit 内），用于唯一性判断 */
+/** 二进制中 1 的个数（候选位掩码用） */
+function popcount(x: number): number {
+  let c = 0
+  while (x) {
+    x &= x - 1
+    c++
+  }
+  return c
+}
+
+/**
+ * 回溯求解放数量（limit 内），用于唯一性判断。
+ * 使用行/列/宫位掩码 + 最小候选数（MRV）选格，且不在每个节点洗牌
+ * （计数与顺序无关，洗牌只增加分配与随机开销）。
+ */
 export function countSolutions(board: Board, spec: SudokuSpec, limit = 2): number {
-  const b = board.map((row) => [...row])
   const n = spec.size
+  const b = board.map((row) => [...row])
+  const rowMask = new Int32Array(n)
+  const colMask = new Int32Array(n)
+  const boxRows = spec.boxRows
+  const boxCols = spec.boxCols
+  const boxesPerRow = n / boxCols
+  const boxCount = (n / boxRows) * boxesPerRow
+  const boxMask = new Int32Array(boxCount)
+  const boxIndex = (r: number, c: number) =>
+    Math.floor(r / boxRows) * boxesPerRow + Math.floor(c / boxCols)
+  // 候选位：bit1..bitn
+  const allBits = ((1 << n) - 1) << 1
+
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) {
+      const v = b[r][c]
+      if (v !== 0) {
+        const bit = 1 << v
+        rowMask[r] |= bit
+        colMask[c] |= bit
+        boxMask[boxIndex(r, c)] |= bit
+      }
+    }
+  }
+
   let count = 0
   const solve = (): void => {
     if (count >= limit) return
-    let r = -1
-    let c = -1
-    outer: for (let i = 0; i < n; i++) {
-      for (let j = 0; j < n; j++) {
-        if (b[i][j] === 0) {
-          r = i
-          c = j
-          break outer
+    // MRV：选候选最少的空格，提前剪枝
+    let bestR = -1
+    let bestC = -1
+    let bestCand = 0
+    let bestCnt = n + 1
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        if (b[r][c] !== 0) continue
+        const cand = allBits & ~(rowMask[r] | colMask[c] | boxMask[boxIndex(r, c)])
+        if (cand === 0) return
+        const cnt = popcount(cand)
+        if (cnt < bestCnt) {
+          bestCnt = cnt
+          bestR = r
+          bestC = c
+          bestCand = cand
+          if (cnt === 1) break
         }
       }
+      if (bestCnt === 1) break
     }
-    if (r < 0) {
+    if (bestR < 0) {
       count++
       return
     }
-    const nums = shuffled(Array.from({ length: n }, (_, i) => i + 1))
-    for (const v of nums) {
-      if (canPlace(b, spec, r, c, v)) {
-        b[r][c] = v
-        solve()
-        if (count >= limit) return
-        b[r][c] = 0
+    const bitBox = boxMask[boxIndex(bestR, bestC)]
+    void bitBox
+    for (let v = 1; v <= n; v++) {
+      const bit = 1 << v
+      if ((bestCand & bit) === 0) continue
+      b[bestR][bestC] = v
+      rowMask[bestR] |= bit
+      colMask[bestC] |= bit
+      boxMask[boxIndex(bestR, bestC)] |= bit
+      solve()
+      if (count >= limit) {
+        b[bestR][bestC] = 0
+        rowMask[bestR] &= ~bit
+        colMask[bestC] &= ~bit
+        boxMask[boxIndex(bestR, bestC)] &= ~bit
+        return
       }
+      b[bestR][bestC] = 0
+      rowMask[bestR] &= ~bit
+      colMask[bestC] &= ~bit
+      boxMask[boxIndex(bestR, bestC)] &= ~bit
     }
   }
   solve()
@@ -156,8 +217,11 @@ export function generatePuzzle(
   const puzzle = solution.map((row) => [...row])
   const cells = shuffled(Array.from({ length: spec.size * spec.size }, (_, i) => i))
   let dug = 0
+  // 时间预算：极端情况下避免长时间占死主线程（宁可少挖洞也要可交互）
+  const deadline = Date.now() + 80
   for (const idx of cells) {
     if (dug >= holes) break
+    if (Date.now() > deadline) break
     const r = Math.floor(idx / spec.size)
     const c = idx % spec.size
     const saved = puzzle[r][c]

@@ -22,6 +22,11 @@ function cloneGrid(grid: Grid): Grid {
   )
 }
 
+/** 快照用深拷贝：保留 isNew/isMerged 等动画标记，且不与引擎内部 grid 共享引用 */
+function cloneGridSnapshot(grid: Grid): Grid {
+  return grid.map((row) => row.map((tile) => (tile ? { ...tile } : null)))
+}
+
 function getEmptyCells(grid: Grid): Array<{ row: number; col: number }> {
   const empty: Array<{ row: number; col: number }> = []
   for (let r = 0; r < grid.length; r++) {
@@ -132,8 +137,9 @@ export class Game2048Engine implements BaseGame<Game2048State, Direction> {
   }
 
   getState(): Game2048State {
+    // 必须返回独立拷贝：否则 reactive(getState()) 会把引擎内部 grid 纳入深层 Proxy
     return {
-      grid: this.grid,
+      grid: cloneGridSnapshot(this.grid),
       score: this.score,
       bestScore: this.bestScore,
       won: this.won,

@@ -32,6 +32,24 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '华容道 · EasyGame' },
   },
   {
+    path: '/game/lianliankan',
+    name: 'GameLianliankan',
+    component: () => import('../views/games/GameLianliankan.vue'),
+    meta: { title: '连连看 · EasyGame' },
+  },
+  {
+    path: '/game/eliminate',
+    name: 'GameEliminate',
+    component: () => import('../views/games/GameEliminate.vue'),
+    meta: { title: '消消乐 · EasyGame' },
+  },
+  {
+    path: '/game/numberchain',
+    name: 'GameNumberChain',
+    component: () => import('../views/games/GameNumberChain.vue'),
+    meta: { title: '数字连连 · EasyGame' },
+  },
+  {
     path: '/game/klotski-classic',
     name: 'GameKlotskiClassic',
     component: () => import('../views/games/GameKlotskiClassic.vue'),

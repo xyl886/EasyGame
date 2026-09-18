@@ -133,7 +133,7 @@
                 v-for="nn in state.size"
                 :key="nn"
                 class="flex items-center justify-center text-[9px] leading-none"
-                :class="engine.hasNote(Math.floor((i - 1) / state.size), (i - 1) % state.size, nn) ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-transparent'"
+                :class="hasNoteAt(i - 1, nn) ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-transparent'"
               >{{ nn }}</span>
             </span>
           </button>
@@ -365,6 +365,7 @@ const hintCell = ref<{ row: number; col: number } | null>(null)
 /** 最近填错的格子（短暂抖动反馈） */
 const wrongCell = ref<{ row: number; col: number } | null>(null)
 let wrongTimer: ReturnType<typeof setTimeout> | null = null
+let hintTimer: ReturnType<typeof setTimeout> | null = null
 
 const difficultyLabel = computed(() => DIFFICULTY_LABELS[settings.config.difficulty])
 const sizeLabel = computed(() => specOf(state.size).label)
@@ -439,6 +440,13 @@ function isNoteShown(idx: number): boolean {
   if (!s || s.row !== r || s.col !== c) return false
   if (state.grid[r][c] !== 0 || state.given[r][c]) return false
   return true
+}
+
+/** 模板用：读响应式 notes，避免每格调非响应式 engine.hasNote */
+function hasNoteAt(idx: number, num: number): boolean {
+  const r = Math.floor(idx / state.size)
+  const c = idx % state.size
+  return state.notes[r]?.[c]?.includes(num) ?? false
 }
 
 function inSameBox(r1: number, c1: number, r2: number, c2: number): boolean {
@@ -576,8 +584,10 @@ function doHint() {
   syncState()
   hintCell.value = { row: cell.row, col: cell.col }
   sound.play('start')
-  setTimeout(() => {
+  if (hintTimer) clearTimeout(hintTimer)
+  hintTimer = setTimeout(() => {
     hintCell.value = null
+    hintTimer = null
   }, 1200)
   if (state.won) {
     finishedElapsed.value = Math.floor((Date.now() - state.startTime) / 1000)
@@ -598,6 +608,10 @@ function newGame() {
   hintCell.value = null
   wrongCell.value = null
   if (wrongTimer) clearTimeout(wrongTimer)
+  if (hintTimer) {
+    clearTimeout(hintTimer)
+    hintTimer = null
+  }
   clearAutosave(AUTOSAVE_GAME_ID)
   showResume.value = false
   sound.play('start')
@@ -612,6 +626,10 @@ function applySettings(config: SudokuConfig) {
   hintCell.value = null
   wrongCell.value = null
   if (wrongTimer) clearTimeout(wrongTimer)
+  if (hintTimer) {
+    clearTimeout(hintTimer)
+    hintTimer = null
+  }
   clearAutosave(AUTOSAVE_GAME_ID)
   showResume.value = false
 }
@@ -722,6 +740,7 @@ onBeforeUnmount(() => {
   if (!state.won) persistAutosave()
   if (timer) clearInterval(timer)
   if (wrongTimer) clearTimeout(wrongTimer)
+  if (hintTimer) clearTimeout(hintTimer)
   window.removeEventListener('keydown', onKeydown)
   document.removeEventListener('visibilitychange', onVisibilityChange)
   window.removeEventListener('pagehide', onPageHide)

@@ -32,13 +32,11 @@
             <span class="text-accent-light dark:text-accent-dark"> 合集</span>
           </h1>
           <p class="text-base md:text-lg text-text-muted-light dark:text-text-muted-dark max-w-2xl leading-relaxed">
-            精心复刻的益智游戏集合。已上线经典 <strong class="text-text-light dark:text-text-dark font-medium">2048</strong>、
-            <strong class="text-text-light dark:text-text-dark font-medium">贪吃蛇</strong>、
-            <strong class="text-text-light dark:text-text-dark font-medium">俄罗斯方块</strong>、
-            <strong class="text-text-light dark:text-text-dark font-medium">华容道</strong>、
-            <strong class="text-text-light dark:text-text-dark font-medium">数独</strong>、
-            <strong class="text-text-light dark:text-text-dark font-medium">扫雷</strong>，
-            支持手机扫码畅玩、离线使用。
+            精心复刻的益智游戏集合。已上线经典
+            <template v-for="(g, i) in availableGames" :key="g.id">
+              <strong class="text-text-light dark:text-text-dark font-medium">{{ g.name }}</strong><span v-if="i < availableGames.length - 1">、</span>
+            </template>
+            ，支持手机扫码畅玩、离线使用。
           </p>
         </div>
       </section>
@@ -72,4 +70,5 @@ import GameCard from '../components/GameCard.vue'
 import OnlinePanel from '../components/OnlinePanel.vue'
 
 const gameStore = useGameStore()
+const availableGames = gameStore.games.filter((g) => g.status === 'available')
 </script>
