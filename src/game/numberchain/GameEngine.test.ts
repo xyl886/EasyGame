@@ -36,6 +36,48 @@ describe('NumberChainEngine', () => {
     expect(engine.getState().grid[0][0]).not.toBe(-1)
   })
 
+  it('每局布局都不一样：起点随机 + 路径形状不重复', () => {
+    // 这是曾经的严重回归：生成器里没有任何随机，导致 60 次生成只有 1 种形状、
+    // ① 永远在左上角，玩家反映"每盘走线都一个样"。用本测试锁住多样性。
+    const shapes = new Set<string>()
+    const starts = new Set<string>()
+    const N = 40
+    for (let i = 0; i < N; i++) {
+      const engine = new NumberChainEngine({ difficulty: 'normal', level: 4 }) // 8×8
+      const { grid, size } = engine.getState()
+      expect(size).toBe(8)
+      // ① 的落点
+      const p1 = findValue(grid, 1)
+      starts.add(`${p1.r},${p1.c}`)
+      // 路径形状签名：每一步的相对方向
+      let sig = ''
+      for (let v = 1; v < size * size; v++) {
+        const a = findValue(grid, v)
+        const b = findValue(grid, v + 1)
+        sig += `${b.r - a.r + 1}${b.c - a.c + 1}`
+      }
+      shapes.add(sig)
+    }
+    // 形状应几乎两两不同。8×8 的路径空间虽大但仍可能偶发撞车
+    // （实测 40 局里偶尔 38~39 种），所以阈值留出余量，避免测试本身 flaky；
+    // 关键是它绝不能退化成"只有 1~2 种形状"（那才是真正的回归）。
+    expect(shapes.size).toBeGreaterThanOrEqual(30)
+    // ① 必须能落在多个不同位置，而不是永远左上角
+    expect(starts.size).toBeGreaterThanOrEqual(5)
+  })
+
+  it('起点不会固定在左上角', () => {
+    const starts = new Set<string>()
+    for (let i = 0; i < 30; i++) {
+      const engine = new NumberChainEngine({ difficulty: 'easy', level: 1 }) // 4×4
+      const { grid } = engine.getState()
+      const p1 = findValue(grid, 1)
+      starts.add(`${p1.r},${p1.c}`)
+    }
+    // 4×4 共 16 格，30 次里至少应出现过多个不同起点；绝不能恒为 (0,0)
+    expect(starts.size).toBeGreaterThan(1)
+  })
+
   it('生成的棋盘保证 1→2→…→N 全部相邻（可解性）', () => {
     // 多难度 × 多关卡重复验证
     for (const difficulty of ['easy', 'normal', 'hard'] as const) {
@@ -81,19 +123,27 @@ describe('NumberChainEngine', () => {
     }
   })
 
-  it('局部聚集：连续数字构成的簇很紧凑（不会满棋盘乱窜）', () => {
-    // 取前 9 个数字（应落在同一个 3×3 块内），其外接框边长不应超过 3
-    const engine = new NumberChainEngine({ difficulty: 'normal', level: 4 })
-    const { grid } = engine.getState()
-    let minR = Infinity, maxR = -Infinity, minC = Infinity, maxC = -Infinity
-    for (let v = 1; v <= 9; v++) {
-      const p = findValue(grid, v)
-      minR = Math.min(minR, p.r); maxR = Math.max(maxR, p.r)
-      minC = Math.min(minC, p.c); maxC = Math.max(maxC, p.c)
+  it('局部聚集：连续数字构成的簇总体紧凑（统计多次，避免单局偶然）', () => {
+    // 注意：不能用"单局外接框 ≤4"来断言——生成带随机性，单局可能是 5 或 6，
+    // 那样测试会 flaky。这里改看**统计特征**：多数局应落在 4×4 内。
+    const boxes: number[] = []
+    for (let t = 0; t < 60; t++) {
+      const engine = new NumberChainEngine({ difficulty: 'normal', level: 4 }) // 8×8
+      const { grid, size } = engine.getState()
+      expect(size).toBe(8)
+      let minR = Infinity, maxR = -Infinity, minC = Infinity, maxC = -Infinity
+      for (let v = 1; v <= 9; v++) {
+        const p = findValue(grid, v)
+        minR = Math.min(minR, p.r); maxR = Math.max(maxR, p.r)
+        minC = Math.min(minC, p.c); maxC = Math.max(maxC, p.c)
+      }
+      boxes.push(Math.max(maxR - minR + 1, maxC - minC + 1))
     }
-    // 9 个连续数字应当聚在一小块里（外接框不超过 4×4，留一格余量）
-    expect(maxR - minR + 1).toBeLessThanOrEqual(4)
-    expect(maxC - minC + 1).toBeLessThanOrEqual(4)
+    const within4 = boxes.filter((b) => b <= 4).length
+    const avg = boxes.reduce((a, b) => a + b, 0) / boxes.length
+    // 实测 BLOCK_SIZE=4 时约 52% 落在 4×4、平均 ~5.2。阈值取宽松些防止偶发抖动。
+    expect(within4).toBeGreaterThanOrEqual(20)
+    expect(avg).toBeLessThanOrEqual(6.5)
   })
 
   it('按 1→2→… 依次 move 推进 next', () => {

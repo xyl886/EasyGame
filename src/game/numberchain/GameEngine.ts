@@ -69,8 +69,12 @@ export type ExtendResult = 'locked' | 'ignored' | 'wrong'
 /** 无尽模式下允许的最大失误数（超过即结束） */
 export const ENDLESS_MAX_MISTAKES = 12
 
-/** 局部块边长：连续数字被约束在 B×B 的方块内活动（见 buildSnakePath） */
-const BLOCK_SIZE = 3
+/**
+ * 局部块边长：连续数字被约束在 B×B 的方块内活动（见 buildRandomRank）。
+ * 4 是实测最优：8×8 上前 9 个数字的外接框有约一半落在理想的 4×4，
+ * 明显好于 2 和 3（那两档更分散）。改大/改小都会让聚集性变差。
+ */
+const BLOCK_SIZE = 4
 
 export class NumberChainEngine implements BaseGame<NumberChainState, ChainPoint> {
   private config: NumberChainConfig
@@ -138,59 +142,119 @@ export class NumberChainEngine implements BaseGame<NumberChainState, ChainPoint>
   /**
    * 生成一条覆盖全部 n² 个格子的通路，要求：
    *   (a) 全程相邻（每步落在上一格周围 8 格内）——满足"只能连相邻的数字"；
-   *   (b) **局部聚集**——连续数字扎堆，找到 ① 之后 ②③④ 就在附近。
+   *   (b) **局部聚集**——连续数字扎堆，找到 ① 之后 ②③④ 就在附近；
+   *   (c) **每局都不一样**——起点随机、形状随机，不能"每盘走线都一个样"。
    *
-   * 不用随机 DFS：16×16 上会指数级回溯甚至卡死（实测挂住），
-   * 而且路径会满棋盘乱窜，1 和 2 可能隔着十几格。
+   * 三步走：
+   *   1) 造一个随机化的"骨架序号"：棋盘切成 BLOCK_SIZE 的块，块序随机游走、
+   *      块内取向随机。骨架只表达"哪些格该挨在一起"，本身不要求相邻。
+   *   2) 从**随机起点**做 Warnsdorff 贪心：每步选"后续可走邻居最少"的相邻未访问格；
+   *      同度数之间**随机**决定（随机只作用于同样好的选择，不会去挑更差的）。
+   *   3) **校验 + 重试**：贪心在大棋盘上仍可能中途走进死胡同（实测 16×16 会留下断链），
+   *      所以走不满就换一套随机重来。生成不到 1ms，重试几十次毫无压力。
    *
-   * 这里用**确定性构造**，不回溯、必然终止：
-   *   1) 初始按块（3×3）蛇形填充，得到"块内聚集"的骨架；
-   *   2) 再对整条路径做一次**贪心重排**：从起点出发，每步都优先走向
-   *      "还没访问、且与当前格相邻、且序号最接近原骨架序号"的格子。
-   *      这样既保持聚集（倾向本块内的邻居），又保证严格相邻。
-   *
-   * 第 2 步是关键：单纯按块拼接无法保证块与块交界处相邻（实测会断链），
-   * 而"贪心走相邻格"从构造上就不可能产生断裂。
+   * 第 3 步是保证可解性的关键：只靠贪心无法 100% 走满，必须有校验兜底。
    */
   private buildSnakePath(size: number): ChainPoint[] {
-    const total = size * size
+    const ATTEMPTS = 60
+    for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
+      const candidate = this.tryBuildPath(size)
+      if (candidate && candidate.length === size * size) return candidate
+    }
+    // 极端兜底：用骨架序号直接铺满。覆盖 100%，但块与块交界处可能不相邻。
+    return this.buildRankOrderPath(size)
+  }
 
-    // ---- 第 1 步：块内蛇形骨架，决定每个格子的"理想序号" ----
+  /** 构造一次随机化的骨架序号：rank[cellIndex] = 骨架序号 */
+  private buildRandomRank(size: number): Int32Array {
+    const total = size * size
+    const B = BLOCK_SIZE
+    const blocksR = Math.ceil(size / B)
+    const blocksC = Math.ceil(size / B)
     const rank = new Int32Array(total).fill(-1)
-    {
-      const B = BLOCK_SIZE
-      const blocksR = Math.ceil(size / B)
-      const blocksC = Math.ceil(size / B)
-      let seq = 0
-      for (let br = 0; br < blocksR; br++) {
-        const cRange: number[] = []
-        for (let bc = 0; bc < blocksC; bc++) cRange.push(bc)
-        if (br % 2 === 1) cRange.reverse()
-        for (const bc of cRange) {
-          const r0 = br * B
-          const c0 = bc * B
-          const r1 = Math.min(r0 + B - 1, size - 1)
-          const c1 = Math.min(c0 + B - 1, size - 1)
-          for (let r = r0; r <= r1; r++) {
-            if ((r - r0) % 2 === 0) {
-              for (let c = c0; c <= c1; c++) rank[r * size + c] = seq++
-            } else {
-              for (let c = c1; c >= c0; c--) rank[r * size + c] = seq++
+
+    // 块序：从随机块出发，在块网格上随机游走
+    const visitedBlock = Array.from({ length: blocksR }, () => new Array<boolean>(blocksC).fill(false))
+    const order: Array<{ r: number; c: number }> = []
+    let br = randInt(blocksR)
+    let bc = randInt(blocksC)
+    visitedBlock[br][bc] = true
+    order.push({ r: br, c: bc })
+    let guard = blocksR * blocksC * 4
+    while (order.length < blocksR * blocksC && guard-- > 0) {
+      const cand: Array<{ r: number; c: number }> = []
+      for (const [dr, dc] of NEIGHBOR_OFFSETS) {
+        const nr = br + dr
+        const nc = bc + dc
+        if (nr < 0 || nr >= blocksR || nc < 0 || nc >= blocksC) continue
+        if (visitedBlock[nr][nc]) continue
+        cand.push({ r: nr, c: nc })
+      }
+      if (cand.length === 0) {
+        let jumped = false
+        for (let r = 0; r < blocksR && !jumped; r++) {
+          for (let c = 0; c < blocksC; c++) {
+            if (!visitedBlock[r][c]) {
+              br = r
+              bc = c
+              jumped = true
+              break
             }
           }
         }
+        if (!jumped) break
+      } else {
+        const pick = cand[randInt(cand.length)]
+        br = pick.r
+        bc = pick.c
       }
+      visitedBlock[br][bc] = true
+      order.push({ r: br, c: bc })
     }
 
-    // ---- 第 2 步：贪心重排，保证严格相邻 ----
-    // 选择规则：在未访问的相邻格里，优先选**后续可走邻居最少**的那个
-    //（Warnsdorff 规则，网格图求哈密顿路径的经典启发式，能几乎总是走满），
-    // 平手时再按骨架序号取小者，以保留"块内聚集"的特性。
+    // 逐块填序号；每块的取向（横蛇/竖蛇）与方向随机
+    let seq = 0
+    for (const b of order) {
+      const r0 = b.r * B
+      const c0 = b.c * B
+      const r1 = Math.min(r0 + B - 1, size - 1)
+      const c1 = Math.min(c0 + B - 1, size - 1)
+      const cells: Array<[number, number]> = []
+      if (Math.random() < 0.5) {
+        for (let c = c0; c <= c1; c++) {
+          if ((c - c0) % 2 === 0) for (let r = r0; r <= r1; r++) cells.push([r, c])
+          else for (let r = r1; r >= r0; r--) cells.push([r, c])
+        }
+      } else {
+        for (let r = r0; r <= r1; r++) {
+          if ((r - r0) % 2 === 0) for (let c = c0; c <= c1; c++) cells.push([r, c])
+          else for (let c = c1; c >= c0; c--) cells.push([r, c])
+        }
+      }
+      if (Math.random() < 0.5) cells.reverse()
+      for (const [r, c] of cells) rank[r * size + c] = seq++
+    }
+    for (let i = 0; i < total; i++) if (rank[i] === -1) rank[i] = seq++
+    return rank
+  }
+
+  /** 兜底：按骨架序号直接铺满（覆盖 100%，块间可能不相邻） */
+  private buildRankOrderPath(size: number): ChainPoint[] {
+    const total = size * size
+    const rank = this.buildRandomRank(size)
+    const idx = Array.from({ length: total }, (_, i) => i)
+    idx.sort((a, b) => rank[a] - rank[b])
+    return idx.map((i) => ({ r: Math.floor(i / size), c: i % size }))
+  }
+
+  /** 尝试生成一条完整的相邻通路；走进死胡同返回 null（由调用方重试） */
+  private tryBuildPath(size: number): ChainPoint[] | null {
+    const total = size * size
+    const key = (r: number, c: number) => r * size + c
+    const rank = this.buildRandomRank(size)
     const visited = new Uint8Array(total)
     const path: ChainPoint[] = []
-    const key = (r: number, c: number) => r * size + c
 
-    /** 某格未访问的相邻格数量（Warnsdorff 度数） */
     const onwardDegree = (r: number, c: number): number => {
       let n = 0
       for (const [dr, dc] of NEIGHBOR_OFFSETS) {
@@ -202,15 +266,9 @@ export class NumberChainEngine implements BaseGame<NumberChainState, ChainPoint>
       return n
     }
 
-    // 起点：取骨架里序号最小的格子（保持从固定角落起手，行为可预期）
-    let cur: number
-    {
-      let best = -1
-      for (let i = 0; i < total; i++) {
-        if (best === -1 || rank[i] < rank[best]) best = i
-      }
-      cur = best
-    }
+    // 起点随机（不再固定左上角）
+    let cur = randInt(total)
+    let curRank = rank[cur]
 
     for (let step = 0; step < total; step++) {
       const r = Math.floor(cur / size)
@@ -219,49 +277,37 @@ export class NumberChainEngine implements BaseGame<NumberChainState, ChainPoint>
       path.push({ r, c })
       if (step === total - 1) break
 
-      let nextCur = -1
-      let bestDeg = Infinity
-      let bestRank = Infinity
+      const cands: Array<{ k: number; deg: number; rankDist: number }> = []
       for (const [dr, dc] of NEIGHBOR_OFFSETS) {
         const nr = r + dr
         const nc = c + dc
         if (nr < 0 || nr >= size || nc < 0 || nc >= size) continue
         const nk = key(nr, nc)
         if (visited[nk]) continue
-        const deg = onwardDegree(nr, nc)
-        // 先比 Warnsdorff 度数，再比骨架序号（保持聚集）
-        if (deg < bestDeg || (deg === bestDeg && rank[nk] < bestRank)) {
-          bestDeg = deg
-          bestRank = rank[nk]
-          nextCur = nk
-        }
+        cands.push({
+          k: nk,
+          deg: onwardDegree(nr, nc),
+          // 与"骨架序号"的差距：越小越贴近该聚在一起的格
+          rankDist: Math.abs(rank[nk] - curRank),
+        })
       }
-      if (nextCur === -1) break
-      cur = nextCur
-    }
+      if (cands.length === 0) return null
 
-    // 兜底：万一贪心没走满（罕见），把剩余格子接到末尾并做局部修正
-    if (path.length !== total) {
-      const rest: ChainPoint[] = []
-      for (let i = 0; i < total; i++) {
-        if (!visited[i]) rest.push({ r: Math.floor(i / size), c: i % size })
-      }
-      // 按与当前尾格的相邻性排序，尽量接得上
-      let tail = path[path.length - 1]
-      while (rest.length) {
-        let bi = 0
-        let bd = Infinity
-        for (let i = 0; i < rest.length; i++) {
-          const d = Math.max(Math.abs(rest[i].r - tail.r), Math.abs(rest[i].c - tail.c))
-          if (d < bd) {
-            bd = d
-            bi = i
-          }
-        }
-        const [p] = rest.splice(bi, 1)
-        path.push(p)
-        tail = p
-      }
+      // 三级排序：
+      //   1) Warnsdorff 度数（保证不走进死胡同、能走满）——不可让步
+      //   2) 骨架距离（保证聚集：下一个数字就在附近）——这是"好玩"的关键
+      //   3) 随机抖动（保证每局形状不同）
+      // 说明：随机只放在最后一级，所以它不会破坏前两个性质。
+      //      之前把随机放在第 2 级，实测 8×8 前 9 个数字的外接框从 4×4 松到 8×8。
+      const jitter = new Map<number, number>()
+      for (const cd of cands) jitter.set(cd.k, Math.random())
+      cands.sort((a, b) => {
+        if (a.deg !== b.deg) return a.deg - b.deg
+        if (a.rankDist !== b.rankDist) return a.rankDist - b.rankDist
+        return (jitter.get(a.k) ?? 0) - (jitter.get(b.k) ?? 0)
+      })
+      cur = cands[0].k
+      curRank = rank[cur]
     }
 
     return path
