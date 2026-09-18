@@ -39,7 +39,6 @@
           <p class="text-[11px] opacity-70 mt-0.5 text-text-muted-light dark:text-text-muted-dark">
             第 {{ state.level }} 关 · {{ modeLabel }} · {{ difficultyLabel }} · {{ state.size }}×{{ state.size }}
             <span v-if="hiddenCount > 0"> · 显示 {{ total - hiddenCount }}/{{ total }}</span>
-            <span v-if="state.mistakes > 0" :class="mistakesClass"> · 失误 {{ state.mistakes }}<template v-if="isEndless">/{{ ENDLESS_MAX_MISTAKES }}</template></span>
           </p>
         </div>
         <div class="flex gap-2">
@@ -242,7 +241,7 @@
           </div>
         </div>
 
-        <!-- 本轮结束遮罩（无尽模式失误超限 / 主动结算） -->
+        <!-- 本轮结束遮罩（无尽模式主动结算） -->
         <div
           v-if="showOver"
           class="absolute inset-0 rounded-2xl flex items-center justify-center backdrop-blur-sm bg-rose-500/85 z-40"
@@ -253,9 +252,7 @@
               通过 {{ state.clearedLevels }} 关 · 总分 {{ state.totalScore }}
             </p>
             <p class="opacity-80 text-white text-sm">
-              <span v-if="overReason === 'mistakes'">失误达到 {{ ENDLESS_MAX_MISTAKES }} 次</span>
-              <span v-else>已主动结算</span>
-              · 最后到达第 {{ state.level }} 关（{{ state.size }}×{{ state.size }}）
+              最后到达第 {{ state.level }} 关（{{ state.size }}×{{ state.size }}）
             </p>
             <div class="flex gap-3 justify-center flex-wrap">
               <button
@@ -301,10 +298,10 @@
         <li><strong>只能连相邻的数字</strong>：下一个数必须落在当前格周围 <strong>8 格</strong>（上下左右 + 斜线）之内。棋盘保证一定存在这样一条通路，所以每关都连得完。</li>
         <li><strong>空白格</strong>：开局只显示一部分数字（简单约 70%、普通约 50%、困难约 30%，并各有保底数量），其余格子是空白的。</li>
         <li>规则是<strong>连到哪就显示到哪</strong>：你连上哪个格子，那个格子就亮出来。但下一个数藏在哪得靠自己找——<strong>不会</strong>提前显示给你。</li>
-        <li>怎么找？<strong>拖过去试</strong>：对了就锁住并显示，不对会红闪并记一次失误、连不下去，换个相邻的方向再试。</li>
-        <li>按住当前数字拖动，划到下一个数所在的圆点自动锁住；也可以逐个<strong>点按</strong>。连错或连到不相邻的数字会<strong>红闪提醒</strong>并记一次失误，但不断链。</li>
+        <li>怎么找？<strong>拖过去试</strong>：连得上就锁住并显示，连不上就说明这个方向不对，换个相邻格再试。</li>
+        <li>按住当前数字拖动，划到下一个数所在的圆点自动锁住；也可以逐个<strong>点按</strong>。</li>
         <li>连错了？用 <strong>↩️ 撤回</strong>退一步，或用 <strong>🧹 清空</strong>从 ① 重连（都不影响已用时间）。</li>
-        <li><strong>♾️ 无尽模式</strong>：棋盘不封顶，一路连下去，关卡越高藏得越多；失误累计 {{ ENDLESS_MAX_MISTAKES }} 次或主动点"结束"才结算总分。</li>
+        <li><strong>♾️ 无尽模式</strong>：棋盘不封顶，一路连下去，关卡越高藏得越多；想结束时点 <strong>🏳️ 结束</strong> 结算总分。</li>
         <li>连完即通关，<strong>用时越快分越高</strong>；经典模式每关棋盘 +1（最多 8×8 = 64 个数字）。找不到下一个数？点 <strong>💡 提示</strong>。</li>
       </ol>
     </HowToPlay>
@@ -322,7 +319,7 @@
 
 <script setup lang="ts">
 import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
-import { NumberChainEngine, ENDLESS_MAX_MISTAKES } from '../../game/numberchain/GameEngine'
+import { NumberChainEngine } from '../../game/numberchain/GameEngine'
 import type { NumberChainState, NumberChainConfig, NumberChainDifficulty, ChainPoint } from '../../game/numberchain/types'
 import { DIFFICULTY_LABELS, MODE_LABELS, levelSize } from '../../game/numberchain/types'
 import { useNumberChainSettingsStore } from '../../stores/numberchain-settings'
@@ -369,7 +366,6 @@ function submitScoreIfWon() {
     score: state.totalScore,
     difficulty: state.difficulty,
     size: state.size,
-    moves: state.mistakes,
     duration: Math.round(state.elapsedMs / 1000),
     won: state.status === 'won',
   })
@@ -387,13 +383,6 @@ const isEndless = computed(() => state.mode === 'endless')
 
 /** 尚未揭示的格子数（空白格） */
 const hiddenCount = computed(() => state.revealed.flat().filter((v) => !v).length)
-
-/** 失误数接近上限时标红（仅无尽模式） */
-const mistakesClass = computed(() =>
-  isEndless.value && state.mistakes >= ENDLESS_MAX_MISTAKES - 3
-    ? 'text-rose-500 dark:text-rose-400 font-bold'
-    : '',
-)
 
 /** 撤回 / 清空可用性（链上至少 2 格） */
 const canUndo = computed(() => state.status === 'playing' && state.committed.length > 1)
@@ -553,9 +542,6 @@ function cellClass(cell: Cell): string {
   if (hintCell.value && hintCell.value.r === cell.r && hintCell.value.c === cell.c) {
     classes.push('animate-pulse ring-4 ring-amber-400 dark:ring-amber-500 z-10')
   }
-  if (wrongCell.value && wrongCell.value.r === cell.r && wrongCell.value.c === cell.c) {
-    classes.push('cell-wrong')
-  }
   // 拖拽中：与当前链尾相邻的格子轻微提亮，直观提示"只能连这 8 格"
   if (engine.value.isDragging() && !isCommitted && isAdjacentToLast(cell)) {
     classes.push('ring-2 ring-sky-400/40')
@@ -586,7 +572,6 @@ function syncState() {
   state.next = s.next
   state.committed = s.committed.map((p) => ({ ...p }))
   state.elapsedMs = s.elapsedMs
-  state.mistakes = s.mistakes
   state.status = s.status
   state.level = s.level
   state.difficulty = s.difficulty
@@ -599,8 +584,6 @@ function syncState() {
 
 // ===== 指针拖拽 =====
 const pointerPct = ref<{ x: number; y: number } | null>(null)
-const wrongCell = ref<ChainPoint | null>(null)
-let wrongTimer: ReturnType<typeof setTimeout> | null = null
 
 function cellFromEvent(e: PointerEvent | MouseEvent): ChainPoint | null {
   const board = boardRef.value
@@ -628,12 +611,6 @@ function pctFromEvent(e: PointerEvent | MouseEvent): { x: number; y: number } {
   return { x: Math.max(-5, Math.min(105, x)), y: Math.max(-5, Math.min(105, y)) }
 }
 
-function flashWrong(cell: ChainPoint) {
-  wrongCell.value = cell
-  if (wrongTimer) clearTimeout(wrongTimer)
-  wrongTimer = setTimeout(() => (wrongCell.value = null), 300)
-}
-
 function onPointerDown(e: PointerEvent) {
   if (showResume.value || showWin.value || showOver.value) return
   const cell = cellFromEvent(e)
@@ -648,10 +625,8 @@ function onPointerDown(e: PointerEvent) {
     const after = engine.value.getState().next
     if (after > before) sound.playChain(engine.value.getState().committed.length)
     syncState()
-  } else {
-    flashWrong(cell)
-    sound.play('pause')
   }
+  // 按在非目标格上：静默忽略，不给任何反馈
 }
 
 function onPointerMove(e: PointerEvent) {
@@ -667,14 +642,6 @@ function onPointerMove(e: PointerEvent) {
     }
     // 连上的格子越多，音调越高（"连成一条链"的递进感）
     sound.playChain(engine.value.getState().committed.length)
-  } else if (result === 'wrong') {
-    flashWrong(cell)
-    // 无尽模式失误超限：立刻结算
-    if (engine.value.getState().status === 'over') {
-      pointerPct.value = null
-      onOver('mistakes')
-      return
-    }
   }
   syncState()
 }
@@ -757,7 +724,6 @@ function doClear() {
 // ===== 通关 / 结束 / 关卡 =====
 const showWin = ref(false)
 const showOver = ref(false)
-const overReason = ref<'mistakes' | 'giveup'>('giveup')
 let winTimer: ReturnType<typeof setTimeout> | null = null
 
 function resetOverlays() {
@@ -780,9 +746,8 @@ function onWin() {
   clearAutosave(AUTOSAVE_GAME_ID)
 }
 
-/** 无尽模式失误超限：拖动中被引擎置为 over，这里补弹结算 */
-function onOver(reason: 'mistakes' | 'giveup') {
-  overReason.value = reason
+/** 无尽模式主动结算：弹结束面板 */
+function onOver() {
   showWin.value = false
   showOver.value = true
   syncState()
@@ -794,7 +759,7 @@ function onOver(reason: 'mistakes' | 'giveup') {
 function doGiveUp() {
   if (state.status !== 'playing') return
   engine.value.giveUp()
-  onOver('giveup')
+  onOver()
 }
 
 /** 无尽模式：从头开始一整轮 */
@@ -896,7 +861,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (state.status === 'playing' && state.next > 1) persistAutosave()
   if (timer) clearInterval(timer)
-  if (wrongTimer) clearTimeout(wrongTimer)
   if (hintTimer) clearTimeout(hintTimer)
   if (winTimer) clearTimeout(winTimer)
   window.removeEventListener('resize', updateLayout)
@@ -906,20 +870,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* 按错的格子红闪 */
-.cell-wrong {
-  animation: wrongShake 0.3s ease-in-out;
-  border-color: rgb(244 63 94 / 0.95) !important;
-  background: rgb(254 226 226 / 0.9) !important;
-}
-.dark .cell-wrong {
-  background: rgb(127 29 29 / 0.5) !important;
-}
-@keyframes wrongShake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-10%); }
-  75% { transform: translateX(10%); }
-}
 /* 连线微光 */
 .chain-line {
   filter: drop-shadow(0 0 4px rgba(14, 165, 233, 0.6));

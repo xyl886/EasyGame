@@ -11,8 +11,9 @@
  *   1..N 谁被显示完全随机。规则是"**连到哪就显示到哪**"：
  *   玩家连上哪个格子，那个格子就显示出来；但不会提前把下一个目标翻出来。
  * - 无尽模式：棋盘不再封顶（可一路超过 8×8），关卡无限递增；
- *   主动结束或失误超限才结算总分。
+ *   只能主动点"结束"来结算总分（没有失误/时限之类的强制结束条件）。
  * - 操作：按住下一个数拖动连线；连完即通关。可**撤回**（退一步）或**清空重连**。
+ * - 没有失误统计：连不上就是连不上，玩家自己会发现走不通。
  */
 
 export type NumberChainDifficulty = 'easy' | 'normal' | 'hard'
@@ -157,7 +158,6 @@ export interface NumberChainState {
   committed: ChainPoint[]
   /** 已冻结的计时（毫秒）；进行中的实时用时 = elapsedMs + (startedAt ? now-startedAt : 0) */
   elapsedMs: number
-  mistakes: number
   status: NumberChainStatus
   level: number
   difficulty: NumberChainDifficulty

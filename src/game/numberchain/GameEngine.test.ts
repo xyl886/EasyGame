@@ -159,7 +159,7 @@ describe('NumberChainEngine', () => {
     expect(engine.getState().next).toBe(3)
   })
 
-  it('相邻约束：非相邻的下一数记失误且不锁定（拖动中）', () => {
+  it('相邻约束：非相邻的下一数连不上，但不给任何反馈（不计数）', () => {
     const engine = new NumberChainEngine({ difficulty: 'easy', level: 1 })
     const s0 = engine.getState()
     const pos1 = findValue(s0.grid, 1)
@@ -173,7 +173,8 @@ describe('NumberChainEngine', () => {
     expect(engine.extendTo(pos2.r, pos2.c)).toBe('locked')
     expect(engine.getState().next).toBe(3)
 
-    // 找一个离 2 距离 >1 的格子，撞上去必须被拦（不推进目标）
+    // 找一个离 2 距离 >1 的格子：撞上去应静默忽略、目标不推进。
+    // 注意这里**不再断言失误计数**——该机制已整个移除。
     const s2 = engine.getState()
     let far: { r: number; c: number } | null = null
     for (let r = 0; r < s2.size && !far; r++) {
@@ -185,11 +186,9 @@ describe('NumberChainEngine', () => {
       }
     }
     expect(far).not.toBeNull()
-    const mistakesBefore = engine.getState().mistakes
-    const result = engine.extendTo(far!.r, far!.c)
-    expect(result).toBe('wrong')
-    expect(engine.getState().mistakes).toBe(mistakesBefore + 1)
+    expect(engine.extendTo(far!.r, far!.c)).toBe('ignored')
     expect(engine.getState().next).toBe(3)
+    expect(engine.getState().committed).toHaveLength(2)
   })
 
   it('相邻的下一数可以正常锁定（拖动路径）', () => {
@@ -330,7 +329,7 @@ describe('NumberChainEngine', () => {
       }
     }
     expect(target).not.toBeNull()
-    expect(engine.extendTo(target!.r, target!.c)).toBe('wrong')
+    expect(engine.extendTo(target!.r, target!.c)).toBe('ignored')
     // 撞过之后仍然不可见——碰对才显示
     expect(engine.getState().revealed[target!.r][target!.c]).toBe(false)
   })
@@ -431,21 +430,19 @@ describe('NumberChainEngine', () => {
     expect(engine.getState().size).toBe(8)
   })
 
-  it('无尽模式：失误超限即结束', () => {
+  it('无尽模式：连错多次也不会自动结束（已无失误机制）', () => {
     const engine = new NumberChainEngine({ difficulty: 'hard', mode: 'endless' })
     const { grid } = engine.getState()
     const p1 = findValue(grid, 1)
     engine.startAt(p1.r, p1.c)
-    // 反复撞一个不相邻的格子刷失误
-    let guard = 0
-    while (engine.getState().status === 'playing' && guard++ < 200) {
+    // 反复撞不相邻的格子：以前会攒满失误直接结束，现在应始终静默忽略
+    for (let i = 0; i < 60; i++) {
       const s = engine.getState()
       const last = s.committed[s.committed.length - 1]
       let far: { r: number; c: number } | null = null
       for (let r = 0; r < s.size && !far; r++) {
         for (let c = 0; c < s.size; c++) {
-          const isCommitted = s.committed.some((p) => p.r === r && p.c === c)
-          if (isCommitted) continue
+          if (s.committed.some((p) => p.r === r && p.c === c)) continue
           if (Math.abs(r - last.r) > 1 || Math.abs(c - last.c) > 1) {
             far = { r, c }
             break
@@ -453,11 +450,17 @@ describe('NumberChainEngine', () => {
         }
       }
       if (!far) break
-      engine.extendTo(far.r, far.c)
+      expect(engine.extendTo(far.r, far.c)).toBe('ignored')
     }
-    const s = engine.getState()
-    expect(s.status).toBe('over')
-    expect(s.mistakes).toBeGreaterThanOrEqual(12)
+    // 状态必须仍是 playing，只有主动 giveUp 才会结束
+    expect(engine.getState().status).toBe('playing')
+  })
+
+  it('无尽模式：只有主动结束才结算', () => {
+    const engine = new NumberChainEngine({ difficulty: 'normal', mode: 'endless' })
+    expect(engine.getState().status).toBe('playing')
+    engine.giveUp()
+    expect(engine.getState().status).toBe('over')
   })
 
   it('restartRun 重置关卡与总分', () => {

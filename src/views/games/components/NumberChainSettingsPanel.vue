@@ -103,7 +103,7 @@ const DIFFICULTY_OPTIONS = (['easy', 'normal', 'hard'] as NumberChainDifficulty[
 
 const MODE_OPTIONS: Array<{ value: NumberChainMode; label: string; desc: string }> = [
   { value: 'classic', label: `🎯 ${MODE_LABELS.classic}`, desc: '逐关推进，棋盘最大 8×8 = 64 个数字' },
-  { value: 'endless', label: `♾️ ${MODE_LABELS.endless}`, desc: '棋盘不封顶，一路连下去；失误 12 次结束' },
+  { value: 'endless', label: `♾️ ${MODE_LABELS.endless}`, desc: '棋盘不封顶，一路连下去；想结束时点「结束」结算' },
 ]
 
 const localConfig = reactive<NumberChainConfig>({ ...settings.config })

@@ -1,30 +1,33 @@
 /**
  * 数字连连引擎（纯 TS，无 DOM 依赖）
  *
- * 生成（保证可解 + 局部聚集）：
- *   棋盘按 3×3 切块，块序走蛇形，块内也走蛇形，并把 1..N 顺着这条通路填入。
+ * 生成（保证可解 + 局部聚集 + 每局不同）：
+ *   棋盘按 BLOCK_SIZE 切块，块序随机游走、块内取向随机，得到"骨架序号"；
+ *   再从随机起点做 Warnsdorff 贪心重排，走不满就重试。
  *   于是 ② 一定在 ① 周围 8 格里、③ 一定在 ② 周围 8 格里……整局必然连得完；
- *   同时 1..9 挤在第一块、10..18 挤在第二块，连续数字始终在同一小片区域里，
- *   玩家找到 ① 之后 ②③④ 就在附近，摸得着。构造是确定性的，不会回溯卡死。
+ *   同时连续数字扎堆在同一小片区域，玩家找到 ① 之后 ②③④ 就在附近。
  *
  * 交互：
  *   - startAt：按下。按在"下一个数"上 → 锁定并进入拖拽；按在最后锁定的数上 → 续连；
- *     按在 ① 上 → 重开本链；其余 → 无效（视图红闪）
+ *     按在 ① 上 → 重开本链；其余 → 静默忽略
  *   - extendTo：拖动经过格子。是下一个数 **且与上一格相邻** → 锁定（连到 N 即通关）；
- *     已锁定过的格子 → 忽略；其他/不相邻 → 记失误并红闪（不断链）
+ *     其他一律静默忽略
  *   - undo：撤回一步（退回上一格，并把"连上才看到"的格子重新藏起来）
  *   - clearChain：清空整条链从头再来
  *   - endDrag：松手，保留已锁定进度
+ *
+ * **没有失误概念**：连不上就是连不上，玩家自己会发现走不通，不需要红闪、不需要计数。
+ * （原先在 extendTo 里逐格 mistakes++ 是错的：该方法由 pointermove 高频触发，
+ *   一次拖拽扫过十几个格子就会瞬间把计数打满，所以整个机制已移除。）
  *
  * 空白格：
  *   开局按**难度**显示一部分格子（简单约 70% / 普通约 50% / 困难约 30%，
  *   并各有保底数量），其余为空白，1..N 谁被显示完全随机。
  *   规则是"**连到哪就显示到哪**"：每锁上一个格子，那一格立即可见；
  *   但绝不提前把下一个目标翻出来——找下一个数正是本游戏的挑战。
- *   撞到错的空白格只红闪记失误，不会告诉你它是几。
  *
  * 计时：从第一次锁定开始；通关冻结并计分。暂停/恢复/存档时间补偿与连连看同一套模式。
- * 模式：classic 封顶 8×8；endless 不封顶，关卡无限递增，失误超限即结束。
+ * 模式：classic 封顶 8×8；endless 不封顶，关卡无限递增，只能主动结束结算。
  */
 import type { BaseGame } from '../base/BaseGame'
 import type {
@@ -64,10 +67,7 @@ const NEIGHBOR_OFFSETS: ReadonlyArray<readonly [number, number]> = [
   [1, 1],
 ]
 
-export type ExtendResult = 'locked' | 'ignored' | 'wrong'
-
-/** 无尽模式下允许的最大失误数（超过即结束） */
-export const ENDLESS_MAX_MISTAKES = 12
+export type ExtendResult = 'locked' | 'ignored'
 
 /**
  * 局部块边长：连续数字被约束在 B×B 的方块内活动（见 buildRandomRank）。
@@ -93,15 +93,12 @@ export class NumberChainEngine implements BaseGame<NumberChainState, ChainPoint>
   private startedAt: number | null = null
   private elapsedMs = 0
   private pausedAt: number | null = null
-  private mistakes = 0
   private totalScore = 0
   private lastLevelScore = 0
   private clearedLevels = 0
   private status: NumberChainStatus = 'playing'
   private bestScore = 0
   private bestScoreKey: string
-  /** 最近一次按错的格子（瞬态，供视图红闪） */
-  lastWrong: ChainPoint | null = null
 
   constructor(config: Partial<NumberChainConfig> = {}) {
     this.config = { ...DEFAULT_NUMBERCHAIN_CONFIG, ...config }
@@ -358,15 +355,13 @@ export class NumberChainEngine implements BaseGame<NumberChainState, ChainPoint>
     this.startedAt = null
     this.elapsedMs = 0
     this.pausedAt = null
-    this.mistakes = 0
     this.lastLevelScore = 0
     this.status = 'playing'
-    this.lastWrong = null
   }
 
   // ---------------- 交互 ----------------
 
-  /** 按下：见类注释。返回是否成功起链/续连（失败供视图红闪） */
+  /** 按下：见类注释。返回是否成功起链/续连 */
   startAt(r: number, c: number): boolean {
     if (this.status !== 'playing') return false
     if (r < 0 || r >= this.size || c < 0 || c >= this.size) return false
@@ -389,7 +384,6 @@ export class NumberChainEngine implements BaseGame<NumberChainState, ChainPoint>
       // 按 ①：重开本链
       this.committed = [{ r, c }]
       this.next = 2
-      this.mistakes = 0
       this.dragging = true
       return true
     }
@@ -398,17 +392,17 @@ export class NumberChainEngine implements BaseGame<NumberChainState, ChainPoint>
       this.dragging = true
       return true
     }
-    // 按在空白格上（数字未知）：不算失误，只是提示它还不是目标
-    this.lastWrong = { r, c }
+    // 按在非目标格（含空白格）：静默忽略，不给任何反馈
     return false
   }
 
   /**
    * 拖动经过格子：
    * - 已是目标且与上一格相邻 → 锁定（并显示该格）
-   * - 已锁定过的格子 → 忽略（路过不算错）
-   * - 目标数字但不与上一格相邻 → 记失误（违反"只能连相邻"）
-   * - 其他数字 → 记失误，但**不显示**它是几（碰对才显示）
+   * - 其他一律忽略：已连过的、不相邻的、数字不对的、空白格
+   *
+   * 刻意**不做任何错误反馈**（不红闪、不计数）：连不下去本身就是提示，
+   * 玩家自己会发现这个方向不对，换个相邻格再试即可。
    */
   extendTo(r: number, c: number): ExtendResult {
     if (!this.dragging || this.status !== 'playing') return 'ignored'
@@ -417,21 +411,11 @@ export class NumberChainEngine implements BaseGame<NumberChainState, ChainPoint>
     const v = this.grid[r][c]
     if (v === this.next) {
       const last = this.committed[this.committed.length - 1]
-      if (last && !isAdjacent(last, { r, c })) {
-        // 数字对，但隔着格子——违反相邻规则
-        this.mistakes++
-        this.lastWrong = { r, c }
-        return 'wrong'
-      }
+      if (last && !isAdjacent(last, { r, c })) return 'ignored' // 不相邻：连不上，静默忽略
       this.commit(r, c)
       return 'locked'
     }
-    this.mistakes++
-    this.lastWrong = { r, c }
-    if (this.isEndless() && this.mistakes >= ENDLESS_MAX_MISTAKES) {
-      this.finishOver()
-    }
-    return 'wrong'
+    return 'ignored'
   }
 
   private isCommitted(r: number, c: number): boolean {
@@ -442,7 +426,6 @@ export class NumberChainEngine implements BaseGame<NumberChainState, ChainPoint>
     if (this.startedAt === null) this.startedAt = Date.now()
     this.committed.push({ r, c })
     this.next++
-    this.lastWrong = null
     // 连到哪就显示到哪：刚锁定的这一格立即可见。
     // 只显示"已经连上的"，绝不提前把下一个目标翻出来。
     this.revealed[r][c] = true
@@ -483,14 +466,13 @@ export class NumberChainEngine implements BaseGame<NumberChainState, ChainPoint>
     const removed = this.committed.pop()
     this.next = Math.max(1, this.next - 1)
     this.dragging = false
-    this.lastWrong = null
     if (removed && !this.initialRevealed[removed.r][removed.c]) {
       this.revealed[removed.r][removed.c] = false
     }
     return true
   }
 
-  /** 清空整条链，回到"从 ① 重新开始"的状态（计时与失误保留） */
+  /** 清空整条链，回到"从 ① 重新开始"的状态（计时保留） */
   canClear(): boolean {
     return this.status === 'playing' && this.committed.length > 1
   }
@@ -501,7 +483,6 @@ export class NumberChainEngine implements BaseGame<NumberChainState, ChainPoint>
     this.committed = [{ ...start }]
     this.next = 2
     this.dragging = false
-    this.lastWrong = null
     // 同 undo：连上才显示的格子一并恢复成空白
     this.revealed = this.initialRevealed.map((row) => [...row])
     return true
@@ -569,13 +550,6 @@ export class NumberChainEngine implements BaseGame<NumberChainState, ChainPoint>
     } satisfies NumberChainProgress)
   }
 
-  /** 失误超限（无尽模式）导致本轮结束 */
-  private finishOver(): void {
-    this.freezeClock()
-    this.status = 'over'
-    this.dragging = false
-  }
-
   /** 主动结束本轮（无尽模式结算） */
   giveUp(): void {
     if (this.status !== 'playing') return
@@ -620,7 +594,6 @@ export class NumberChainEngine implements BaseGame<NumberChainState, ChainPoint>
       next: this.next,
       committed: this.committed.map((p) => ({ ...p })),
       elapsedMs: this.elapsed(),
-      mistakes: this.mistakes,
       status: this.status,
       level: this.level,
       difficulty: this.config.difficulty,
@@ -659,7 +632,6 @@ export class NumberChainEngine implements BaseGame<NumberChainState, ChainPoint>
     this.elapsedMs = state.elapsedMs
     this.startedAt = state.status === 'playing' ? Date.now() : null
     this.pausedAt = null
-    this.mistakes = state.mistakes
     this.status = state.status
     this.config.difficulty = state.difficulty
     this.config.mode = state.mode ?? this.config.mode
@@ -670,7 +642,6 @@ export class NumberChainEngine implements BaseGame<NumberChainState, ChainPoint>
     this.bestScoreKey = `${BEST_KEY_PREFIX}-${state.difficulty}-${this.mode()}`
     this.bestScore = StorageAdapter.get<number>(this.bestScoreKey) ?? state.bestScore
     this.dragging = false
-    this.lastWrong = null
   }
 
   // ---------------- BaseGame 兼容 ----------------
