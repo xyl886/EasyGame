@@ -94,6 +94,15 @@ export const useGameStore = defineStore('game', {
         route: '/game/numberchain',
         status: 'available',
       },
+      {
+        id: 'merge1024',
+        name: '1024 消消乐',
+        description: '连线相邻相同数字求和，合成 1024 通关',
+        icon: '🔀',
+        accent: 'from-amber-400 to-yellow-600',
+        route: '/game/merge1024',
+        status: 'available',
+      },
     ] as GameMeta[],
   }),
 })
