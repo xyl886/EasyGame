@@ -50,6 +50,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '数字连连 · EasyGame' },
   },
   {
+    path: '/game/merge1024',
+    name: 'GameMerge1024',
+    component: () => import('../views/games/GameMerge1024.vue'),
+    meta: { title: '1024 消消乐 · EasyGame' },
+  },
+  {
     path: '/game/klotski-classic',
     name: 'GameKlotskiClassic',
     component: () => import('../views/games/GameKlotskiClassic.vue'),

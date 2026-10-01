@@ -29,7 +29,7 @@
     @apply rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude transition-all duration-200;
   }
   .claude-btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-light/40 dark:focus-visible:ring-accent-dark/40;
   }
   .claude-btn-primary {
     @apply claude-btn bg-accent-light hover:bg-accent-hover-light text-white shadow-claude-md;
@@ -48,6 +48,104 @@
   }
   .dark .claude-input:focus {
     --tw-ring-color: rgba(240, 122, 107, 0.3);
+  }
+
+  /* ===== EasyGame 共享 UI（大厅 / 各游戏页统一） ===== */
+  .eg-shell {
+    @apply min-h-screen w-full flex flex-col py-4 px-3 md:px-6;
+  }
+  .eg-icon-btn {
+    @apply w-10 h-10 shrink-0 inline-flex items-center justify-center rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-accent-light/40 dark:hover:border-accent-dark/40 transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-light/40 dark:focus-visible:ring-accent-dark/40;
+  }
+  .eg-back-btn {
+    @apply eg-icon-btn text-lg group-hover:-translate-x-0.5;
+  }
+  .eg-game-title {
+    @apply text-base md:text-lg font-bold tracking-tight text-text-light dark:text-text-dark truncate;
+  }
+  .eg-ghost-btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-accent-light/40 dark:hover:border-accent-dark/40 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-text-light dark:text-text-dark whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-light/40 dark:focus-visible:ring-accent-dark/40;
+  }
+  .eg-primary-btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2 bg-accent-light hover:bg-accent-hover-light dark:bg-accent-dark dark:hover:bg-accent-hover-dark text-white dark:text-bg-dark shadow-claude-md transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-light/50;
+  }
+  .eg-toolbar {
+    @apply flex flex-wrap items-center justify-between gap-2;
+  }
+  .eg-score-row {
+    @apply flex items-start justify-between gap-3 mb-4;
+  }
+  .eg-hero-title {
+    @apply text-3xl md:text-5xl font-extrabold tracking-tight leading-[1.1] text-text-light dark:text-text-dark;
+  }
+  .eg-section-label {
+    @apply flex items-center gap-2.5 mb-4;
+  }
+  .eg-section-label::before {
+    content: '';
+    @apply w-1 h-4 rounded-full bg-accent-light dark:bg-accent-dark;
+  }
+  .eg-kbd {
+    @apply px-1.5 py-0.5 rounded-md bg-bg-light dark:bg-bg-dark border border-border-light dark:border-border-dark text-xs font-mono text-text-light dark:text-text-dark;
+  }
+
+  /* ===== 模态弹层（设置 / 玩法 / 排行榜） ===== */
+  .eg-modal-overlay {
+    @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+  }
+  .eg-modal-mask {
+    @apply absolute inset-0 bg-black/40 backdrop-blur-sm;
+  }
+  .eg-modal-card {
+    @apply relative w-full max-w-md max-h-[85vh] overflow-y-auto rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude-lg p-5 space-y-5;
+  }
+  .eg-modal-card-plain {
+    @apply relative w-full max-w-md max-h-[85vh] overflow-y-auto rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude-lg p-5;
+  }
+  .eg-modal-card-col {
+    @apply relative w-full max-w-md max-h-[85vh] flex flex-col rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude-lg overflow-hidden;
+  }
+  .eg-modal-head {
+    @apply flex items-center justify-between;
+  }
+  .eg-modal-title {
+    @apply text-lg font-bold flex items-center gap-2 text-text-light dark:text-text-dark;
+  }
+  .eg-modal-close {
+    @apply w-8 h-8 shrink-0 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center transition-colors text-text-muted-light dark:text-text-muted-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-light/40;
+  }
+  .eg-modal-actions {
+    @apply flex gap-2 pt-3 border-t border-border-light dark:border-border-dark;
+  }
+  .eg-modal-actions .eg-ghost-btn,
+  .eg-modal-actions .eg-primary-btn {
+    @apply flex-1 py-2.5;
+  }
+  .eg-modal-actions .eg-primary-btn {
+    @apply flex-[2];
+  }
+  .eg-hint {
+    @apply text-xs text-text-muted-light dark:text-text-muted-dark leading-relaxed;
+  }
+  .eg-field-label {
+    @apply text-sm font-semibold block text-text-light dark:text-text-dark;
+  }
+  .eg-opt {
+    @apply py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-accent-light/40 dark:hover:border-accent-dark/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-light/40;
+  }
+  .eg-opt-on {
+    @apply bg-accent-light dark:bg-accent-dark !text-white border-transparent shadow-claude;
+  }
+  .dark .eg-opt-on {
+    @apply !text-bg-dark;
+  }
+  /* 设置面板选项按钮统一最小高度 */
+  .eg-modal-card .eg-opt {
+    @apply min-h-[40px];
+  }
+  .eg-modal-head + .space-y-2,
+  .eg-modal-card > .space-y-2 {
+    @apply pt-0;
   }
 }
 
@@ -69,5 +167,19 @@
   }
   .cell-bg-dark {
     background-color: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* 入场动画：尊重系统「减少动态效果」 */
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise-in,
+  .animate-fade-in {
+    animation: none !important;
+  }
+  .eg-icon-btn,
+  .eg-ghost-btn,
+  .eg-primary-btn,
+  .claude-card {
+    transition: none !important;
   }
 }

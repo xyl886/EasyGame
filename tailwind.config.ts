@@ -43,14 +43,16 @@ export default {
         sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
       },
       boxShadow: {
-        'claude': '0 1px 3px 0 rgba(0,0,0,0.04), 0 1px 2px -1px rgba(0,0,0,0.02)',
-        'claude-md': '0 4px 12px -2px rgba(0,0,0,0.06), 0 2px 4px -2px rgba(0,0,0,0.04)',
-        'claude-lg': '0 12px 28px -4px rgba(0,0,0,0.08), 0 6px 10px -6px rgba(0,0,0,0.04)',
+        'claude': '0 1px 3px 0 rgba(15,17,21,0.04), 0 1px 2px -1px rgba(15,17,21,0.03)',
+        'claude-md': '0 6px 16px -4px rgba(15,17,21,0.08), 0 2px 6px -2px rgba(15,17,21,0.04)',
+        'claude-lg': '0 16px 40px -8px rgba(15,17,21,0.12), 0 8px 16px -8px rgba(15,17,21,0.06)',
+        'card-lift': '0 10px 28px -8px rgba(232,106,91,0.18), 0 4px 10px -4px rgba(15,17,21,0.06)',
       },
       animation: {
         'tile-pop': 'tilePop 0.15s ease-out',
         'tile-merge': 'tileMerge 0.15s ease-out',
         'fade-in': 'fadeIn 0.3s ease-out',
+        'rise-in': 'riseIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both',
       },
       keyframes: {
         tilePop: {
@@ -65,6 +67,10 @@ export default {
         },
         fadeIn: {
           '0%': { opacity: '0', transform: 'translateY(4px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        riseIn: {
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
       },

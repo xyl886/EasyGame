@@ -132,6 +132,31 @@ class SoundManager {
     }
 
     /**
+     * 1024 消消乐专用：合成新数字时播放**音调随数值升高**的上行音。
+     * 数值越大音越高（对数映射），封顶 1400Hz，合成 1024/2048 时有明显的高昂感。
+     * @param value 合成出的新数字
+     */
+    playUpgrade(value: number): void {
+        const ctx = this.ensureCtx()
+        if (!ctx || value <= 0) return
+        try {
+            // 数值 → 音高：v=2 → ~409Hz，v=4 → ~509，v=8 → ~609，v=64 → ~1010，1024 → 封顶
+            const freq = Math.min(1400, 300 * Math.log2(value) + 200)
+            const tone: ToneSpec = {
+                freq,
+                delay: 0,
+                dur: 0.16,
+                type: 'sine',
+                vol: 0.15,
+                endFreq: Math.min(1500, freq * 1.25),
+            }
+            this.tone(ctx, tone, ctx.currentTime)
+        } catch {
+            // 音效失败不影响游戏
+        }
+    }
+
+    /**
      * 数字连连专用：连上一格时播放递进音，**音调随链长升高**。
      *
      * 用五声音阶（大调 pentatonic）逐级上行，而不是线性加频率——
