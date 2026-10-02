@@ -2,22 +2,22 @@
   <transition name="panel">
     <div
       v-if="settings.showSettings"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      class="eg-modal-overlay"
       @click.self="settings.closeSettings()"
     >
       <!-- 遮罩 -->
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+      <div class="eg-modal-mask"></div>
 
       <!-- 面板 -->
-      <div class="relative w-full max-w-md max-h-[85vh] overflow-y-auto rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude-lg p-5 space-y-5">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold flex items-center gap-2">
+      <div class="eg-modal-card">
+        <div class="eg-modal-head">
+          <h3 class="eg-modal-title">
             <span>⚙️</span>
             <span>贪吃蛇设置</span>
           </h3>
           <button
             @click="settings.closeSettings()"
-            class="w-8 h-8 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center transition-colors"
+            class="eg-modal-close"
           >
             ✕
           </button>
@@ -26,18 +26,17 @@
         <!-- 棋盘尺寸 -->
         <div class="space-y-2">
           <div class="flex items-center justify-between">
-            <label class="text-sm font-semibold">棋盘尺寸</label>
-            <span class="text-xs opacity-60">{{ localConfig.size }}×{{ localConfig.size }}</span>
+            <label class="eg-field-label">棋盘尺寸</label>
+            <span class="eg-hint">{{ localConfig.size }}×{{ localConfig.size }}</span>
           </div>
           <div class="grid grid-cols-4 gap-2">
             <button
               v-for="s in SIZE_OPTIONS"
               :key="s"
               @click="localConfig.size = s"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="localConfig.size === s
-                ? 'bg-lime-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-lime-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               {{ s }}
             </button>
@@ -46,16 +45,15 @@
 
         <!-- 速度档位 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">初始速度</label>
+          <label class="eg-field-label">初始速度</label>
           <div class="grid grid-cols-3 gap-2">
             <button
               v-for="opt in SPEED_OPTIONS"
               :key="opt.value"
               @click="localConfig.speed = opt.value"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="localConfig.speed === opt.value
-                ? 'bg-lime-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-lime-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               {{ opt.label }}
             </button>
@@ -64,23 +62,21 @@
 
         <!-- 穿墙模式 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">穿墙模式</label>
+          <label class="eg-field-label">穿墙模式</label>
           <div class="grid grid-cols-2 gap-2">
             <button
               @click="localConfig.wallThrough = false"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="!localConfig.wallThrough
-                ? 'bg-lime-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-lime-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               撞墙死
             </button>
             <button
               @click="localConfig.wallThrough = true"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="localConfig.wallThrough
-                ? 'bg-lime-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-lime-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               穿墙绕到对面
             </button>
@@ -89,42 +85,39 @@
 
         <!-- 多食物模式 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">食物模式</label>
+          <label class="eg-field-label">食物模式</label>
           <div class="grid grid-cols-2 gap-2">
             <button
               @click="localConfig.multiFood = false"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="!localConfig.multiFood
-                ? 'bg-lime-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-lime-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               单食物（经典）
             </button>
             <button
               @click="localConfig.multiFood = true"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="localConfig.multiFood
-                ? 'bg-lime-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-lime-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               多食物（同时 3 个）
             </button>
           </div>
-          <p class="text-xs opacity-60">食物有 10% 概率为金色 bonus，+5 分</p>
+          <p class="eg-hint">食物有 10% 概率为金色 bonus，+5 分</p>
         </div>
 
         <!-- 障碍物数量 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">障碍物数量</label>
+          <label class="eg-field-label">障碍物数量</label>
           <div class="grid grid-cols-4 gap-2">
             <button
               v-for="n in OBSTACLE_OPTIONS"
               :key="n"
               @click="localConfig.obstacleCount = n"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="localConfig.obstacleCount === n
-                ? 'bg-lime-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-lime-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               {{ n === 0 ? '无' : n }}
             </button>
@@ -133,34 +126,33 @@
 
         <!-- 胜利长度 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">胜利长度</label>
+          <label class="eg-field-label">胜利长度</label>
           <div class="grid grid-cols-2 gap-2">
             <button
               v-for="opt in WIN_LENGTH_OPTIONS"
               :key="opt.value"
               @click="localConfig.winLength = opt.value"
-              class="py-2 px-2 rounded-lg text-xs font-medium transition-all active:scale-95 border"
+              class="eg-opt text-xs"
               :class="localConfig.winLength === opt.value
-                ? 'bg-lime-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-lime-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               {{ opt.label }}
             </button>
           </div>
-          <p class="text-xs opacity-60">蛇身达到目标长度即获胜，0 为无尽模式</p>
+          <p class="eg-hint">蛇身达到目标长度即获胜，0 为无尽模式</p>
         </div>
 
         <!-- 底部按钮 -->
-        <div class="flex gap-2 pt-3 border-t border-border-light dark:border-border-dark">
+        <div class="eg-modal-actions">
           <button
             @click="resetDefault"
-            class="flex-1 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-sm font-medium text-text-light dark:text-text-dark hover:border-lime-400/50 transition-all active:scale-95"
+            class="eg-ghost-btn"
           >
             恢复默认
           </button>
           <button
             @click="apply"
-            class="flex-[2] py-2.5 rounded-xl bg-lime-400 hover:bg-lime-500 text-gray-900 text-sm font-bold shadow-claude-md transition-all active:scale-95"
+            class="eg-primary-btn"
           >
             应用并重新开始
           </button>

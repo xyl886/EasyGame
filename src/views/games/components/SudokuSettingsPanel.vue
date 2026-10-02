@@ -2,22 +2,22 @@
   <transition name="panel">
     <div
       v-if="settings.showSettings"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      class="eg-modal-overlay"
       @click.self="settings.closeSettings()"
     >
       <!-- 遮罩 -->
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+      <div class="eg-modal-mask"></div>
 
       <!-- 面板 -->
-      <div class="relative w-full max-w-md rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude-lg p-5 space-y-5">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold flex items-center gap-2">
+      <div class="eg-modal-card">
+        <div class="eg-modal-head">
+          <h3 class="eg-modal-title">
             <span>⚙️</span>
             <span>数独设置</span>
           </h3>
           <button
             @click="settings.closeSettings()"
-            class="w-8 h-8 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center transition-colors"
+            class="eg-modal-close"
           >
             ✕
           </button>
@@ -25,53 +25,51 @@
 
         <!-- 尺寸 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">棋盘尺寸</label>
+          <label class="eg-field-label">棋盘尺寸</label>
           <div class="grid grid-cols-3 gap-2">
             <button
               v-for="s in SIZES"
               :key="s.size"
               @click="localConfig.size = s.size"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="localConfig.size === s.size
-                ? 'bg-emerald-400 text-white border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-emerald-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               {{ s.label }}
             </button>
           </div>
-          <p class="text-xs opacity-60">4×4 入门 · 6×6 中阶 · 9×9 标准</p>
+          <p class="eg-hint">4×4 入门 · 6×6 中阶 · 9×9 标准</p>
         </div>
 
         <!-- 难度 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">难度（挖空格数）</label>
+          <label class="eg-field-label">难度（挖空格数）</label>
           <div class="grid grid-cols-3 gap-2">
             <button
               v-for="opt in DIFFICULTY_OPTIONS"
               :key="opt.value"
               @click="localConfig.difficulty = opt.value"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="localConfig.difficulty === opt.value
-                ? 'bg-emerald-400 text-white border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-emerald-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               {{ opt.label }}
             </button>
           </div>
-          <p class="text-xs opacity-60">所有题面均为唯一解</p>
+          <p class="eg-hint">所有题面均为唯一解</p>
         </div>
 
         <!-- 底部按钮 -->
-        <div class="flex gap-2 pt-3 border-t border-border-light dark:border-border-dark">
+        <div class="eg-modal-actions">
           <button
-            @click="settings.closeSettings()"
-            class="flex-1 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-sm font-medium text-text-light dark:text-text-dark hover:border-emerald-400/50 transition-all active:scale-95"
+            @click="resetDefault"
+            class="eg-ghost-btn"
           >
-            取消
+            恢复默认
           </button>
           <button
             @click="apply"
-            class="flex-[2] py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-500 text-white text-sm font-bold shadow-claude-md transition-all active:scale-95"
+            class="eg-primary-btn"
           >
             应用并重新开始
           </button>
@@ -84,6 +82,7 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
 import { useSudokuSettingsStore, DIFFICULTY_LABELS, SIZES } from '../../../stores/sudoku-settings'
+import { DEFAULT_SUDOKU_CONFIG } from '../../../game/sudoku/types'
 import type { SudokuConfig, SudokuDifficulty } from '../../../game/sudoku/types'
 
 const settings = useSudokuSettingsStore()
@@ -111,6 +110,10 @@ function apply() {
   settings.setConfig({ ...localConfig })
   settings.closeSettings()
   emit('apply', { ...localConfig })
+}
+
+function resetDefault() {
+  Object.assign(localConfig, DEFAULT_SUDOKU_CONFIG)
 }
 </script>
 

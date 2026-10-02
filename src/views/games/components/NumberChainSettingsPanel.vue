@@ -2,22 +2,22 @@
   <transition name="panel">
     <div
       v-if="settings.showSettings"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      class="eg-modal-overlay"
       @click.self="settings.closeSettings()"
     >
       <!-- 遮罩 -->
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+      <div class="eg-modal-mask"></div>
 
       <!-- 面板 -->
-      <div class="relative w-full max-w-md rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude-lg p-5 space-y-5">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold flex items-center gap-2">
+      <div class="eg-modal-card">
+        <div class="eg-modal-head">
+          <h3 class="eg-modal-title">
             <span>⚙️</span>
             <span>数字连连设置</span>
           </h3>
           <button
             @click="settings.closeSettings()"
-            class="w-8 h-8 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center transition-colors"
+            class="eg-modal-close"
           >
             ✕
           </button>
@@ -25,16 +25,15 @@
 
         <!-- 模式 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">游戏模式</label>
+          <label class="eg-field-label">游戏模式</label>
           <div class="space-y-2">
             <button
               v-for="opt in MODE_OPTIONS"
               :key="opt.value"
               @click="localConfig.mode = opt.value"
-              class="w-full py-2 px-3 rounded-lg text-sm font-medium transition-all active:scale-95 border text-left flex items-center justify-between gap-3"
+              class="eg-opt w-full text-left flex items-center justify-between gap-3"
               :class="localConfig.mode === opt.value
-                ? 'bg-sky-500 text-white border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-sky-500/50'"
+                 ? 'eg-opt-on' : ''"
             >
               <span class="flex flex-col">
                 <span>{{ opt.label }}</span>
@@ -46,38 +45,37 @@
 
         <!-- 难度 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">难度（决定开局显示多少个数字）</label>
+          <label class="eg-field-label">难度（决定开局显示多少个数字）</label>
           <div class="space-y-2">
             <button
               v-for="opt in DIFFICULTY_OPTIONS"
               :key="opt.value"
               @click="localConfig.difficulty = opt.value"
-              class="w-full py-2 px-3 rounded-lg text-sm font-medium transition-all active:scale-95 border text-left flex items-center justify-between"
+              class="eg-opt w-full text-left flex items-center justify-between"
               :class="localConfig.difficulty === opt.value
-                ? 'bg-sky-500 text-white border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-sky-500/50'"
+                 ? 'eg-opt-on' : ''"
             >
               <span>{{ opt.label }}</span>
               <span class="text-xs opacity-70">{{ opt.desc }}</span>
             </button>
           </div>
-          <p class="text-xs opacity-60 leading-relaxed">
+          <p class="eg-hint">
             开局只显示一部分数字，其余是空白格。规则是「连到哪就显示到哪」：
             你连上哪个格子它才亮出来，下一个数藏在哪得自己拖过去试。
           </p>
         </div>
 
         <!-- 底部按钮 -->
-        <div class="flex gap-2 pt-3 border-t border-border-light dark:border-border-dark">
+        <div class="eg-modal-actions">
           <button
             @click="resetDefault"
-            class="flex-1 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-sm font-medium text-text-light dark:text-text-dark hover:border-sky-500/50 transition-all active:scale-95"
+            class="eg-ghost-btn"
           >
-            ↺ 恢复默认
+            恢复默认
           </button>
           <button
             @click="apply"
-            class="flex-[2] py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-sm font-bold shadow-claude-md transition-all active:scale-95"
+            class="eg-primary-btn"
           >
             应用并重新开始
           </button>

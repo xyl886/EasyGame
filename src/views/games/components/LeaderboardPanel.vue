@@ -2,23 +2,23 @@
   <transition name="panel">
     <div
       v-if="modelValue"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      class="eg-modal-overlay"
       @click.self="close"
     >
       <!-- 遮罩 -->
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+      <div class="eg-modal-mask"></div>
 
       <!-- 面板 -->
-      <div class="relative w-full max-w-md max-h-[85vh] flex flex-col rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude-lg overflow-hidden">
+      <div class="eg-modal-card-col">
         <!-- 头部 -->
-        <div class="flex items-center justify-between p-5 pb-3 border-b border-black/5 dark:border-white/10">
-          <h3 class="text-lg font-bold flex items-center gap-2">
+        <div class="eg-modal-head p-5 pb-3 border-b border-black/5 dark:border-white/10">
+          <h3 class="eg-modal-title">
             <span>🏆</span>
             <span>{{ gameName }} · 最高分榜</span>
           </h3>
           <button
             @click="close"
-            class="w-8 h-8 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center transition-colors"
+            class="eg-modal-close"
             aria-label="关闭"
           >
             ✕
@@ -63,19 +63,17 @@
             <span class="opacity-60 shrink-0">排序</span>
             <button
               @click="sortBy = 'score'"
-              class="px-2.5 py-1 rounded-md font-medium transition-all border"
+              class="eg-opt !py-1 !px-2.5 !rounded-md text-xs"
               :class="sortBy === 'score'
-                ? 'bg-accent-light dark:bg-accent-dark text-white border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-accent-light/40 dark:hover:border-accent-dark/40'"
+                 ? 'eg-opt-on' : ''"
             >
               按分数
             </button>
             <button
               @click="sortBy = 'time'"
-              class="px-2.5 py-1 rounded-md font-medium transition-all border"
+              class="eg-opt !py-1 !px-2.5 !rounded-md text-xs"
               :class="sortBy === 'time'
-                ? 'bg-accent-light dark:bg-accent-dark text-white border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-accent-light/40 dark:hover:border-accent-dark/40'"
+                 ? 'eg-opt-on' : ''"
             >
               按时间
             </button>
@@ -90,10 +88,9 @@
             <span class="opacity-60 shrink-0">{{ dim.label }}</span>
             <button
               @click="filter[dim.key] = undefined"
-              class="px-2.5 py-1 rounded-md font-medium transition-all border"
+              class="eg-opt !py-1 !px-2.5 !rounded-md text-xs"
               :class="filter[dim.key] === undefined
-                ? 'bg-accent-light dark:bg-accent-dark text-white border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-accent-light/40 dark:hover:border-accent-dark/40'"
+                 ? 'eg-opt-on' : ''"
             >
               全部
             </button>
@@ -101,10 +98,9 @@
               v-for="opt in dim.values"
               :key="String(opt.value)"
               @click="filter[dim.key] = opt.value"
-              class="px-2.5 py-1 rounded-md font-medium transition-all border"
+              class="eg-opt !py-1 !px-2.5 !rounded-md text-xs"
               :class="filter[dim.key] === opt.value
-                ? 'bg-accent-light dark:bg-accent-dark text-white border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-accent-light/40 dark:hover:border-accent-dark/40'"
+                 ? 'eg-opt-on' : ''"
             >
               {{ opt.label }}
             </button>
@@ -123,8 +119,7 @@
               :key="e.id"
               class="flex items-center gap-3 px-3 py-2 rounded-xl transition-colors"
               :class="e.playerName === board.playerName
-                ? 'bg-accent-light/10 dark:bg-accent-dark/10 ring-1 ring-accent-light/30 dark:ring-accent-dark/30'
-                : 'hover:bg-bg-light dark:hover:bg-bg-dark/40'"
+                 ? 'eg-opt-on' : ''"
             >
               <div class="w-7 text-center font-bold text-sm shrink-0"
                 :class="i === 0 ? 'text-amber-500' : i === 1 ? 'text-slate-500' : i === 2 ? 'text-orange-700 dark:text-orange-400' : 'opacity-60'"

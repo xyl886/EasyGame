@@ -2,22 +2,22 @@
   <transition name="panel">
     <div
       v-if="settings.showSettings"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      class="eg-modal-overlay"
       @click.self="settings.closeSettings()"
     >
       <!-- 遮罩 -->
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+      <div class="eg-modal-mask"></div>
 
       <!-- 面板 -->
-      <div class="relative w-full max-w-md max-h-[85vh] overflow-y-auto rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude-lg p-5 space-y-5">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold flex items-center gap-2">
+      <div class="eg-modal-card">
+        <div class="eg-modal-head">
+          <h3 class="eg-modal-title">
             <span>⚙️</span>
             <span>俄罗斯方块设置</span>
           </h3>
           <button
             @click="settings.closeSettings()"
-            class="w-8 h-8 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center transition-colors"
+            class="eg-modal-close"
           >
             ✕
           </button>
@@ -25,54 +25,51 @@
 
         <!-- 初始速度 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">初始速度</label>
+          <label class="eg-field-label">初始速度</label>
           <div class="grid grid-cols-3 gap-2">
             <button
               v-for="opt in SPEED_OPTIONS"
               :key="opt.value"
               @click="localConfig.speed = opt.value"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="localConfig.speed === opt.value
-                ? 'bg-cyan-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-cyan-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               {{ opt.label }}
             </button>
           </div>
-          <p class="text-xs opacity-60">每消除 10 行升 1 级，下落速度自动加快</p>
+          <p class="eg-hint">每消除 10 行升 1 级，下落速度自动加快</p>
         </div>
 
         <!-- 胜利目标 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">胜利目标</label>
+          <label class="eg-field-label">胜利目标</label>
           <div class="grid grid-cols-2 gap-2">
             <button
               v-for="opt in TARGET_LINES_OPTIONS"
               :key="opt.value"
               @click="localConfig.targetLines = opt.value"
-              class="py-2 px-2 rounded-lg text-xs font-medium transition-all active:scale-95 border"
+              class="eg-opt text-xs"
               :class="localConfig.targetLines === opt.value
-                ? 'bg-cyan-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-cyan-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               {{ opt.label }}
             </button>
           </div>
-          <p class="text-xs opacity-60">消除目标行数即获胜，0 为无尽模式</p>
+          <p class="eg-hint">消除目标行数即获胜，0 为无尽模式</p>
         </div>
 
         <!-- 预览数量 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">预览下一块数量</label>
+          <label class="eg-field-label">预览下一块数量</label>
           <div class="grid grid-cols-3 gap-2">
             <button
               v-for="n in PREVIEW_COUNT_OPTIONS"
               :key="n"
               @click="localConfig.previewCount = n"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="localConfig.previewCount === n
-                ? 'bg-cyan-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-cyan-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               {{ n }}
             </button>
@@ -81,23 +78,21 @@
 
         <!-- 鬼影预览 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">鬼影落点预览</label>
+          <label class="eg-field-label">鬼影落点预览</label>
           <div class="grid grid-cols-2 gap-2">
             <button
               @click="localConfig.ghostPiece = false"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="!localConfig.ghostPiece
-                ? 'bg-cyan-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-cyan-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               隐藏
             </button>
             <button
               @click="localConfig.ghostPiece = true"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="localConfig.ghostPiece
-                ? 'bg-cyan-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-cyan-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               显示落点轮廓
             </button>
@@ -106,23 +101,21 @@
 
         <!-- Hold 槽 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">Hold 暂存槽</label>
+          <label class="eg-field-label">Hold 暂存槽</label>
           <div class="grid grid-cols-2 gap-2">
             <button
               @click="localConfig.holdPiece = false"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="!localConfig.holdPiece
-                ? 'bg-cyan-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-cyan-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               关闭
             </button>
             <button
               @click="localConfig.holdPiece = true"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="localConfig.holdPiece
-                ? 'bg-cyan-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-cyan-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               启用（每块仅一次）
             </button>
@@ -131,23 +124,21 @@
 
         <!-- 硬降 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">空格行为</label>
+          <label class="eg-field-label">空格行为</label>
           <div class="grid grid-cols-2 gap-2">
             <button
               @click="localConfig.hardDrop = false"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="!localConfig.hardDrop
-                ? 'bg-cyan-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-cyan-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               软降（+1 分/格）
             </button>
             <button
               @click="localConfig.hardDrop = true"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="localConfig.hardDrop
-                ? 'bg-cyan-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-cyan-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               硬降（直接落底 +2 分/格）
             </button>
@@ -155,16 +146,16 @@
         </div>
 
         <!-- 底部按钮 -->
-        <div class="flex gap-2 pt-3 border-t border-border-light dark:border-border-dark">
+        <div class="eg-modal-actions">
           <button
             @click="resetDefault"
-            class="flex-1 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-sm font-medium text-text-light dark:text-text-dark hover:border-cyan-400/50 transition-all active:scale-95"
+            class="eg-ghost-btn"
           >
             恢复默认
           </button>
           <button
             @click="apply"
-            class="flex-[2] py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-500 text-gray-900 text-sm font-bold shadow-claude-md transition-all active:scale-95"
+            class="eg-primary-btn"
           >
             应用并重新开始
           </button>
@@ -223,6 +214,6 @@ function resetDefault() {
 }
 .panel-enter-from > div:last-child,
 .panel-leave-to > div:last-child {
-  transform: scale(0.92) translateY(10px);
+  transform: scale(0.9) translateY(10px);
 }
 </style>

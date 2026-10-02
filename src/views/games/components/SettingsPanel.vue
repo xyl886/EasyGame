@@ -2,22 +2,22 @@
   <transition name="panel">
     <div
       v-if="settings.showSettings"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      class="eg-modal-overlay"
       @click.self="settings.closeSettings()"
     >
       <!-- 遮罩 -->
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+      <div class="eg-modal-mask"></div>
 
       <!-- 面板 -->
-      <div class="relative w-full max-w-md max-h-[85vh] overflow-y-auto rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude-lg p-5 space-y-5">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold flex items-center gap-2">
+      <div class="eg-modal-card">
+        <div class="eg-modal-head">
+          <h3 class="eg-modal-title">
             <span>⚙️</span>
             <span>游戏设置</span>
           </h3>
           <button
             @click="settings.closeSettings()"
-            class="w-8 h-8 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center transition-colors"
+            class="eg-modal-close"
           >
             ✕
           </button>
@@ -26,18 +26,17 @@
         <!-- 棋盘尺寸 -->
         <div class="space-y-2">
           <div class="flex items-center justify-between">
-            <label class="text-sm font-semibold">棋盘尺寸</label>
-            <span class="text-xs opacity-60">{{ localConfig.size }}×{{ localConfig.size }}</span>
+            <label class="eg-field-label">棋盘尺寸</label>
+            <span class="eg-hint">{{ localConfig.size }}×{{ localConfig.size }}</span>
           </div>
           <div class="grid grid-cols-4 gap-2">
             <button
               v-for="s in SIZE_OPTIONS"
               :key="s"
               @click="localConfig.size = s"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="localConfig.size === s
-                ? 'bg-accent-light dark:bg-accent-dark text-white border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-accent-light/40 dark:hover:border-accent-dark/40'"
+                 ? 'eg-opt-on' : ''"
             >
               {{ s }}×{{ s }}
             </button>
@@ -46,16 +45,15 @@
 
         <!-- 胜利目标 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">胜利目标</label>
+          <label class="eg-field-label">胜利目标</label>
           <div class="grid grid-cols-3 gap-2">
             <button
               v-for="opt in WIN_VALUE_OPTIONS"
               :key="opt.value"
               @click="localConfig.winValue = opt.value"
-              class="py-2 px-2 rounded-lg text-xs font-medium transition-all active:scale-95 leading-tight border"
+              class="eg-opt text-xs leading-tight"
               :class="localConfig.winValue === opt.value
-                ? 'bg-accent-light dark:bg-accent-dark text-white border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-accent-light/40 dark:hover:border-accent-dark/40'"
+                 ? 'eg-opt-on' : ''"
             >
               {{ opt.label }}
             </button>
@@ -64,16 +62,15 @@
 
         <!-- 初始方块数 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">初始方块数</label>
+          <label class="eg-field-label">初始方块数</label>
           <div class="grid grid-cols-3 gap-2">
             <button
               v-for="n in INITIAL_TILES_OPTIONS"
               :key="n"
               @click="localConfig.initialTiles = n"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="localConfig.initialTiles === n
-                ? 'bg-accent-light dark:bg-accent-dark text-white border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-accent-light/40 dark:hover:border-accent-dark/40'"
+                 ? 'eg-opt-on' : ''"
             >
               {{ n }} 个
             </button>
@@ -82,16 +79,15 @@
 
         <!-- 难度 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">难度（新方块数值概率）</label>
+          <label class="eg-field-label">难度（新方块数值概率）</label>
           <div class="grid grid-cols-2 gap-2">
             <button
               v-for="opt in DIFFICULTY_OPTIONS"
               :key="opt.value"
               @click="localConfig.difficulty = opt.value"
-              class="py-2 px-3 rounded-lg text-sm transition-all active:scale-95 text-left border"
+              class="eg-opt text-left"
               :class="localConfig.difficulty === opt.value
-                ? 'bg-accent-light dark:bg-accent-dark text-white border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-accent-light/40 dark:hover:border-accent-dark/40'"
+                 ? 'eg-opt-on' : ''"
             >
               <div class="font-semibold">{{ opt.label }}</div>
               <div class="text-[10px] opacity-70">{{ opt.desc }}</div>
@@ -101,16 +97,15 @@
 
         <!-- 皮肤 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">皮肤</label>
+          <label class="eg-field-label">皮肤</label>
           <div class="grid grid-cols-2 gap-2">
             <button
               v-for="opt in SKIN_OPTIONS"
               :key="opt.value"
               @click="localConfig.skin = opt.value"
-              class="py-2 px-3 rounded-lg text-sm transition-all active:scale-95 text-left border"
+              class="eg-opt text-left"
               :class="localConfig.skin === opt.value
-                ? 'bg-accent-light dark:bg-accent-dark text-white border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-accent-light/40 dark:hover:border-accent-dark/40'"
+                 ? 'eg-opt-on' : ''"
             >
               <div class="font-semibold">{{ opt.label }}</div>
               <div class="text-[10px] opacity-70">{{ opt.hint }}</div>
@@ -119,16 +114,16 @@
         </div>
 
         <!-- 底部按钮 -->
-        <div class="flex gap-2 pt-3 border-t border-border-light dark:border-border-dark">
+        <div class="eg-modal-actions">
           <button
             @click="resetDefault"
-            class="flex-1 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-sm font-medium text-text-light dark:text-text-dark hover:border-accent-light/40 dark:hover:border-accent-dark/40 transition-all active:scale-95"
+            class="eg-ghost-btn"
           >
             恢复默认
           </button>
           <button
             @click="apply"
-            class="flex-[2] py-2.5 rounded-xl bg-accent-light dark:bg-accent-dark hover:bg-accent-hover-light dark:hover:bg-accent-hover-dark text-white text-sm font-bold shadow-claude-md transition-all active:scale-95"
+            class="eg-primary-btn"
           >
             应用并重新开始
           </button>

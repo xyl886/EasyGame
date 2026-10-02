@@ -2,22 +2,22 @@
   <transition name="panel">
     <div
       v-if="modelValue"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      class="eg-modal-overlay"
       @click.self="close"
     >
       <!-- 遮罩 -->
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+      <div class="eg-modal-mask"></div>
 
       <!-- 面板 -->
-      <div class="relative w-full max-w-md max-h-[80vh] overflow-y-auto rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude-lg p-5">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-bold flex items-center gap-2 text-text-light dark:text-text-dark">
+      <div class="eg-modal-card-plain max-h-[80vh]">
+        <div class="eg-modal-head mb-4">
+          <h3 class="eg-modal-title">
             <span>🎮</span>
             <span>{{ title }} · 玩法</span>
           </h3>
           <button
             @click="close"
-            class="w-8 h-8 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center transition-colors"
+            class="eg-modal-close"
             aria-label="关闭"
           >
             ✕

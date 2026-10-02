@@ -2,22 +2,22 @@
   <transition name="panel">
     <div
       v-if="settings.showSettings"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      class="eg-modal-overlay"
       @click.self="settings.closeSettings()"
     >
       <!-- 遮罩 -->
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+      <div class="eg-modal-mask"></div>
 
       <!-- 面板 -->
-      <div class="relative w-full max-w-md max-h-[85vh] overflow-y-auto rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude-lg p-5 space-y-5">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold flex items-center gap-2">
+      <div class="eg-modal-card">
+        <div class="eg-modal-head">
+          <h3 class="eg-modal-title">
             <span>⚙️</span>
             <span>华容道设置</span>
           </h3>
           <button
             @click="settings.closeSettings()"
-            class="w-8 h-8 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center transition-colors"
+            class="eg-modal-close"
           >
             ✕
           </button>
@@ -25,75 +25,73 @@
 
         <!-- 玩法切换 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">玩法</label>
+          <label class="eg-field-label">玩法</label>
           <div class="grid grid-cols-2 gap-2">
             <button
-              class="py-2 rounded-lg text-sm font-medium transition-all border bg-rose-400 text-white border-transparent shadow-claude"
+              class="eg-opt eg-opt-on"
             >
               🔢 数字版
             </button>
             <button
               @click="goClassic"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-rose-400/50"
+              class="eg-opt"
             >
               🧩 三国版
             </button>
           </div>
-          <p class="text-xs opacity-60">三国版为经典滑块：曹操 2×2 + 关羽 + 五虎将 + 小兵，4×5 棋盘</p>
+          <p class="eg-hint">三国版为经典滑块：曹操 2×2 + 关羽 + 五虎将 + 小兵，4×5 棋盘</p>
         </div>
 
         <!-- 棋盘尺寸 -->
         <div class="space-y-2">
           <div class="flex items-center justify-between">
-            <label class="text-sm font-semibold">棋盘尺寸</label>
-            <span class="text-xs opacity-60">{{ localConfig.size }}×{{ localConfig.size }} · 共 {{ localConfig.size * localConfig.size - 1 }} 个数字</span>
+            <label class="eg-field-label">棋盘尺寸</label>
+            <span class="eg-hint">{{ localConfig.size }}×{{ localConfig.size }} · 共 {{ localConfig.size * localConfig.size - 1 }} 个数字</span>
           </div>
           <div class="grid grid-cols-3 gap-2">
             <button
               v-for="s in SIZE_OPTIONS"
               :key="s"
               @click="localConfig.size = s"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="localConfig.size === s
-                ? 'bg-rose-400 text-white border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-rose-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               {{ s }}×{{ s }}
             </button>
           </div>
-          <p class="text-xs opacity-60">3×3 入门 · 4×4 经典 · 5×5 挑战</p>
+          <p class="eg-hint">3×3 入门 · 4×4 经典 · 5×5 挑战</p>
         </div>
 
         <!-- 难度（打乱强度） -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">难度（打乱强度）</label>
+          <label class="eg-field-label">难度（打乱强度）</label>
           <div class="grid grid-cols-3 gap-2">
             <button
               v-for="opt in DIFFICULTY_OPTIONS"
               :key="opt.value"
               @click="localConfig.difficulty = opt.value"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border"
+              class="eg-opt"
               :class="localConfig.difficulty === opt.value
-                ? 'bg-rose-400 text-white border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-rose-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               {{ opt.label }}
             </button>
           </div>
-          <p class="text-xs opacity-60">难度越高，初始乱序程度越大</p>
+          <p class="eg-hint">难度越高，初始乱序程度越大</p>
         </div>
 
         <!-- 底部按钮 -->
-        <div class="flex gap-2 pt-3 border-t border-border-light dark:border-border-dark">
+        <div class="eg-modal-actions">
           <button
             @click="resetDefault"
-            class="flex-1 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-sm font-medium text-text-light dark:text-text-dark hover:border-rose-400/50 transition-all active:scale-95"
+            class="eg-ghost-btn"
           >
             恢复默认
           </button>
           <button
             @click="apply"
-            class="flex-[2] py-2.5 rounded-xl bg-rose-400 hover:bg-rose-500 text-white text-sm font-bold shadow-claude-md transition-all active:scale-95"
+            class="eg-primary-btn"
           >
             应用并重新开始
           </button>

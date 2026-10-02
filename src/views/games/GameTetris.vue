@@ -1,24 +1,22 @@
 <template>
-  <div class="min-h-screen w-full py-4 px-3 md:px-6 flex flex-col">
+  <div class="eg-shell">
     <!-- 顶部栏 -->
     <header class="max-w-3xl w-full mx-auto flex items-center justify-between mb-5">
-      <RouterLink to="/" class="flex items-center gap-2 group">
-        <button class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-cyan-400/40 transition-all duration-200 group-hover:-translate-x-0.5 text-lg flex items-center justify-center">
-          ←
-        </button>
+      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅">
+        ←
       </RouterLink>
-      <div class="text-lg font-bold text-text-light dark:text-text-dark">🧱 俄罗斯方块</div>
+      <div class="eg-game-title">🧱 俄罗斯方块</div>
       <div class="flex gap-2">
         <button
           @click="showLeaderboard = true"
-          class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-cyan-400/40 transition-all active:scale-95 flex items-center justify-center"
+          class="eg-icon-btn"
           aria-label="排行榜"
         >
           🏆
         </button>
         <button
           @click="settings.openSettings()"
-          class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-cyan-400/40 transition-all active:scale-95 flex items-center justify-center"
+          class="eg-icon-btn"
           aria-label="设置"
         >
           ⚙️
@@ -31,7 +29,7 @@
     <!-- 游戏主体 -->
     <main class="max-w-3xl w-full mx-auto flex-1 flex flex-col">
       <!-- 标题 + 分数 -->
-      <div class="flex items-center justify-between mb-4 gap-3 flex-wrap">
+      <div class="eg-score-row flex-wrap">
         <div>
           <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-text-light dark:text-text-dark">
             俄罗斯方块
@@ -50,11 +48,11 @@
       </div>
 
       <!-- 操作按钮 -->
-      <div class="flex items-center justify-between mb-4 gap-2 flex-wrap">
+      <div class="eg-toolbar mb-4 flex-wrap">
         <div class="flex items-center gap-2">
           <button
             @click="showHowTo = true"
-            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-cyan-400/40 transition-all active:scale-95 text-sm font-medium text-text-light dark:text-text-dark"
+            class="eg-ghost-btn"
           >
             ❓ 玩法
           </button>
@@ -72,20 +70,20 @@
             v-if="state.holdPiece"
             @click="hold"
             :disabled="state.over || !started || !state.canHold"
-            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-cyan-400/40 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-text-light dark:text-text-dark"
+            class="eg-ghost-btn"
           >
             🤚 Hold
           </button>
           <button
             @click="togglePause"
             :disabled="state.over || !started"
-            class="px-4 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-cyan-400/40 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-text-light dark:text-text-dark"
+            class="eg-ghost-btn"
           >
             {{ state.paused ? '▶️ 继续' : '⏸️ 暂停' }}
           </button>
           <button
             @click="newGame"
-            class="px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-500 text-gray-900 shadow-claude-md transition-all active:scale-95 text-sm font-bold"
+            class="eg-primary-btn"
           >
             🔄 新游戏
           </button>

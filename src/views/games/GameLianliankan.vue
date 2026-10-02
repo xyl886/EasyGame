@@ -1,24 +1,22 @@
 <template>
-  <div class="min-h-screen w-full py-4 px-3 md:px-6 flex flex-col">
+  <div class="eg-shell">
     <!-- 顶部栏 -->
-    <header class="max-w-lg w-full mx-auto flex items-center justify-between mb-4">
-      <RouterLink to="/" class="flex items-center gap-2 group">
-        <button class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-indigo-400/40 transition-all duration-200 group-hover:-translate-x-0.5 text-lg flex items-center justify-center">
-          ←
-        </button>
+    <header class="max-w-lg w-full mx-auto flex items-center justify-between mb-5">
+      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅">
+        ←
       </RouterLink>
-      <div class="text-lg font-bold text-text-light dark:text-text-dark">🔗 连连看</div>
+      <div class="eg-game-title">🔗 连连看</div>
       <div class="flex gap-2">
         <button
           @click="showLeaderboard = true"
-          class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-indigo-400/40 transition-all active:scale-95 flex items-center justify-center"
+          class="eg-icon-btn"
           aria-label="排行榜"
         >
           🏆
         </button>
         <button
           @click="settings.openSettings()"
-          class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-indigo-400/40 transition-all active:scale-95 flex items-center justify-center"
+          class="eg-icon-btn"
           aria-label="设置"
         >
           ⚙️
@@ -31,7 +29,7 @@
     <!-- 游戏主体（窄高竖条：棋盘占满宽度，图案做大） -->
     <main class="max-w-lg w-full mx-auto flex-1 flex flex-col">
       <!-- 分数面板（紧凑单行） -->
-      <div class="flex items-center justify-between mb-3 gap-3">
+      <div class="eg-score-row !mb-3">
         <div>
           <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-text-light dark:text-text-dark">
             连连看
@@ -48,11 +46,11 @@
       </div>
 
       <!-- 操作按钮（单行紧凑） -->
-      <div class="flex items-center justify-between mb-3 gap-2">
+      <div class="eg-toolbar !mb-3">
         <div class="flex items-center gap-2">
           <button
             @click="showHowTo = true"
-            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-indigo-400/40 transition-all active:scale-95 text-sm font-medium text-text-light dark:text-text-dark"
+            class="eg-ghost-btn"
           >
             ❓ 玩法
           </button>
@@ -66,27 +64,27 @@
           <button
             @click="doUndo"
             :disabled="showResume || !canUndoNow || state.status !== 'playing'"
-            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-indigo-400/40 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-text-light dark:text-text-dark"
+            class="eg-ghost-btn"
           >
             ↩️ 撤销{{ state.undoLeft > 0 ? `(${state.undoLeft})` : '' }}
           </button>
           <button
             @click="doHint"
             :disabled="showResume || state.status !== 'playing'"
-            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-indigo-400/40 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-text-light dark:text-text-dark"
+            class="eg-ghost-btn"
           >
             💡 提示
           </button>
           <button
             @click="doReshuffle"
             :disabled="showResume || state.status !== 'playing'"
-            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-indigo-400/40 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-text-light dark:text-text-dark"
+            class="eg-ghost-btn"
           >
             🔀 洗牌
           </button>
           <button
             @click="newGame"
-            class="px-4 py-2 rounded-xl bg-indigo-400 hover:bg-indigo-500 text-white shadow-claude-md transition-all active:scale-95 text-sm font-bold"
+            class="eg-primary-btn"
           >
             🔄 新游戏
           </button>

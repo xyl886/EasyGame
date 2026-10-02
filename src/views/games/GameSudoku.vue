@@ -1,24 +1,22 @@
 <template>
-  <div class="min-h-screen w-full py-4 px-3 md:px-6 flex flex-col">
+  <div class="eg-shell">
     <!-- 顶部栏 -->
     <header class="max-w-md w-full mx-auto flex items-center justify-between mb-5">
-      <RouterLink to="/" class="flex items-center gap-2 group">
-        <button class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-emerald-400/40 transition-all duration-200 group-hover:-translate-x-0.5 text-lg flex items-center justify-center">
-          ←
-        </button>
+      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅">
+        ←
       </RouterLink>
-      <div class="text-lg font-bold text-text-light dark:text-text-dark">🔢 数独</div>
+      <div class="eg-game-title">🔢 数独</div>
       <div class="flex gap-2">
         <button
           @click="showLeaderboard = true"
-          class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-emerald-400/40 transition-all active:scale-95 flex items-center justify-center"
+          class="eg-icon-btn"
           aria-label="排行榜"
         >
           🏆
         </button>
         <button
           @click="settings.openSettings()"
-          class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-emerald-400/40 transition-all active:scale-95 flex items-center justify-center"
+          class="eg-icon-btn"
           aria-label="设置"
         >
           ⚙️
@@ -31,7 +29,7 @@
     <!-- 游戏主体 -->
     <main class="max-w-md w-full mx-auto flex-1 flex flex-col">
       <!-- 分数面板 -->
-      <div class="flex items-center justify-between mb-4 gap-3">
+      <div class="eg-score-row">
         <div>
           <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-text-light dark:text-text-dark">
             数独
@@ -55,33 +53,33 @@
       </div>
 
       <!-- 操作按钮 -->
-      <div class="flex items-center justify-between mb-4 gap-2 flex-wrap">
+      <div class="eg-toolbar mb-4 flex-wrap">
         <div class="flex gap-2">
           <button
             @click="showHowTo = true"
-            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-emerald-400/40 transition-all active:scale-95 text-sm font-medium text-text-light dark:text-text-dark"
+            class="eg-ghost-btn"
           >
             ❓ 玩法
           </button>
           <button
             @click="toggleNotesMode"
-            class="px-3 py-2 rounded-xl text-sm font-medium border transition-all active:scale-95 shadow-claude"
+            class="eg-ghost-btn"
             :class="notesMode
-              ? 'bg-emerald-400 text-white border-transparent'
-              : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-emerald-400/50'"
+              ? '!bg-emerald-400 !text-white !border-transparent hover:!border-transparent'
+              : ''"
           >
             ✏️ 笔记{{ notesMode ? '·开' : '' }}
           </button>
           <button
             @click="doCheck"
-            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-emerald-400/40 transition-all active:scale-95 text-sm font-medium text-text-light dark:text-text-dark"
+            class="eg-ghost-btn"
           >
             ✅ 检查
           </button>
           <button
             @click="doHint"
             :disabled="state.hintsUsed >= MAX_HINTS || state.won"
-            class="px-3 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-emerald-400/40 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-text-light dark:text-text-dark"
+            class="eg-ghost-btn"
           >
             💡 提示{{ state.hintsUsed >= MAX_HINTS ? '' : ` ${MAX_HINTS - state.hintsUsed}` }}
           </button>
@@ -90,13 +88,13 @@
           <button
             @click="undo"
             :disabled="!canUndo"
-            class="px-4 py-2 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-emerald-400/40 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-text-light dark:text-text-dark"
+            class="eg-ghost-btn"
           >
             ↩️ 撤销
           </button>
           <button
             @click="newGame"
-            class="px-4 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-500 text-white shadow-claude-md transition-all active:scale-95 text-sm font-bold"
+            class="eg-primary-btn"
           >
             🔄 新游戏
           </button>

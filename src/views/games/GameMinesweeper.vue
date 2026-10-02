@@ -1,24 +1,22 @@
 <template>
-  <div class="min-h-screen w-full py-4 px-2 md:px-6 flex flex-col">
+  <div class="eg-shell">
     <!-- 顶部栏 -->
     <header class="max-w-xl w-full mx-auto flex items-center justify-between mb-5">
-      <RouterLink to="/" class="flex items-center gap-2 group">
-        <button class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-gray-500/40 transition-all duration-200 group-hover:-translate-x-0.5 text-lg flex items-center justify-center">
-          ←
-        </button>
+      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅">
+        ←
       </RouterLink>
-      <div class="text-lg font-bold text-text-light dark:text-text-dark">💣 扫雷</div>
+      <div class="eg-game-title">💣 扫雷</div>
       <div class="flex gap-2">
         <button
           @click="showLeaderboard = true"
-          class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-gray-500/40 transition-all active:scale-95 flex items-center justify-center"
+          class="eg-icon-btn"
           aria-label="排行榜"
         >
           🏆
         </button>
         <button
           @click="settings.openSettings()"
-          class="w-10 h-10 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-gray-500/40 transition-all active:scale-95 flex items-center justify-center"
+          class="eg-icon-btn"
           aria-label="设置"
         >
           ⚙️
@@ -31,7 +29,7 @@
     <!-- 游戏主体 -->
     <main class="max-w-xl w-full mx-auto flex-1 flex flex-col">
       <!-- 状态栏 -->
-      <div class="flex items-center justify-between mb-3 gap-2 flex-wrap">
+      <div class="eg-toolbar !mb-3 flex-wrap">
         <div class="flex items-center gap-2">
           <div class="flex flex-col items-center justify-center px-3 py-1 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[64px]">
             <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark">💣 剩余</span>
@@ -52,16 +50,16 @@
           </button>
           <button
             @click="showHowTo = true"
-            class="px-3 py-2 rounded-xl text-sm font-medium border transition-all active:scale-95 shadow-claude bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-gray-500/50"
+            class="eg-ghost-btn"
           >
             ❓ 玩法
           </button>
           <button
             @click="flagMode = !flagMode"
-            class="px-3 py-2 rounded-xl text-sm font-medium border transition-all active:scale-95 shadow-claude"
+            class="eg-ghost-btn"
             :class="flagMode
-              ? 'bg-blue-500 text-white border-transparent'
-              : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-blue-400/50'"
+              ? '!bg-blue-500 !text-white !border-transparent hover:!border-transparent'
+              : ''"
           >
             🚩 旗子{{ flagMode ? '·开' : '' }}
           </button>
@@ -73,7 +71,7 @@
           </span>
           <button
             @click="newGame"
-            class="px-4 py-2 rounded-xl bg-gray-600 hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-400 text-white shadow-claude-md transition-all active:scale-95 text-sm font-bold"
+            class="eg-primary-btn"
           >
             🔄 新游戏
           </button>

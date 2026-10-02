@@ -2,22 +2,22 @@
   <transition name="panel">
     <div
       v-if="settings.showSettings"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      class="eg-modal-overlay"
       @click.self="settings.closeSettings()"
     >
       <!-- 遮罩 -->
-      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+      <div class="eg-modal-mask"></div>
 
       <!-- 面板 -->
-      <div class="relative w-full max-w-md max-h-[85vh] overflow-y-auto rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude-lg p-5 space-y-5">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold flex items-center gap-2">
+      <div class="eg-modal-card">
+        <div class="eg-modal-head">
+          <h3 class="eg-modal-title">
             <span>⚙️</span>
             <span>三国华容道设置</span>
           </h3>
           <button
             @click="settings.closeSettings()"
-            class="w-8 h-8 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center transition-colors"
+            class="eg-modal-close"
           >
             ✕
           </button>
@@ -25,16 +25,16 @@
 
         <!-- 玩法切换 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">玩法</label>
+          <label class="eg-field-label">玩法</label>
           <div class="grid grid-cols-2 gap-2">
             <button
               @click="goDigital"
-              class="py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-amber-400/50"
+              class="eg-opt"
             >
               🔢 数字版
             </button>
             <button
-              class="py-2 rounded-lg text-sm font-medium transition-all border bg-amber-400 text-gray-900 border-transparent shadow-claude"
+              class="eg-opt eg-opt-on"
             >
               🧩 三国版
             </button>
@@ -43,35 +43,34 @@
 
         <!-- 经典布局 -->
         <div class="space-y-2">
-          <label class="text-sm font-semibold block">经典布局（40 残局）</label>
+          <label class="eg-field-label">经典布局（40 残局）</label>
           <div class="grid grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1">
             <button
               v-for="opt in LAYOUT_OPTIONS"
               :key="opt.value"
               @click="localLayout = opt.value"
-              class="px-2 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95 border flex items-center justify-between gap-1"
+              class="eg-opt !py-1.5 text-xs flex items-center justify-between gap-1"
               :class="localLayout === opt.value
-                ? 'bg-amber-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-amber-400/50'"
+                 ? 'eg-opt-on' : ''"
             >
               <span class="truncate">{{ opt.label }}</span>
               <span class="shrink-0 opacity-60">{{ opt.minSteps > 0 ? opt.minSteps + '步' : '无解' }}</span>
             </button>
           </div>
-          <p class="text-xs opacity-60">每个经典布局附带最少步数，游戏页可一键「自动演示」解法</p>
+          <p class="eg-hint">每个经典布局附带最少步数，游戏页可一键「自动演示」解法</p>
         </div>
 
         <!-- 底部按钮 -->
-        <div class="flex gap-2 pt-3 border-t border-border-light dark:border-border-dark">
+        <div class="eg-modal-actions">
           <button
-            @click="settings.closeSettings()"
-            class="flex-1 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-sm font-medium text-text-light dark:text-text-dark hover:border-amber-400/50 transition-all active:scale-95"
+            @click="resetDefault"
+            class="eg-ghost-btn"
           >
-            取消
+            恢复默认
           </button>
           <button
             @click="apply"
-            class="flex-[2] py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-gray-900 text-sm font-bold shadow-claude-md transition-all active:scale-95"
+            class="eg-primary-btn"
           >
             应用并重新开始
           </button>
@@ -106,6 +105,10 @@ function apply() {
   settings.setClassicLayout(localLayout.value)
   settings.closeSettings()
   emit('apply', { layout: localLayout.value })
+}
+
+function resetDefault() {
+  localLayout.value = '横刀立马'
 }
 
 /** 切回数字版 */
