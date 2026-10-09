@@ -311,9 +311,11 @@
 <script setup lang="ts">
 import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { LianliankanEngine } from '../../game/lianliankan/GameEngine'
+import { isLianliankanAutosave } from '../../game/base/autosaveGuards'
 import type { LinkState, LinkConfig, LinkDifficulty } from '../../game/lianliankan/types'
 import { DIFFICULTY_LABELS, SYMBOL_POOL, isSpecialTile, baseSymbol } from '../../game/lianliankan/types'
 import { useLianliankanSettingsStore } from '../../stores/lianliankan-settings'
+import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
 import { sound } from '../../utils/sound'
@@ -369,7 +371,7 @@ const AUTOSAVE_GAME_ID = 'lianliankan'
 // 存档格式版本：调参后 +1，旧版本存档直接作废（避免旧时间限制/旧参数毒害新对局）
 const AUTOSAVE_VERSION = 2
 type SavedLinkState = LinkState & { savedAt?: number; v?: number }
-const pendingAutosave = loadAutosave<SavedLinkState>(AUTOSAVE_GAME_ID)
+const pendingAutosave = loadAutosave<SavedLinkState>(AUTOSAVE_GAME_ID, isLianliankanAutosave)
 const showResume = ref(false)
 if (pendingAutosave && pendingAutosave.status === 'playing') {
   if (pendingAutosave.v === AUTOSAVE_VERSION) showResume.value = true
@@ -775,16 +777,14 @@ watch(modalOpen, (open, prev) => {
 // ===== 计时器 =====
 let timer: ReturnType<typeof setInterval> | null = null
 
+useGamePageEvents({ keydown: onKeydown, resize: updateLayout, visibilitychange: onVisibilityChange, pagehide: onPageHide })
+
 onMounted(() => {
   updateLayout()
   syncState()
   if (state.status === 'won') {
     submitScoreIfWon()
   }
-  window.addEventListener('keydown', onKeydown)
-  window.addEventListener('resize', updateLayout)
-  document.addEventListener('visibilitychange', onVisibilityChange)
-  window.addEventListener('pagehide', onPageHide)
   timer = setInterval(() => {
     now.value = Date.now()
     if (showResume.value || modalOpen.value) return
@@ -804,10 +804,6 @@ onBeforeUnmount(() => {
   if (timer) clearInterval(timer)
   if (connectTimer) clearTimeout(connectTimer)
   if (extraTimer) clearTimeout(extraTimer)
-  window.removeEventListener('keydown', onKeydown)
-  window.removeEventListener('resize', updateLayout)
-  document.removeEventListener('visibilitychange', onVisibilityChange)
-  window.removeEventListener('pagehide', onPageHide)
 })
 </script>
 

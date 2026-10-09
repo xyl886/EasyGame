@@ -9,17 +9,44 @@
 import { StorageAdapter } from '../adapters/StorageAdapter'
 
 const PREFIX = 'easygame-autosave'
+const ENVELOPE_KIND = 'easygame-autosave'
+const ENVELOPE_VERSION = 1
+
+interface AutosaveEnvelope {
+  kind: typeof ENVELOPE_KIND
+  version: number
+  savedAt: number
+  state: unknown
+}
+
+export type AutosaveGuard<T> = (value: unknown) => value is T
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
 
 export function autosaveKey(gameId: string): string {
   return `${PREFIX}-${gameId}`
 }
 
 export function saveAutosave(gameId: string, state: unknown): void {
-  StorageAdapter.set(autosaveKey(gameId), state)
+  const envelope: AutosaveEnvelope = {
+    kind: ENVELOPE_KIND,
+    version: ENVELOPE_VERSION,
+    savedAt: Date.now(),
+    state,
+  }
+  StorageAdapter.set(autosaveKey(gameId), envelope)
 }
 
-export function loadAutosave<T>(gameId: string): T | null {
-  return StorageAdapter.get<T>(autosaveKey(gameId))
+export function loadAutosave<T>(gameId: string, guard: AutosaveGuard<T>): T | null {
+  const stored = StorageAdapter.get<unknown>(autosaveKey(gameId))
+  if (!isRecord(stored)) return null
+
+  const isEnvelope = stored.kind === ENVELOPE_KIND
+  if (isEnvelope && stored.version !== ENVELOPE_VERSION) return null
+  const state = isEnvelope ? stored.state : stored
+  return guard(state) ? state : null
 }
 
 export function clearAutosave(gameId: string): void {

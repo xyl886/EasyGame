@@ -318,9 +318,11 @@
 <script setup lang="ts">
 import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { NumberChainEngine } from '../../game/numberchain/GameEngine'
+import { isNumberChainAutosave } from '../../game/base/autosaveGuards'
 import type { NumberChainState, NumberChainConfig, NumberChainDifficulty, ChainPoint } from '../../game/numberchain/types'
 import { DIFFICULTY_LABELS, MODE_LABELS, levelSize } from '../../game/numberchain/types'
 import { useNumberChainSettingsStore } from '../../stores/numberchain-settings'
+import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
 import { sound } from '../../utils/sound'
@@ -390,7 +392,7 @@ const canClear = computed(() => state.status === 'playing' && state.committed.le
 const AUTOSAVE_GAME_ID = 'numberchain'
 const AUTOSAVE_VERSION = 2
 type SavedState = NumberChainState & { savedAt?: number; v?: number }
-const pendingAutosave = loadAutosave<SavedState>(AUTOSAVE_GAME_ID)
+const pendingAutosave = loadAutosave<SavedState>(AUTOSAVE_GAME_ID, isNumberChainAutosave)
 const showResume = ref(false)
 if (pendingAutosave && pendingAutosave.status === 'playing') {
   if (pendingAutosave.v === AUTOSAVE_VERSION) showResume.value = true
@@ -845,12 +847,11 @@ function updateLayout() {
 
 let timer: ReturnType<typeof setInterval> | null = null
 
+useGamePageEvents({ resize: updateLayout, visibilitychange: onVisibilityChange, pagehide: onPageHide })
+
 onMounted(() => {
   updateLayout()
   syncState()
-  window.addEventListener('resize', updateLayout)
-  document.addEventListener('visibilitychange', onVisibilityChange)
-  window.addEventListener('pagehide', onPageHide)
   timer = setInterval(() => {
     now.value = Date.now()
   }, 200)
@@ -861,9 +862,6 @@ onBeforeUnmount(() => {
   if (timer) clearInterval(timer)
   if (hintTimer) clearTimeout(hintTimer)
   if (winTimer) clearTimeout(winTimer)
-  window.removeEventListener('resize', updateLayout)
-  document.removeEventListener('visibilitychange', onVisibilityChange)
-  window.removeEventListener('pagehide', onPageHide)
 })
 </script>
 

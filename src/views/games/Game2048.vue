@@ -217,9 +217,11 @@
 <script setup lang="ts">
 import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef } from 'vue'
 import { Game2048Engine } from '../../game/2048/GameEngine'
+import { isGame2048Autosave } from '../../game/base/autosaveGuards'
 import type { Game2048State, Tile, Direction, Game2048Config, Difficulty } from '../../game/2048/types'
 import { DIFFICULTY_LABELS, CAKE_EMOJI, CAKE_OVERFLOW_EMOJI } from '../../game/2048/types'
 import { useGame2048SettingsStore, SIZE_OPTIONS } from '../../stores/game2048-settings'
+import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { StorageAdapter } from '../../adapters/StorageAdapter'
 import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
@@ -313,7 +315,7 @@ const winSoundPlayed = ref(false)
 
 // ===== 自动存档：误退/刷新后可继续上次进度 =====
 const AUTOSAVE_GAME_ID = '2048'
-const pendingAutosave = loadAutosave<Game2048State>(AUTOSAVE_GAME_ID)
+const pendingAutosave = loadAutosave<Game2048State>(AUTOSAVE_GAME_ID, isGame2048Autosave)
 /** 是否显示「继续上次」弹窗（存在未完成存档且未结束） */
 const showResume = ref(false)
 if (pendingAutosave && !pendingAutosave.over) {
@@ -615,6 +617,8 @@ function updateLayout() {
   padding.value = g + 4
 }
 
+useGamePageEvents({ keydown: onKeydown, resize: updateLayout, visibilitychange: onVisibilityChange, pagehide: onPageHide })
+
 onMounted(() => {
   updateLayout()
   syncState()
@@ -622,10 +626,6 @@ onMounted(() => {
   migrateLegacyBest()
   // 若初始状态已是 game-over（极少见，但保险），也允许入榜
   submitScoreIfOver()
-  window.addEventListener('keydown', onKeydown)
-  window.addEventListener('resize', updateLayout)
-  document.addEventListener('visibilitychange', onVisibilityChange)
-  window.addEventListener('pagehide', onPageHide)
   const el = boardRef.value
   if (el) {
     el.addEventListener('touchstart', onTouchStart, { passive: true })
@@ -636,10 +636,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   // 离开页面兜底保存
   if (!state.over) persistAutosave()
-  window.removeEventListener('keydown', onKeydown)
-  window.removeEventListener('resize', updateLayout)
-  document.removeEventListener('visibilitychange', onVisibilityChange)
-  window.removeEventListener('pagehide', onPageHide)
   const el = boardRef.value
   if (el) {
     el.removeEventListener('touchstart', onTouchStart)

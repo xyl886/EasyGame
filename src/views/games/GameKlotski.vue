@@ -202,9 +202,11 @@
 <script setup lang="ts">
 import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef } from 'vue'
 import { KlotskiEngine } from '../../game/klotski/GameEngine'
+import { isKlotskiAutosave } from '../../game/base/autosaveGuards'
 import type { KlotskiState, KlotskiConfig, KlotskiDirection, KlotskiDifficulty } from '../../game/klotski/types'
 import { DIFFICULTY_LABELS, scoreForMoves } from '../../game/klotski/types'
 import { useKlotskiSettingsStore } from '../../stores/klotski-settings'
+import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
 import { sound } from '../../utils/sound'
@@ -262,7 +264,7 @@ function submitScoreIfWon() {
 
 // ===== 自动存档 =====
 const AUTOSAVE_GAME_ID = 'klotski'
-const pendingAutosave = loadAutosave<KlotskiState>(AUTOSAVE_GAME_ID)
+const pendingAutosave = loadAutosave<KlotskiState>(AUTOSAVE_GAME_ID, isKlotskiAutosave)
 const showResume = ref(false)
 if (pendingAutosave && !pendingAutosave.won) {
   showResume.value = true
@@ -497,6 +499,8 @@ function updateLayout() {
 // ===== 计时器（仅未完成时刷新显示） =====
 let timer: ReturnType<typeof setInterval> | null = null
 
+useGamePageEvents({ keydown: onKeydown, resize: updateLayout, visibilitychange: onVisibilityChange, pagehide: onPageHide })
+
 onMounted(() => {
   updateLayout()
   syncState()
@@ -505,10 +509,6 @@ onMounted(() => {
     finishedElapsed.value = Math.floor((Date.now() - state.startTime) / 1000)
     submitScoreIfWon()
   }
-  window.addEventListener('keydown', onKeydown)
-  window.addEventListener('resize', updateLayout)
-  document.addEventListener('visibilitychange', onVisibilityChange)
-  window.addEventListener('pagehide', onPageHide)
   const el = boardRef.value
   if (el) {
     el.addEventListener('touchstart', onTouchStart, { passive: true })
@@ -523,10 +523,6 @@ onBeforeUnmount(() => {
   // 离开页面兜底保存
   if (!state.won) persistAutosave()
   if (timer) clearInterval(timer)
-  window.removeEventListener('keydown', onKeydown)
-  window.removeEventListener('resize', updateLayout)
-  document.removeEventListener('visibilitychange', onVisibilityChange)
-  window.removeEventListener('pagehide', onPageHide)
   const el = boardRef.value
   if (el) {
     el.removeEventListener('touchstart', onTouchStart)

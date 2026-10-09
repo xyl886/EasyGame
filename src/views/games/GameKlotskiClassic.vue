@@ -309,6 +309,7 @@
 <script setup lang="ts">
 import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef } from 'vue'
 import { ClassicKlotskiEngine } from '../../game/klotski-classic/GameEngine'
+import { isClassicAutosave } from '../../game/base/autosaveGuards'
 import type {
   ClassicState,
   ClassicConfig,
@@ -323,6 +324,7 @@ import {
   classicScoreForMoves,
 } from '../../game/klotski-classic/types'
 import { LEVELS, findLevel } from '../../game/klotski-classic/levels'
+import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useKlotskiSettingsStore } from '../../stores/klotski-settings'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
@@ -384,7 +386,7 @@ function submitScoreIfWon() {
 
 // ===== 自动存档 =====
 const AUTOSAVE_GAME_ID = 'klotski-classic'
-const pendingAutosave = loadAutosave<ClassicState>(AUTOSAVE_GAME_ID)
+const pendingAutosave = loadAutosave<ClassicState>(AUTOSAVE_GAME_ID, isClassicAutosave)
 const showResume = ref(false)
 if (pendingAutosave && !pendingAutosave.won) {
   showResume.value = true
@@ -789,6 +791,8 @@ function updateLayout() {
 // ===== 计时器 =====
 let timer: ReturnType<typeof setInterval> | null = null
 
+useGamePageEvents({ keydown: onKeydown, resize: updateLayout, visibilitychange: onVisibilityChange, pagehide: onPageHide })
+
 onMounted(() => {
   updateLayout()
   syncState()
@@ -796,10 +800,6 @@ onMounted(() => {
     finishedElapsed.value = Math.floor((Date.now() - state.startTime) / 1000)
     submitScoreIfWon()
   }
-  window.addEventListener('keydown', onKeydown)
-  window.addEventListener('resize', updateLayout)
-  document.addEventListener('visibilitychange', onVisibilityChange)
-  window.addEventListener('pagehide', onPageHide)
   const el = boardRef.value
   if (el) {
     el.addEventListener('touchstart', onTouchStart, { passive: true })
@@ -814,10 +814,6 @@ onBeforeUnmount(() => {
   if (!state.won) persistAutosave()
   stopDemo()
   if (timer) clearInterval(timer)
-  window.removeEventListener('keydown', onKeydown)
-  window.removeEventListener('resize', updateLayout)
-  document.removeEventListener('visibilitychange', onVisibilityChange)
-  window.removeEventListener('pagehide', onPageHide)
   const el = boardRef.value
   if (el) {
     el.removeEventListener('touchstart', onTouchStart)

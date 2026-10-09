@@ -100,7 +100,7 @@ onMounted(async () => {
 
 async function shareHome() {
   const result = await shareOrCopy({
-    text: '🎮 EasyGame：九款经典益智小游戏（2048、贪吃蛇、俄罗斯方块、数独、扫雷…），即开即玩、离线可用，来一起玩！',
+    text: '🎮 EasyGame：十五款经典益智小游戏（2048、贪吃蛇、俄罗斯方块、数独、扫雷…），即开即玩、离线可用，来一起玩！',
     url: shareUrl('/'),
   })
   toast(result === 'shared' ? '✅ 已分享' : result === 'copied' ? '📋 链接已复制，快发给朋友吧' : '❌ 分享失败')

@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
+import { gameRegistry } from '../game/registry'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -7,66 +8,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/Home.vue'),
     meta: { title: 'EasyGame · 游戏大厅' },
   },
-  {
-    path: '/game/2048',
-    name: 'Game2048',
-    component: () => import('../views/games/Game2048.vue'),
-    meta: { title: '2048 · EasyGame' },
-  },
-  {
-    path: '/game/snake',
-    name: 'GameSnake',
-    component: () => import('../views/games/GameSnake.vue'),
-    meta: { title: '贪吃蛇 · EasyGame' },
-  },
-  {
-    path: '/game/tetris',
-    name: 'GameTetris',
-    component: () => import('../views/games/GameTetris.vue'),
-    meta: { title: '俄罗斯方块 · EasyGame' },
-  },
-  {
-    path: '/game/klotski',
-    name: 'GameKlotski',
-    component: () => import('../views/games/GameKlotski.vue'),
-    meta: { title: '华容道 · EasyGame' },
-  },
-  {
-    path: '/game/lianliankan',
-    name: 'GameLianliankan',
-    component: () => import('../views/games/GameLianliankan.vue'),
-    meta: { title: '连连看 · EasyGame' },
-  },
-  {
-    path: '/game/eliminate',
-    name: 'GameEliminate',
-    component: () => import('../views/games/GameEliminate.vue'),
-    meta: { title: '消消乐 · EasyGame' },
-  },
-  {
-    path: '/game/numberchain',
-    name: 'GameNumberChain',
-    component: () => import('../views/games/GameNumberChain.vue'),
-    meta: { title: '数字连连 · EasyGame' },
-  },
-  {
-    path: '/game/klotski-classic',
-    name: 'GameKlotskiClassic',
-    component: () => import('../views/games/GameKlotskiClassic.vue'),
-    meta: { title: '三国华容道 · EasyGame' },
-  },
-  {
-    path: '/game/sudoku',
-    name: 'GameSudoku',
-    component: () => import('../views/games/GameSudoku.vue'),
-    meta: { title: '数独 · EasyGame' },
-  },
-  {
-    path: '/game/minesweeper',
-    name: 'GameMinesweeper',
-    component: () => import('../views/games/GameMinesweeper.vue'),
-    meta: { title: '扫雷 · EasyGame' },
-  },
+  ...gameRegistry.map((game) => ({
+    path: game.route,
+    name: game.routeName,
+    component: game.component,
+    meta: { title: `${game.name} · EasyGame` },
+  })),
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',

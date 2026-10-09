@@ -266,9 +266,11 @@
 <script setup lang="ts">
 import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { EliminateEngine } from '../../game/eliminate/GameEngine'
+import { isEliminateAutosave } from '../../game/base/autosaveGuards'
 import type { EliminateState, EliminateConfig, EliminateDifficulty } from '../../game/eliminate/types'
 import { DIFFICULTY_LABELS, ELIMINATE_POOL, SPECIAL_EMOJI, isSpecial, specialType, deriveLevelParams } from '../../game/eliminate/types'
 import { useEliminateSettingsStore } from '../../stores/eliminate-settings'
+import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
 import { sound } from '../../utils/sound'
@@ -323,7 +325,7 @@ const AUTOSAVE_GAME_ID = 'eliminate'
 // 存档格式版本：数值/规则调参后 +1，旧版本存档直接作废（避免旧目标分毒害新对局）
 const AUTOSAVE_VERSION = 2
 type SavedEliminateState = EliminateState & { savedAt?: number; v?: number }
-const pendingAutosave = loadAutosave<SavedEliminateState>(AUTOSAVE_GAME_ID)
+const pendingAutosave = loadAutosave<SavedEliminateState>(AUTOSAVE_GAME_ID, isEliminateAutosave)
 const showResume = ref(false)
 if (pendingAutosave && pendingAutosave.status === 'playing') {
   if (pendingAutosave.v === AUTOSAVE_VERSION) showResume.value = true
@@ -987,16 +989,14 @@ watch(modalOpen, (open, prev) => {
 // ===== 计时器 =====
 let timer: ReturnType<typeof setInterval> | null = null
 
+useGamePageEvents({ keydown: onKeydown, resize: updateLayout, visibilitychange: onVisibilityChange, pagehide: onPageHide })
+
 onMounted(() => {
   updateLayout()
   syncState()
   if (state.status === 'won') {
     submitScoreIfWon()
   }
-  window.addEventListener('keydown', onKeydown)
-  window.addEventListener('resize', updateLayout)
-  document.addEventListener('visibilitychange', onVisibilityChange)
-  window.addEventListener('pagehide', onPageHide)
   timer = setInterval(() => {
     now.value = Date.now()
   }, 500)
@@ -1008,10 +1008,6 @@ onBeforeUnmount(() => {
   if (timer) clearInterval(timer)
   if (popTimer) clearTimeout(popTimer)
   if (shakeTimer) clearTimeout(shakeTimer)
-  window.removeEventListener('keydown', onKeydown)
-  window.removeEventListener('resize', updateLayout)
-  document.removeEventListener('visibilitychange', onVisibilityChange)
-  window.removeEventListener('pagehide', onPageHide)
 })
 </script>
 

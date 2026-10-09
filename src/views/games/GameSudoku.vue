@@ -260,9 +260,11 @@
 <script setup lang="ts">
 import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef } from 'vue'
 import { SudokuEngine, findConflicts } from '../../game/sudoku/GameEngine'
+import { isSudokuAutosave } from '../../game/base/autosaveGuards'
 import type { SudokuState, SudokuConfig, SudokuDifficulty } from '../../game/sudoku/types'
 import { DIFFICULTY_LABELS, specOf, SIZES, sudokuScoreForTime, MAX_HINTS } from '../../game/sudoku/types'
 import { useSudokuSettingsStore } from '../../stores/sudoku-settings'
+import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
 import { sound } from '../../utils/sound'
@@ -318,7 +320,7 @@ function submitScoreIfWon() {
 
 // ===== 自动存档 =====
 const AUTOSAVE_GAME_ID = 'sudoku'
-const pendingAutosave = loadAutosave<SudokuState>(AUTOSAVE_GAME_ID)
+const pendingAutosave = loadAutosave<SudokuState>(AUTOSAVE_GAME_ID, isSudokuAutosave)
 const showResume = ref(false)
 if (pendingAutosave && !pendingAutosave.won) {
   showResume.value = true
@@ -720,15 +722,14 @@ function onKeydown(e: KeyboardEvent) {
 // ===== 计时器 =====
 let timer: ReturnType<typeof setInterval> | null = null
 
+useGamePageEvents({ keydown: onKeydown, visibilitychange: onVisibilityChange, pagehide: onPageHide })
+
 onMounted(() => {
   syncState()
   if (state.won) {
     finishedElapsed.value = Math.floor((Date.now() - state.startTime) / 1000)
     submitScoreIfWon()
   }
-  window.addEventListener('keydown', onKeydown)
-  document.addEventListener('visibilitychange', onVisibilityChange)
-  window.addEventListener('pagehide', onPageHide)
   timer = setInterval(() => {
     now.value = Date.now()
   }, 500)
@@ -739,9 +740,6 @@ onBeforeUnmount(() => {
   if (timer) clearInterval(timer)
   if (wrongTimer) clearTimeout(wrongTimer)
   if (hintTimer) clearTimeout(hintTimer)
-  window.removeEventListener('keydown', onKeydown)
-  document.removeEventListener('visibilitychange', onVisibilityChange)
-  window.removeEventListener('pagehide', onPageHide)
 })
 </script>
 

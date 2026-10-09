@@ -219,9 +219,11 @@
 <script setup lang="ts">
 import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef } from 'vue'
 import { MinesweeperEngine } from '../../game/minesweeper/GameEngine'
+import { isMinesweeperAutosave } from '../../game/base/autosaveGuards'
 import type { MineState, MineConfig, MineCell, MineDifficulty, MineStatus } from '../../game/minesweeper/types'
 import { DIFFICULTY_LABELS, mineScoreForTime } from '../../game/minesweeper/types'
 import { useMinesweeperSettingsStore } from '../../stores/minesweeper-settings'
+import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
 import { sound } from '../../utils/sound'
@@ -270,7 +272,7 @@ function submitScoreIfWon() {
 
 // ===== 自动存档 =====
 const AUTOSAVE_GAME_ID = 'minesweeper'
-const pendingAutosave = loadAutosave<MineState>(AUTOSAVE_GAME_ID)
+const pendingAutosave = loadAutosave<MineState>(AUTOSAVE_GAME_ID, isMinesweeperAutosave)
 const showResume = ref(false)
 if (pendingAutosave && pendingAutosave.status !== 'won' && pendingAutosave.status !== 'lost') {
   showResume.value = true
@@ -652,15 +654,14 @@ function isPressed(cell: MineCell, i: number): boolean {
 // ===== 计时器 =====
 let timer: ReturnType<typeof setInterval> | null = null
 
+useGamePageEvents({ keydown: onKeydown, visibilitychange: onVisibilityChange, pagehide: onPageHide })
+
 onMounted(() => {
   syncState()
   if (state.status === 'won') {
     finishedElapsed.value = Math.floor((Date.now() - state.startTime) / 1000)
     submitScoreIfWon()
   }
-  window.addEventListener('keydown', onKeydown)
-  document.addEventListener('visibilitychange', onVisibilityChange)
-  window.addEventListener('pagehide', onPageHide)
   timer = setInterval(() => {
     now.value = Date.now()
   }, 500)
@@ -670,9 +671,6 @@ onBeforeUnmount(() => {
   if (state.status !== 'won' && state.status !== 'lost') persistAutosave()
   if (timer) clearInterval(timer)
   if (pressTimer) clearTimeout(pressTimer)
-  window.removeEventListener('keydown', onKeydown)
-  document.removeEventListener('visibilitychange', onVisibilityChange)
-  window.removeEventListener('pagehide', onPageHide)
 })
 </script>
 

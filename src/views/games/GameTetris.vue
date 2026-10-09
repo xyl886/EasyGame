@@ -317,9 +317,11 @@
 <script setup lang="ts">
 import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef } from 'vue'
 import { TetrisEngine } from '../../game/tetris/GameEngine'
+import { isTetrisAutosave } from '../../game/base/autosaveGuards'
 import type { TetrisState, TetrisConfig, SpeedTier, Direction, Rotation } from '../../game/tetris/types'
 import { SPEED_LABELS, TETROMINOES } from '../../game/tetris/types'
 import { useTetrisSettingsStore } from '../../stores/tetris-settings'
+import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { loadAutosave, saveAutosave, clearAutosave, throttledSaver } from '../../utils/autosave'
 import type { LeaderboardDimension } from '../../game/base/leaderboard'
@@ -383,7 +385,7 @@ function submitScoreIfOver() {
 
 // ===== 自动存档：误退/刷新后可继续上次进度 =====
 const AUTOSAVE_GAME_ID = 'tetris'
-const pendingAutosave = loadAutosave<TetrisState>(AUTOSAVE_GAME_ID)
+const pendingAutosave = loadAutosave<TetrisState>(AUTOSAVE_GAME_ID, isTetrisAutosave)
 /** 是否显示「继续上次」弹窗（存在未完成且未结束的存档） */
 const showResume = ref(false)
 if (pendingAutosave && !pendingAutosave.over && !pendingAutosave.won) {
@@ -840,14 +842,12 @@ function updateLayout() {
   padding.value = Math.max(3, Math.floor(cell / 8))
 }
 
+useGamePageEvents({ keydown: onKeydown, resize: updateLayout, visibilitychange: onVisibilityChange, pagehide: onPageHide })
+
 onMounted(() => {
   updateLayout()
   syncState()
   submitScoreIfOver()
-  window.addEventListener('keydown', onKeydown)
-  window.addEventListener('resize', updateLayout)
-  document.addEventListener('visibilitychange', onVisibilityChange)
-  window.addEventListener('pagehide', onPageHide)
   const el = boardRef.value
   if (el) {
     el.addEventListener('touchstart', onTouchStart, { passive: true })
@@ -861,10 +861,6 @@ onBeforeUnmount(() => {
   // 离开页面兜底保存
   if (!state.over) autosaver.flush()
   autosaver.dispose()
-  window.removeEventListener('keydown', onKeydown)
-  window.removeEventListener('resize', updateLayout)
-  document.removeEventListener('visibilitychange', onVisibilityChange)
-  window.removeEventListener('pagehide', onPageHide)
   const el = boardRef.value
   if (el) {
     el.removeEventListener('touchstart', onTouchStart)
