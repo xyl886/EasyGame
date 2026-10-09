@@ -1,4 +1,4 @@
-import { reactive } from 'vue'
+import { shallowReactive } from 'vue'
 import { StorageAdapter } from '../adapters/StorageAdapter'
 
 export type ExtraPuzzleSettingValue = number | string
@@ -14,7 +14,7 @@ export function useExtraPuzzleSettings<Config extends ExtraPuzzleConfig>(
 ) {
   const key = `${PREFIX}-${gameId}`
   const saved = StorageAdapter.get<Partial<Config>>(key) ?? {}
-  const state = reactive({
+  const state = shallowReactive({
     config: normalize({ ...defaults, ...saved } as Config),
     showSettings: false,
   })

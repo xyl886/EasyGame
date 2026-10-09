@@ -13,7 +13,7 @@ const demoDirections: Record<number, ClassicDirection> = {
 describe('ClassicKlotskiEngine', () => {
   beforeEach(() => localStorage.clear())
 
-  it.each(LEVELS)('$name 的内置演示步骤可以完整通关', (level) => {
+  it.each(LEVELS.filter((level) => level.steps.length > 0))('$name 的内置演示步骤可以完整通关', (level) => {
     const engine = new ClassicKlotskiEngine({ layout: level.id })
 
     for (const code of level.steps) {
@@ -28,12 +28,22 @@ describe('ClassicKlotskiEngine', () => {
     expect(engine.getState().moves).toBe(level.steps.length)
   })
 
+  it('“走投无路”未提供演示解法时仍能正常载入', () => {
+    const level = LEVELS.find((item) => item.id === '走投无路')!
+    const engine = new ClassicKlotskiEngine({ layout: level.id })
+
+    expect(level.steps).toHaveLength(0)
+    expect(engine.getState().layout).toBe(level.id)
+    expect(engine.isWin()).toBe(false)
+  })
+
   it('加载存档后棋子状态一致，重置恢复当前布局', () => {
     const engine = new ClassicKlotskiEngine({ layout: LEVELS[0].id })
     const initial = engine.getState()
-    const legalMove = engine.movablePieces()[0]
+    const firstPiece = initial.pieces.find((piece) => engine.movableDirs(piece.id).length > 0)!
+    const firstDirection = engine.movableDirs(firstPiece.id)[0]
 
-    expect(engine.demoMove(legalMove.pieceId, legalMove.dir)).toBe(true)
+    expect(engine.demoMove(firstPiece.id, firstDirection)).toBe(true)
     const snapshot = engine.getState()
     const restored = new ClassicKlotskiEngine({ layout: LEVELS[0].id })
     restored.loadState(snapshot)

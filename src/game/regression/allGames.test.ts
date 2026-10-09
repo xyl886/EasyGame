@@ -17,6 +17,7 @@ import { SokobanEngine } from '../sokoban/GameEngine'
 import { SudokuEngine } from '../sudoku/GameEngine'
 import { TetrisEngine } from '../tetris/GameEngine'
 import { gameRegistry } from '../registry'
+import type { Direction as Direction2048, Game2048State } from '../2048/types'
 
 interface EngineCase {
   id: string
@@ -30,7 +31,11 @@ interface EngineCase {
   initial(): { state: unknown; isGameOver: boolean; isWin: boolean; score: number }
 }
 
-function engineCase<State, Move>(id: string, create: () => BaseGame<State, Move>): EngineCase {
+function engineCase<State, Move>(
+  id: string,
+  create: () => BaseGame<State, Move>,
+  normalizeState: (state: State) => unknown = (state) => state,
+): EngineCase {
   return {
     id,
     roundTrip() {
@@ -39,8 +44,8 @@ function engineCase<State, Move>(id: string, create: () => BaseGame<State, Move>
       const restored = create()
       restored.loadState(snapshot)
       return {
-        originalState: snapshot,
-        restoredState: restored.getState(),
+        originalState: normalizeState(snapshot),
+        restoredState: normalizeState(restored.getState()),
         originalScore: original.getScore(),
         restoredScore: restored.getScore(),
       }
@@ -63,7 +68,10 @@ function engineCase<State, Move>(id: string, create: () => BaseGame<State, Move>
 }
 
 const engines: EngineCase[] = [
-  engineCase('2048', () => new Game2048Engine()),
+  engineCase<Game2048State, Direction2048>('2048', () => new Game2048Engine(), (state) => ({
+    ...state,
+    grid: state.grid.map((row) => row.map((tile) => tile ? { value: tile.value, row: tile.row, col: tile.col } : null)),
+  })),
   engineCase('tetris', () => new TetrisEngine()),
   engineCase('minesweeper', () => new MinesweeperEngine()),
   engineCase('sudoku', () => new SudokuEngine()),
