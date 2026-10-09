@@ -4,6 +4,7 @@
       <RouterLink to="/" class="eg-back-btn" aria-label="返回游戏大厅">←</RouterLink>
       <div class="eg-game-title">{{ icon }} {{ title }}</div>
       <div class="flex items-center gap-2">
+        <slot name="header-actions" />
         <button class="eg-icon-btn" type="button" aria-label="玩法说明" @click="showRules = true">❓</button>
         <SoundToggle />
         <ThemeToggle />

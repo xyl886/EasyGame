@@ -48,8 +48,17 @@ function edgeKey(a: number, b: number): string {
 export class HashiEngine implements BaseGame<HashiState, number> {
   private state!: HashiState
 
-  constructor() {
-    this.reset()
+  constructor(puzzleIndex = 0) {
+    this.state = { puzzleIndex: 0, islands: [], bridges: {}, selected: null, status: 'playing' }
+    this.loadPuzzle(this.clampPuzzleIndex(puzzleIndex))
+  }
+
+  selectPuzzle(puzzleIndex: number): void {
+    this.loadPuzzle(this.clampPuzzleIndex(puzzleIndex))
+  }
+
+  private clampPuzzleIndex(puzzleIndex: number): number {
+    return Number.isInteger(puzzleIndex) ? Math.max(0, Math.min(PUZZLES.length - 1, puzzleIndex)) : 0
   }
 
   getState(): HashiState {
@@ -119,7 +128,7 @@ export class HashiEngine implements BaseGame<HashiState, number> {
   }
 
   reset(): void {
-    this.loadPuzzle(0)
+    this.loadPuzzle(this.state.puzzleIndex)
   }
 
   getScore(): number {

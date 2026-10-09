@@ -1,0 +1,65 @@
+import { beforeEach, describe, expect, it } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import { StorageAdapter } from '../adapters/StorageAdapter'
+import { leaderboardKey } from '../game/base/leaderboard'
+import { useLeaderboardStore } from '../stores/leaderboard'
+import { useExtraPuzzleLeaderboard } from './useExtraPuzzleLeaderboard'
+import { useExtraPuzzleSettings } from './useExtraPuzzleSettings'
+
+describe('新游戏设置', () => {
+  beforeEach(() => localStorage.clear())
+
+  it('按游戏隔离持久化设置，恢复默认值并规范化损坏配置', () => {
+    const first = useExtraPuzzleSettings('memory-match-test', { pairs: 8 }, (config) => ({
+      pairs: [4, 6, 8].includes(config.pairs) ? config.pairs : 8,
+    }))
+
+    first.openSettings()
+    expect(first.state.showSettings).toBe(true)
+    first.setConfig({ pairs: 4 })
+    expect(first.state.config.pairs).toBe(4)
+
+    const restored = useExtraPuzzleSettings('memory-match-test', { pairs: 8 }, (config) => ({
+      pairs: [4, 6, 8].includes(config.pairs) ? config.pairs : 8,
+    }))
+    expect(restored.state.config.pairs).toBe(4)
+    restored.resetToDefault()
+    expect(restored.state.config.pairs).toBe(8)
+
+    StorageAdapter.set('easygame-extra-settings-invalid', { pairs: 99 })
+    const invalid = useExtraPuzzleSettings('invalid', { pairs: 8 }, (config) => ({
+      pairs: [4, 6, 8].includes(config.pairs) ? config.pairs : 8,
+    }))
+    expect(invalid.state.config.pairs).toBe(8)
+  })
+})
+
+describe('游戏排行榜接入', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    setActivePinia(createPinia())
+  })
+
+  it('排行榜按游戏隔离、同玩家同维度只保留最高分并持久化', () => {
+    const board = useLeaderboardStore('memory-match-test')
+    expect(board.addEntry({ score: 600, difficulty: '4', size: 4, won: true })).not.toBeNull()
+    expect(board.addEntry({ score: 500, difficulty: '4', size: 4, won: true })).toBeNull()
+    expect(board.addEntry({ score: 700, difficulty: '8', size: 8, won: true })).not.toBeNull()
+
+    expect(board.entries).toHaveLength(2)
+    expect(board.getBestScore({ difficulty: '4' })).toBe(600)
+    expect(StorageAdapter.get(leaderboardKey('memory-match-test'))).toHaveLength(2)
+  })
+
+  it('新游戏排行榜提交器每局最多记一次，失败局不入榜', () => {
+    const result = useExtraPuzzleLeaderboard('one-stroke-test')
+    expect(result.record({ score: 0, won: false })).toBeNull()
+    expect(result.record({ score: 800, moves: 14, difficulty: '5', won: true })).not.toBeNull()
+    expect(result.record({ score: 900, moves: 14, difficulty: '5', won: true })).toBeNull()
+    expect(result.leaderboard.entries).toHaveLength(1)
+
+    result.beginRound()
+    expect(result.record({ score: 900, moves: 14, difficulty: '5', won: true })).not.toBeNull()
+    expect(result.leaderboard.entries[0].score).toBe(900)
+  })
+})

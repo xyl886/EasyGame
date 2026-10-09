@@ -18,6 +18,10 @@ export interface SokobanState {
   status: 'playing' | 'won'
 }
 
+export interface SokobanConfig {
+  startLevel: number
+}
+
 const LEVELS: SokobanLevel[] = [
   { map: ['######', '#    #', '# @$ .#', '#    #', '######'] },
   { map: ['#######', '#  .  #', '#  $  #', '#  @  #', '#  $  #', '#  .  #', '#######'] },
@@ -31,9 +35,11 @@ const DELTA: Record<SokobanDirection, [number, number]> = {
 export class SokobanEngine implements BaseGame<SokobanState, SokobanDirection> {
   private state!: SokobanState
   private history: SokobanState[] = []
+  private startLevel: number
 
-  constructor() {
-    this.loadLevel(0)
+  constructor(config: Partial<SokobanConfig> = {}) {
+    this.startLevel = this.clampLevel(config.startLevel ?? 0)
+    this.loadLevel(this.startLevel)
   }
 
   getState(): SokobanState {
@@ -57,6 +63,7 @@ export class SokobanEngine implements BaseGame<SokobanState, SokobanDirection> {
 
   move(direction: SokobanDirection): boolean {
     if (this.state.status !== 'playing') return false
+    if (!Object.prototype.hasOwnProperty.call(DELTA, direction)) return false
     const row = Math.floor(this.state.player / this.state.cols)
     const col = this.state.player % this.state.cols
     const [dr, dc] = DELTA[direction]
@@ -108,6 +115,11 @@ export class SokobanEngine implements BaseGame<SokobanState, SokobanDirection> {
     this.loadLevel(this.state.level)
   }
 
+  setStartLevel(level: number): void {
+    this.startLevel = this.clampLevel(level)
+    this.loadLevel(this.startLevel)
+  }
+
   getScore(): number {
     return Math.max(0, 1000 - this.state.moves)
   }
@@ -132,5 +144,9 @@ export class SokobanEngine implements BaseGame<SokobanState, SokobanDirection> {
     })
     this.state = { level, rows, cols, walls, targets, boxes, player, moves: 0, status: 'playing' }
     this.history = []
+  }
+
+  private clampLevel(level: number): number {
+    return Number.isInteger(level) ? Math.max(0, Math.min(LEVELS.length - 1, level)) : 0
   }
 }

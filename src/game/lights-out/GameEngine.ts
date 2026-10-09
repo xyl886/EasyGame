@@ -11,7 +11,8 @@ export class LightsOutEngine implements BaseGame<LightsOutState, number> {
   private state!: LightsOutState
 
   constructor(size = 5) {
-    this.state = { size, cells: [], moves: 0, status: 'playing' }
+    const safeSize = [3, 5, 7].includes(size) ? size : 5
+    this.state = { size: safeSize, cells: [], moves: 0, status: 'playing' }
     this.reset()
   }
 
@@ -24,7 +25,7 @@ export class LightsOutEngine implements BaseGame<LightsOutState, number> {
   }
 
   move(index: number): boolean {
-    if (this.state.status !== 'playing' || index < 0 || index >= this.state.cells.length) return false
+    if (this.state.status !== 'playing' || !Number.isInteger(index) || index < 0 || index >= this.state.cells.length) return false
     this.toggleCross(index)
     this.state.moves++
     if (this.state.cells.every(Boolean)) this.state.status = 'won'

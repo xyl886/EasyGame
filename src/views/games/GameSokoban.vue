@@ -1,7 +1,12 @@
 <template>
   <ExtraPuzzleShell title="推箱子" icon="📦">
+    <template #header-actions>
+      <button class="eg-icon-btn" type="button" aria-label="排行榜" @click="showLeaderboard = true">🏆</button>
+      <button class="eg-icon-btn" type="button" aria-label="设置" @click="settings.openSettings()">⚙️</button>
+    </template>
+
     <section class="max-w-xl mx-auto space-y-4">
-      <div class="grid grid-cols-3 gap-2">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <div class="claude-card p-3 text-center">
           <div class="text-xl font-extrabold text-accent-light dark:text-accent-dark">{{ state.level + 1 }}/3</div>
           <div class="text-xs text-text-muted-light dark:text-text-muted-dark">关卡</div>
@@ -13,6 +18,10 @@
         <div class="claude-card p-3 text-center">
           <div class="text-xl font-extrabold text-accent-light dark:text-accent-dark">{{ remaining }}</div>
           <div class="text-xs text-text-muted-light dark:text-text-muted-dark">未到位箱子</div>
+        </div>
+        <div class="claude-card p-3 text-center">
+          <div class="text-xl font-extrabold text-accent-light dark:text-accent-dark">{{ bestScore ?? '—' }}</div>
+          <div class="text-xs text-text-muted-light dark:text-text-muted-dark">本关最高分</div>
         </div>
       </div>
 
@@ -55,6 +64,21 @@
       </div>
     </section>
 
+    <ExtraPuzzleSettingsPanel
+      v-model="settings.state.showSettings"
+      title="推箱子设置"
+      :config="settings.state.config"
+      :defaults="DEFAULT_CONFIG"
+      :fields="settingsFields"
+      @apply="applySettings"
+    />
+    <LeaderboardPanel
+      v-model="showLeaderboard"
+      game-id="sokoban"
+      game-name="推箱子"
+      :dimensions="leaderboardDimensions"
+    />
+
     <template #rules>
       <ol class="list-decimal pl-5 space-y-2">
         <li>用方向键、屏幕按钮或键盘方向键移动角色。</li>
@@ -67,13 +91,34 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useExtraPuzzleLeaderboard } from '../../composables/useExtraPuzzleLeaderboard'
+import { useExtraPuzzleSettings, type ExtraPuzzleConfig } from '../../composables/useExtraPuzzleSettings'
+import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import { SokobanEngine, type SokobanDirection } from '../../game/sokoban/GameEngine'
 import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import ExtraPuzzleShell from './components/ExtraPuzzleShell.vue'
+import ExtraPuzzleSettingsPanel from './components/ExtraPuzzleSettingsPanel.vue'
+import LeaderboardPanel from './components/LeaderboardPanel.vue'
 
-const engine = new SokobanEngine()
+const DEFAULT_CONFIG = { startLevel: 0 }
+const settings = useExtraPuzzleSettings('sokoban', DEFAULT_CONFIG, (config) => ({
+  startLevel: Number.isInteger(config.startLevel) ? Math.max(0, Math.min(2, config.startLevel)) : DEFAULT_CONFIG.startLevel,
+}))
+const settingsFields = [{
+  key: 'startLevel',
+  label: '起始关卡',
+  options: [{ value: 0, label: '第 1 关' }, { value: 1, label: '第 2 关' }, { value: 2, label: '第 3 关' }],
+}]
+const leaderboardDimensions: LeaderboardDimension[] = [{
+  key: 'difficulty', label: '关卡', values: [{ value: '1', label: '第 1 关' }, { value: '2', label: '第 2 关' }, { value: '3', label: '第 3 关' }],
+}]
+const leaderboard = useExtraPuzzleLeaderboard('sokoban')
+const showLeaderboard = ref(false)
+let engine = new SokobanEngine(settings.state.config)
 const state = ref(engine.getState())
+const startedAt = ref(Date.now())
 const remaining = computed(() => state.value.targets.filter((target) => !state.value.boxes.includes(target)).length)
+const bestScore = computed(() => leaderboard.leaderboard.getBestScore({ difficulty: String(state.value.level + 1) }))
 const canUndo = computed(() => state.value.moves > 0)
 const walls = computed(() => new Set(state.value.walls))
 const targets = computed(() => new Set(state.value.targets))
@@ -84,7 +129,9 @@ function syncState() {
 }
 
 function move(direction: SokobanDirection) {
-  if (engine.move(direction)) syncState()
+  if (!engine.move(direction)) return
+  syncState()
+  recordWin()
 }
 
 function undo() {
@@ -93,11 +140,37 @@ function undo() {
 
 function restart() {
   engine.reset()
+  leaderboard.beginRound()
+  startedAt.value = Date.now()
   syncState()
 }
 
 function nextLevel() {
-  if (engine.nextLevel()) syncState()
+  if (engine.nextLevel()) {
+    leaderboard.beginRound()
+    startedAt.value = Date.now()
+    syncState()
+  }
+}
+
+function applySettings(config: ExtraPuzzleConfig) {
+  settings.setConfig({ startLevel: Number(config.startLevel) })
+  engine = new SokobanEngine(settings.state.config)
+  leaderboard.beginRound()
+  startedAt.value = Date.now()
+  syncState()
+}
+
+function recordWin() {
+  if (!engine.isWin()) return
+  const duration = Math.floor((Date.now() - startedAt.value) / 1000)
+  leaderboard.record({
+    score: Math.max(1, engine.getScore() - duration),
+    moves: state.value.moves,
+    duration,
+    difficulty: String(state.value.level + 1),
+    won: true,
+  })
 }
 
 function cellClass(index: number) {

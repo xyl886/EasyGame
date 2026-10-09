@@ -1,7 +1,12 @@
 <template>
   <ExtraPuzzleShell title="桥接谜题" icon="🌉">
+    <template #header-actions>
+      <button class="eg-icon-btn" type="button" aria-label="排行榜" @click="showLeaderboard = true">🏆</button>
+      <button class="eg-icon-btn" type="button" aria-label="设置" @click="settings.openSettings()">⚙️</button>
+    </template>
+
     <section class="max-w-xl mx-auto space-y-4">
-      <div class="grid grid-cols-2 gap-2">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <div class="claude-card p-3 text-center">
           <div class="text-xl font-extrabold text-accent-light dark:text-accent-dark">{{ state.islands.length }}</div>
           <div class="text-xs text-text-muted-light dark:text-text-muted-dark">岛屿数量</div>
@@ -9,6 +14,14 @@
         <div class="claude-card p-3 text-center">
           <div class="text-xl font-extrabold text-accent-light dark:text-accent-dark">{{ satisfiedCount }}/{{ state.islands.length }}</div>
           <div class="text-xs text-text-muted-light dark:text-text-muted-dark">桥数达标</div>
+        </div>
+        <div class="claude-card p-3 text-center">
+          <div class="text-xl font-extrabold text-accent-light dark:text-accent-dark">{{ moveCount }}</div>
+          <div class="text-xs text-text-muted-light dark:text-text-muted-dark">架桥操作</div>
+        </div>
+        <div class="claude-card p-3 text-center">
+          <div class="text-xl font-extrabold text-accent-light dark:text-accent-dark">{{ bestScore ?? '—' }}</div>
+          <div class="text-xs text-text-muted-light dark:text-text-muted-dark">本关最高分</div>
         </div>
       </div>
 
@@ -54,6 +67,21 @@
       </div>
     </section>
 
+    <ExtraPuzzleSettingsPanel
+      v-model="settings.state.showSettings"
+      title="桥接谜题设置"
+      :config="settings.state.config"
+      :defaults="DEFAULT_CONFIG"
+      :fields="settingsFields"
+      @apply="applySettings"
+    />
+    <LeaderboardPanel
+      v-model="showLeaderboard"
+      game-id="hashi"
+      game-name="桥接谜题"
+      :dimensions="leaderboardDimensions"
+    />
+
     <template #rules>
       <ol class="list-decimal pl-5 space-y-2">
         <li>岛上的数字表示它必须连接的桥梁总数。</li>
@@ -66,12 +94,36 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useExtraPuzzleLeaderboard } from '../../composables/useExtraPuzzleLeaderboard'
+import { useExtraPuzzleSettings, type ExtraPuzzleConfig } from '../../composables/useExtraPuzzleSettings'
+import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import { HashiEngine, type HashiIsland } from '../../game/hashi/GameEngine'
 import ExtraPuzzleShell from './components/ExtraPuzzleShell.vue'
+import ExtraPuzzleSettingsPanel from './components/ExtraPuzzleSettingsPanel.vue'
+import LeaderboardPanel from './components/LeaderboardPanel.vue'
 
-const engine = new HashiEngine()
+const DEFAULT_CONFIG = { puzzleIndex: 0 }
+const puzzleOptions = [
+  { value: 0, label: '入门 · 三座岛' },
+  { value: 1, label: '入门 · 纵向桥' },
+  { value: 2, label: '进阶 · 五座岛' },
+  { value: 3, label: '进阶 · 四角连通' },
+]
+const settings = useExtraPuzzleSettings('hashi', DEFAULT_CONFIG, (config) => ({
+  puzzleIndex: Number.isInteger(config.puzzleIndex) ? Math.max(0, Math.min(3, config.puzzleIndex)) : DEFAULT_CONFIG.puzzleIndex,
+}))
+const settingsFields = [{ key: 'puzzleIndex', label: '默认关卡', options: puzzleOptions }]
+const leaderboardDimensions: LeaderboardDimension[] = [{
+  key: 'difficulty', label: '关卡', values: puzzleOptions.map((option) => ({ value: String(option.value), label: option.label })),
+}]
+const leaderboard = useExtraPuzzleLeaderboard('hashi')
+const showLeaderboard = ref(false)
+let engine = new HashiEngine(settings.state.config.puzzleIndex)
 const state = ref(engine.getState())
 const satisfiedCount = computed(() => state.value.islands.filter((island) => engine.degree(island.id) === island.required).length)
+const bestScore = computed(() => leaderboard.leaderboard.getBestScore({ difficulty: String(state.value.puzzleIndex) }))
+const moveCount = ref(0)
+const startedAt = ref(Date.now())
 const bridgeLines = computed(() => Object.entries(state.value.bridges).flatMap(([key, count]) => {
   const [a, b] = key.split('-').map(Number)
   const first = state.value.islands.find((island) => island.id === a)!
@@ -104,17 +156,46 @@ function islandClass(islandId: number) {
 }
 
 function connect(islandId: number) {
+  const previousBridgeCount = engine.totalBridges()
   engine.move(islandId)
   state.value = engine.getState()
+  if (engine.totalBridges() !== previousBridgeCount) moveCount.value++
+  if (engine.isWin()) recordWin()
 }
 
 function clearBridges() {
   engine.loadState({ ...state.value, bridges: {}, selected: null, status: 'playing' })
+  moveCount.value = 0
+  startedAt.value = Date.now()
+  leaderboard.beginRound()
   state.value = engine.getState()
 }
 
 function nextPuzzle() {
   engine.nextPuzzle()
+  moveCount.value = 0
+  startedAt.value = Date.now()
+  leaderboard.beginRound()
   state.value = engine.getState()
+}
+
+function applySettings(config: ExtraPuzzleConfig) {
+  settings.setConfig({ puzzleIndex: Number(config.puzzleIndex) })
+  engine = new HashiEngine(settings.state.config.puzzleIndex)
+  moveCount.value = 0
+  startedAt.value = Date.now()
+  leaderboard.beginRound()
+  state.value = engine.getState()
+}
+
+function recordWin() {
+  const duration = Math.floor((Date.now() - startedAt.value) / 1000)
+  leaderboard.record({
+    score: Math.max(1, 1000 - moveCount.value * 10 - duration),
+    moves: moveCount.value,
+    duration,
+    difficulty: String(state.value.puzzleIndex),
+    won: true,
+  })
 }
 </script>

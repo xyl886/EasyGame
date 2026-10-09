@@ -1,7 +1,12 @@
 <template>
   <ExtraPuzzleShell title="数织" icon="🧩">
+    <template #header-actions>
+      <button class="eg-icon-btn" type="button" aria-label="排行榜" @click="showLeaderboard = true">🏆</button>
+      <button class="eg-icon-btn" type="button" aria-label="设置" @click="settings.openSettings()">⚙️</button>
+    </template>
+
     <section class="max-w-xl mx-auto space-y-4">
-      <div class="grid grid-cols-3 gap-2">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <div class="claude-card p-3 text-center">
           <div class="text-lg font-extrabold text-accent-light dark:text-accent-dark">{{ state.puzzleName }}</div>
           <div class="text-xs text-text-muted-light dark:text-text-muted-dark">当前图案</div>
@@ -13,6 +18,10 @@
         <div class="claude-card p-3 text-center">
           <div class="text-xl font-extrabold text-accent-light dark:text-accent-dark">{{ state.moves }}</div>
           <div class="text-xs text-text-muted-light dark:text-text-muted-dark">操作次数</div>
+        </div>
+        <div class="claude-card p-3 text-center">
+          <div class="text-xl font-extrabold text-accent-light dark:text-accent-dark">{{ bestScore ?? '—' }}</div>
+          <div class="text-xs text-text-muted-light dark:text-text-muted-dark">本题最高分</div>
         </div>
       </div>
 
@@ -58,6 +67,21 @@
       </div>
     </section>
 
+    <ExtraPuzzleSettingsPanel
+      v-model="settings.state.showSettings"
+      title="数织设置"
+      :config="settings.state.config"
+      :defaults="DEFAULT_CONFIG"
+      :fields="settingsFields"
+      @apply="applySettings"
+    />
+    <LeaderboardPanel
+      v-model="showLeaderboard"
+      game-id="nonogram"
+      game-name="数织"
+      :dimensions="leaderboardDimensions"
+    />
+
     <template #rules>
       <ol class="list-decimal pl-5 space-y-2">
         <li>每行和每列的数字表示连续涂色格子的长度，数字顺序与格子顺序一致。</li>
@@ -70,16 +94,40 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useExtraPuzzleLeaderboard } from '../../composables/useExtraPuzzleLeaderboard'
+import { useExtraPuzzleSettings, type ExtraPuzzleConfig } from '../../composables/useExtraPuzzleSettings'
+import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import { NonogramEngine } from '../../game/nonogram/GameEngine'
 import ExtraPuzzleShell from './components/ExtraPuzzleShell.vue'
+import ExtraPuzzleSettingsPanel from './components/ExtraPuzzleSettingsPanel.vue'
+import LeaderboardPanel from './components/LeaderboardPanel.vue'
 
-const engine = new NonogramEngine()
+const DEFAULT_CONFIG = { puzzleIndex: 0 }
+const puzzleOptions = [
+  { value: 0, label: '爱心' }, { value: 1, label: '笑脸' }, { value: 2, label: '小树' }, { value: 3, label: '杯子' },
+]
+const puzzleIds = ['heart', 'smiley', 'tree', 'cup']
+const settings = useExtraPuzzleSettings('nonogram', DEFAULT_CONFIG, (config) => ({
+  puzzleIndex: Number.isInteger(config.puzzleIndex) ? Math.max(0, Math.min(3, config.puzzleIndex)) : DEFAULT_CONFIG.puzzleIndex,
+}))
+const settingsFields = [{ key: 'puzzleIndex', label: '默认题目', options: puzzleOptions }]
+const leaderboardDimensions: LeaderboardDimension[] = [{
+  key: 'difficulty', label: '题目', values: puzzleOptions.map((option) => ({ value: String(option.value), label: option.label })),
+}]
+const leaderboard = useExtraPuzzleLeaderboard('nonogram')
+const showLeaderboard = ref(false)
+let engine = new NonogramEngine(settings.state.config.puzzleIndex)
 const state = ref(engine.getState())
 const size = 5
+const startedAt = ref(Date.now())
 const filledCount = computed(() => state.value.filled.filter(Boolean).length)
+const currentPuzzleIndex = computed(() => Math.max(0, puzzleIds.indexOf(state.value.puzzleId)))
+const bestScore = computed(() => leaderboard.leaderboard.getBestScore({ difficulty: String(currentPuzzleIndex.value) }))
 
 function play(row: number, col: number) {
-  if (engine.move([row, col])) state.value = engine.getState()
+  if (!engine.move([row, col])) return
+  state.value = engine.getState()
+  recordWin()
 }
 
 function toggleMarkMode() {
@@ -89,12 +137,37 @@ function toggleMarkMode() {
 
 function restart() {
   engine.reset()
+  leaderboard.beginRound()
+  startedAt.value = Date.now()
   state.value = engine.getState()
 }
 
 function nextPuzzle() {
   engine.nextPuzzle()
+  leaderboard.beginRound()
+  startedAt.value = Date.now()
   state.value = engine.getState()
+}
+
+function applySettings(config: ExtraPuzzleConfig) {
+  const puzzleIndex = Number(config.puzzleIndex)
+  settings.setConfig({ puzzleIndex })
+  engine = new NonogramEngine(settings.state.config.puzzleIndex)
+  leaderboard.beginRound()
+  startedAt.value = Date.now()
+  state.value = engine.getState()
+}
+
+function recordWin() {
+  if (!engine.isWin()) return
+  const duration = Math.floor((Date.now() - startedAt.value) / 1000)
+  leaderboard.record({
+    score: Math.max(1, engine.getScore() - duration),
+    moves: state.value.moves,
+    duration,
+    difficulty: String(currentPuzzleIndex.value),
+    won: true,
+  })
 }
 
 function cellClass(row: number, col: number) {

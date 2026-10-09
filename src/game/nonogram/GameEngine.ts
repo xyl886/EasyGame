@@ -42,7 +42,8 @@ export class NonogramEngine implements BaseGame<NonogramState, [number, number]>
   private puzzleIndex = 0
   private state!: NonogramState
 
-  constructor() {
+  constructor(puzzleIndex = 0) {
+    this.puzzleIndex = this.clampPuzzleIndex(puzzleIndex)
     this.reset()
   }
 
@@ -57,7 +58,7 @@ export class NonogramEngine implements BaseGame<NonogramState, [number, number]>
 
   move([row, col]: [number, number]): boolean {
     const size = this.size()
-    if (this.state.status !== 'playing' || row < 0 || row >= size || col < 0 || col >= size) return false
+    if (this.state.status !== 'playing' || !Number.isInteger(row) || !Number.isInteger(col) || row < 0 || row >= size || col < 0 || col >= size) return false
     const index = row * size + col
     if (this.state.markMode) {
       this.state.marked[index] = !this.state.marked[index]
@@ -94,6 +95,11 @@ export class NonogramEngine implements BaseGame<NonogramState, [number, number]>
     this.reset()
   }
 
+  selectPuzzle(puzzleIndex: number): void {
+    this.puzzleIndex = this.clampPuzzleIndex(puzzleIndex)
+    this.reset()
+  }
+
   isGameOver(): boolean {
     return this.state.status === 'won'
   }
@@ -123,5 +129,9 @@ export class NonogramEngine implements BaseGame<NonogramState, [number, number]>
 
   private size(): number {
     return Math.sqrt(this.state.solution.length)
+  }
+
+  private clampPuzzleIndex(puzzleIndex: number): number {
+    return Number.isInteger(puzzleIndex) ? Math.max(0, Math.min(PUZZLES.length - 1, puzzleIndex)) : 0
   }
 }

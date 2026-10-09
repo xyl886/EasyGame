@@ -10,6 +10,7 @@ export interface StrokeState {
   nodes: StrokeNode[]
   edges: Array<[number, number]>
   usedEdges: string[]
+  startNode: number
   current: number | null
   status: 'playing' | 'stuck' | 'won'
 }
@@ -32,12 +33,18 @@ export class OneStrokeEngine implements BaseGame<StrokeState, number> {
   private usedEdges = new Set<string>()
   private current: number | null = null
   private status: StrokeState['status'] = 'playing'
+  private startNode = 0
+
+  constructor(startNode = 0) {
+    this.setStartNode(startNode)
+  }
 
   getState(): StrokeState {
     return {
       nodes: NODES.map((node) => ({ ...node })),
       edges: EDGES.map((edge) => [...edge] as [number, number]),
       usedEdges: [...this.usedEdges],
+      startNode: this.startNode,
       current: this.current,
       status: this.status,
     }
@@ -45,6 +52,7 @@ export class OneStrokeEngine implements BaseGame<StrokeState, number> {
 
   loadState(state: StrokeState): void {
     this.usedEdges = new Set(state.usedEdges)
+    this.startNode = [0, 5, 6].includes(state.startNode) ? state.startNode : 0
     this.current = state.current
     this.status = state.status
   }
@@ -52,6 +60,7 @@ export class OneStrokeEngine implements BaseGame<StrokeState, number> {
   move(nodeId: number): boolean {
     if (this.status !== 'playing' || !NODES.some((node) => node.id === nodeId)) return false
     if (this.current === null) {
+      if (this.startNode !== 0 && nodeId !== this.startNode) return false
       this.current = nodeId
       return true
     }
@@ -80,6 +89,11 @@ export class OneStrokeEngine implements BaseGame<StrokeState, number> {
     this.usedEdges.clear()
     this.current = null
     this.status = 'playing'
+  }
+
+  setStartNode(startNode: number): void {
+    this.startNode = [0, 5, 6].includes(startNode) ? startNode : 0
+    this.reset()
   }
 
   getScore(): number {

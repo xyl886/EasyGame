@@ -11,6 +11,7 @@ export interface MemoryCard {
 
 export interface MemoryState {
   cards: MemoryCard[]
+  pairCount: number
   moves: number
   pairs: number
   status: MemoryStatus
@@ -19,6 +20,10 @@ export interface MemoryState {
 }
 
 const SYMBOLS = ['🐶', '🐱', '🐰', '🐻', '🐼', '🐨', '🦊', '🐸']
+
+export interface MemoryConfig {
+  pairs: number
+}
 
 function shuffled<T>(items: T[]): T[] {
   const result = [...items]
@@ -31,8 +36,10 @@ function shuffled<T>(items: T[]): T[] {
 
 export class MemoryMatchEngine implements BaseGame<MemoryState, number> {
   private state!: MemoryState
+  private pairCount: number
 
-  constructor() {
+  constructor(config: Partial<MemoryConfig> = {}) {
+    this.pairCount = [4, 6, 8].includes(config.pairs ?? 8) ? config.pairs ?? 8 : 8
     this.reset()
   }
 
@@ -41,7 +48,9 @@ export class MemoryMatchEngine implements BaseGame<MemoryState, number> {
   }
 
   loadState(state: MemoryState): void {
-    this.state = { ...state, cards: state.cards.map((card) => ({ ...card })) }
+    const pairCount = [4, 6, 8].includes(state.pairCount) ? state.pairCount : 8
+    this.pairCount = pairCount
+    this.state = { ...state, pairCount, cards: state.cards.map((card) => ({ ...card })) }
   }
 
   move(index: number): boolean {
@@ -57,7 +66,7 @@ export class MemoryMatchEngine implements BaseGame<MemoryState, number> {
       if (opened[0].symbol === opened[1].symbol) {
         opened.forEach((item) => (item.matched = true))
         this.state.pairs++
-        if (this.state.pairs === SYMBOLS.length) this.state.status = 'won'
+        if (this.state.pairs === this.pairCount) this.state.status = 'won'
       } else {
         this.state.mismatchPending = true
       }
@@ -82,8 +91,10 @@ export class MemoryMatchEngine implements BaseGame<MemoryState, number> {
   }
 
   reset(): void {
-    const deck = shuffled([...SYMBOLS, ...SYMBOLS])
+    const symbols = SYMBOLS.slice(0, this.pairCount)
+    const deck = shuffled([...symbols, ...symbols])
     this.state = {
+      pairCount: this.pairCount,
       cards: deck.map((symbol, id) => ({ id, symbol, open: false, matched: false })),
       moves: 0,
       pairs: 0,

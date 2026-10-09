@@ -1,9 +1,20 @@
 <template>
   <ExtraPuzzleShell title="一笔画" icon="✍️">
+    <template #header-actions>
+      <button class="eg-icon-btn" type="button" aria-label="排行榜" @click="showLeaderboard = true">🏆</button>
+      <button class="eg-icon-btn" type="button" aria-label="设置" @click="settings.openSettings()">⚙️</button>
+    </template>
+
     <section class="max-w-xl mx-auto space-y-4">
-      <div class="claude-card p-3 text-center">
-        <span class="text-sm text-text-muted-light dark:text-text-muted-dark">已连接</span>
-        <strong class="ml-2 text-accent-light dark:text-accent-dark">{{ state.usedEdges.length }}/{{ state.edges.length }}</strong>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="claude-card p-3 text-center">
+          <span class="text-sm text-text-muted-light dark:text-text-muted-dark">已连接</span>
+          <strong class="ml-2 text-accent-light dark:text-accent-dark">{{ state.usedEdges.length }}/{{ state.edges.length }}</strong>
+        </div>
+        <div class="claude-card p-3 text-center">
+          <span class="text-sm text-text-muted-light dark:text-text-muted-dark">历史最高</span>
+          <strong class="ml-2 text-accent-light dark:text-accent-dark">{{ bestScore ?? '—' }}</strong>
+        </div>
       </div>
 
       <div class="claude-card p-4 sm:p-6">
@@ -40,6 +51,21 @@
       </div>
     </section>
 
+    <ExtraPuzzleSettingsPanel
+      v-model="settings.state.showSettings"
+      title="一笔画设置"
+      :config="settings.state.config"
+      :defaults="DEFAULT_CONFIG"
+      :fields="settingsFields"
+      @apply="applySettings"
+    />
+    <LeaderboardPanel
+      v-model="showLeaderboard"
+      game-id="one-stroke"
+      game-name="一笔画"
+      :dimensions="leaderboardDimensions"
+    />
+
     <template #rules>
       <ol class="list-decimal pl-5 space-y-2">
         <li>点击任意圆点开始，再依次点击相邻圆点。</li>
@@ -52,14 +78,42 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useExtraPuzzleLeaderboard } from '../../composables/useExtraPuzzleLeaderboard'
+import { useExtraPuzzleSettings, type ExtraPuzzleConfig } from '../../composables/useExtraPuzzleSettings'
+import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import { OneStrokeEngine } from '../../game/one-stroke/GameEngine'
 import ExtraPuzzleShell from './components/ExtraPuzzleShell.vue'
+import ExtraPuzzleSettingsPanel from './components/ExtraPuzzleSettingsPanel.vue'
+import LeaderboardPanel from './components/LeaderboardPanel.vue'
 
-const engine = new OneStrokeEngine()
+const DEFAULT_CONFIG = { startNode: 0 }
+const settings = useExtraPuzzleSettings('one-stroke', DEFAULT_CONFIG, (config) => ({
+  startNode: [0, 5, 6].includes(config.startNode) ? config.startNode : DEFAULT_CONFIG.startNode,
+}))
+const settingsFields = [{
+  key: 'startNode',
+  label: '起点限制',
+  options: [
+    { value: 0, label: '自由选择' },
+    { value: 5, label: '左侧端点' },
+    { value: 6, label: '右侧端点' },
+  ],
+}]
+const leaderboardDimensions: LeaderboardDimension[] = [{
+  key: 'difficulty',
+  label: '起点',
+  values: [{ value: '0', label: '自由选择' }, { value: '5', label: '左侧端点' }, { value: '6', label: '右侧端点' }],
+}]
+const leaderboard = useExtraPuzzleLeaderboard('one-stroke')
+const showLeaderboard = ref(false)
+const startedAt = ref(Date.now())
+const engine = new OneStrokeEngine(settings.state.config.startNode)
 const state = ref(engine.getState())
+const bestScore = computed(() => leaderboard.leaderboard.getBestScore({ difficulty: String(state.value.startNode) }))
 const message = computed(() => {
   if (state.value.status === 'won') return '🎉 一笔连成，全部线段已完成！'
   if (state.value.status === 'stuck') return '走到死路了，重新开始再试一次。'
+  if (state.value.current === null && state.value.startNode !== 0) return `请从${state.value.startNode === 5 ? '左' : '右'}侧端点开始。`
   return state.value.current === null ? '从任意圆点开始。' : '继续点击与当前圆点相连的线段。'
 })
 
@@ -75,10 +129,30 @@ function used(edge: [number, number]) {
 function selectPoint(id: number) {
   engine.move(id)
   state.value = engine.getState()
+  if (engine.isWin()) {
+    const duration = Math.floor((Date.now() - startedAt.value) / 1000)
+    leaderboard.record({
+      score: Math.max(1, 1000 - state.value.usedEdges.length * 5 - duration),
+      moves: state.value.usedEdges.length,
+      duration,
+      difficulty: String(state.value.startNode),
+      won: true,
+    })
+  }
 }
 
 function reset() {
   engine.reset()
+  leaderboard.beginRound()
+  startedAt.value = Date.now()
+  state.value = engine.getState()
+}
+
+function applySettings(config: ExtraPuzzleConfig) {
+  settings.setConfig({ startNode: Number(config.startNode) })
+  engine.setStartNode(settings.state.config.startNode)
+  leaderboard.beginRound()
+  startedAt.value = Date.now()
   state.value = engine.getState()
 }
 </script>
