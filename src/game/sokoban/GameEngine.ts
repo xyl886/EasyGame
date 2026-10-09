@@ -73,7 +73,7 @@ export class SokobanEngine implements BaseGame<SokobanState, SokobanDirection> {
     const next = nextRow * this.state.cols + nextCol
     if (this.state.walls.includes(next)) return false
     const boxIndex = this.state.boxes.indexOf(next)
-    let boxes = [...this.state.boxes]
+    const boxes = [...this.state.boxes]
     if (boxIndex >= 0) {
       const beyondRow = nextRow + dr
       const beyondCol = nextCol + dc

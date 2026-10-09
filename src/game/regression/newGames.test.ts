@@ -6,6 +6,47 @@ import { NonogramEngine, nonogramHints } from '../nonogram/GameEngine'
 import { OneStrokeEngine } from '../one-stroke/GameEngine'
 import { SokobanEngine, type SokobanDirection } from '../sokoban/GameEngine'
 
+function solveLightsOut(size: number, cells: boolean[]): number[] | null {
+  const rowMask = (row: number) => {
+    let mask = 0
+    for (let col = 0; col < size; col++) {
+      if (!cells[row * size + col]) mask |= 1 << col
+    }
+    return mask
+  }
+  const board = Array.from({ length: size }, (_, row) => rowMask(row))
+  const rowLimit = (1 << size) - 1
+
+  for (let firstRow = 0; firstRow <= rowLimit; firstRow++) {
+    const presses = new Array<number>(size).fill(0)
+    presses[0] = firstRow
+    for (let row = 0; row < size - 1; row++) {
+      let nextRow = 0
+      for (let col = 0; col < size; col++) {
+        const bit = 1 << col
+        const horizontal = presses[row] ^ ((presses[row] << 1) & rowLimit) ^ (presses[row] >> 1)
+        const above = row > 0 ? presses[row - 1] : 0
+        if (((board[row] ^ horizontal ^ above) & bit) !== 0) nextRow |= bit
+      }
+      presses[row + 1] = nextRow
+    }
+
+    const last = size - 1
+    const finalRow = board[last]
+      ^ presses[last]
+      ^ ((presses[last] << 1) & rowLimit)
+      ^ (presses[last] >> 1)
+      ^ (last > 0 ? presses[last - 1] : 0)
+    if (finalRow === 0) {
+      return presses.flatMap((mask, row) =>
+        Array.from({ length: size }, (_, col) => (mask & (1 << col)) !== 0 ? row * size + col : -1),
+      ).filter((index) => index >= 0)
+    }
+  }
+
+  return null
+}
+
 describe('记忆翻牌回归', () => {
   it.each([4, 6, 8])('设置 %i 对时使用对应数量的牌并可完整通关', (pairs) => {
     const engine = new MemoryMatchEngine({ pairs })
@@ -103,6 +144,18 @@ describe('点灯谜题回归', () => {
     engine.reset()
     expect(engine.isWin()).toBe(false)
     expect(engine.getState().moves).toBe(0)
+  })
+
+  it.each([3, 5, 7])('随机生成的 %i 阶棋盘始终可解', (size) => {
+    const engine = new LightsOutEngine(size)
+
+    for (let attempt = 0; attempt < 8; attempt++) {
+      const solution = solveLightsOut(size, engine.getState().cells)
+      expect(solution).not.toBeNull()
+      for (const index of solution!) expect(engine.move(index)).toBe(true)
+      expect(engine.isWin()).toBe(true)
+      engine.reset()
+    }
   })
 })
 

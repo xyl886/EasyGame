@@ -61,6 +61,7 @@ export function useLeaderboardStore(gameId: string) {
         const score = input.score
         const difficulty = input.difficulty
         const size = input.size
+        let submittedId: string | null = null
         // 尝试找到同一玩家同维度的现有记录
         const existIdx = this.entries.findIndex(
           (e) =>
@@ -97,6 +98,7 @@ export function useLeaderboardStore(gameId: string) {
             moves: input.moves,
             won: input.won,
           }
+          submittedId = replaced.id
           this.entries.splice(existIdx, 1, replaced)
         } else {
           // 该玩家此维度首次上榜：直接新增
@@ -111,6 +113,7 @@ export function useLeaderboardStore(gameId: string) {
             moves: input.moves,
             won: input.won,
           }
+          submittedId = entry.id
           this.entries.push(entry)
         }
         // 统一去重 + 分数降序 Top N
@@ -118,7 +121,7 @@ export function useLeaderboardStore(gameId: string) {
         this.persist()
         return existIdx >= 0
           ? this.entries.find((e) => e.playerName === playerName && e.difficulty === difficulty && e.size === size) ?? null
-          : (this.entries[this.entries.length - 1] ?? null)
+          : this.entries.find((e) => e.id === submittedId) ?? null
       },
 
       /** 设置玩家昵称（同时写入跨游戏共享 key） */

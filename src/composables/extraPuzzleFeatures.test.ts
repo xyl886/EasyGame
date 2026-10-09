@@ -51,6 +51,17 @@ describe('游戏排行榜接入', () => {
     expect(StorageAdapter.get(leaderboardKey('memory-match-test'))).toHaveLength(2)
   })
 
+  it('新增记录返回本次提交的记录，而不是排序后的末条记录', () => {
+    const board = useLeaderboardStore('leaderboard-return-value-test')
+    board.addEntry({ score: 900, difficulty: 'easy', won: true })
+    board.addEntry({ score: 400, difficulty: 'hard', won: true })
+
+    const submitted = board.addEntry({ score: 700, difficulty: 'normal', won: true })
+
+    expect(submitted?.score).toBe(700)
+    expect(board.entries.map((entry) => entry.score)).toEqual([900, 700, 400])
+  })
+
   it('新游戏排行榜提交器每局最多记一次，失败局不入榜', () => {
     const result = useExtraPuzzleLeaderboard('one-stroke-test')
     expect(result.record({ score: 0, won: false })).toBeNull()
