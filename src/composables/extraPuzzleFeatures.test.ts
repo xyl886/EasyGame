@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { StorageAdapter } from '../adapters/StorageAdapter'
 import { leaderboardKey } from '../game/base/leaderboard'
@@ -40,6 +40,8 @@ describe('游戏排行榜接入', () => {
     setActivePinia(createPinia())
   })
 
+  afterEach(() => vi.useRealTimers())
+
   it('排行榜按游戏隔离、同玩家同维度只保留最高分并持久化', () => {
     const board = useLeaderboardStore('memory-match-test')
     expect(board.addEntry({ score: 600, difficulty: '4', size: 4, won: true })).not.toBeNull()
@@ -72,5 +74,21 @@ describe('游戏排行榜接入', () => {
     result.beginRound()
     expect(result.record({ score: 900, moves: 14, difficulty: '5', won: true })).not.toBeNull()
     expect(result.leaderboard.entries[0].score).toBe(900)
+  })
+
+  it('计时从首个操作开始，等待时间不计入，重开后清零', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'))
+    const round = useExtraPuzzleLeaderboard('round-timer-test')
+
+    vi.advanceTimersByTime(120_000)
+    expect(round.durationSeconds()).toBe(0)
+
+    round.startTiming()
+    vi.advanceTimersByTime(2_500)
+    expect(round.durationSeconds()).toBe(2)
+
+    round.beginRound()
+    expect(round.durationSeconds()).toBe(0)
   })
 })

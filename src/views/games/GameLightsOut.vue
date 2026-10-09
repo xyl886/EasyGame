@@ -94,15 +94,15 @@ const leaderboard = useExtraPuzzleLeaderboard('lights-out')
 const showLeaderboard = ref(false)
 let engine = new LightsOutEngine(settings.state.config.size)
 const state = ref(engine.getState())
-let startedAt = Date.now()
 const litCount = computed(() => state.value.cells.filter(Boolean).length)
 const bestScore = computed(() => leaderboard.leaderboard.getBestScore({ difficulty: String(state.value.size) }))
 
 function play(index: number) {
   if (!engine.move(index)) return
+  leaderboard.startTiming()
   state.value = engine.getState()
   if (engine.isWin()) {
-    const duration = Math.floor((Date.now() - startedAt) / 1000)
+    const duration = leaderboard.durationSeconds()
     leaderboard.record({
       score: Math.max(1, engine.getScore() - duration),
       moves: state.value.moves,
@@ -116,7 +116,6 @@ function play(index: number) {
 function newGame() {
   engine = new LightsOutEngine(settings.state.config.size)
   leaderboard.beginRound()
-  startedAt = Date.now()
   state.value = engine.getState()
 }
 

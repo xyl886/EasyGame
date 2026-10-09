@@ -47,6 +47,39 @@ function solveLightsOut(size: number, cells: boolean[]): number[] | null {
   return null
 }
 
+function countNonogramSolutions(solution: boolean[]): number {
+  const size = Math.sqrt(solution.length)
+  const rowClues = Array.from({ length: size }, (_, row) => nonogramHints(solution.slice(row * size, (row + 1) * size)))
+  const columnClues = Array.from({ length: size }, (_, col) =>
+    nonogramHints(Array.from({ length: size }, (_, row) => solution[row * size + col])),
+  )
+  const rowOptions = rowClues.map((clue) =>
+    Array.from({ length: 1 << size }, (_, mask) =>
+      Array.from({ length: size }, (_, col) => (mask & (1 << col)) !== 0),
+    ).filter((row) => JSON.stringify(nonogramHints(row)) === JSON.stringify(clue)),
+  )
+  const rows: boolean[][] = []
+  let count = 0
+
+  function search(row: number) {
+    if (row === size) {
+      const matches = columnClues.every((clue, col) =>
+        JSON.stringify(nonogramHints(rows.map((line) => line[col]))) === JSON.stringify(clue),
+      )
+      if (matches) count++
+      return
+    }
+    for (const candidate of rowOptions[row]) {
+      rows.push(candidate)
+      search(row + 1)
+      rows.pop()
+    }
+  }
+
+  search(0)
+  return count
+}
+
 describe('记忆翻牌回归', () => {
   it.each([4, 6, 8])('设置 %i 对时使用对应数量的牌并可完整通关', (pairs) => {
     const engine = new MemoryMatchEngine({ pairs })
@@ -205,6 +238,16 @@ describe('一笔画回归', () => {
     expect(engine.move(5)).toBe(true)
     expect(engine.getState().current).toBe(5)
   })
+
+  it('从右侧端点开始也能走完整幅图形', () => {
+    const engine = new OneStrokeEngine(6)
+    const trail = findEulerTrail(engine.getState().edges, 6)
+    expect(trail).not.toBeNull()
+
+    for (const node of trail!) expect(engine.move(node)).toBe(true)
+
+    expect(engine.isWin()).toBe(true)
+  })
 })
 
 describe('推箱子回归', () => {
@@ -314,6 +357,11 @@ describe('数织回归', () => {
       expect(engine.isWin(), state.puzzleName).toBe(true)
     }
   })
+
+  it.each([0, 1, 2, 3])('第 %i 幅图案的行列线索只有一个合法解', (puzzleIndex) => {
+    const engine = new NonogramEngine(puzzleIndex)
+    expect(countNonogramSolutions(engine.getState().solution)).toBe(1)
+  })
 })
 
 describe('桥接谜题回归', () => {
@@ -353,5 +401,25 @@ describe('桥接谜题回归', () => {
     engine.move(2)
     expect(engine.getState().bridges).toEqual({})
     expect(engine.getState().selected).toBe(2)
+  })
+
+  it('拒绝与已有桥相交的连接', () => {
+    const engine = new HashiEngine()
+    engine.loadState({
+      puzzleIndex: 0,
+      islands: [
+        { id: 0, row: 1, col: 1, required: 1 },
+        { id: 1, row: 1, col: 5, required: 1 },
+        { id: 2, row: 0, col: 3, required: 1 },
+        { id: 3, row: 2, col: 3, required: 1 },
+      ],
+      bridges: { '0-1': 1 },
+      selected: null,
+      status: 'playing',
+    })
+
+    expect(engine.move(2)).toBe(true)
+    expect(engine.move(3)).toBe(true)
+    expect(engine.getState().bridges).toEqual({ '0-1': 1 })
   })
 })

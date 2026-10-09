@@ -116,7 +116,6 @@ const leaderboard = useExtraPuzzleLeaderboard('sokoban')
 const showLeaderboard = ref(false)
 let engine = new SokobanEngine(settings.state.config)
 const state = ref(engine.getState())
-const startedAt = ref(Date.now())
 const remaining = computed(() => state.value.targets.filter((target) => !state.value.boxes.includes(target)).length)
 const bestScore = computed(() => leaderboard.leaderboard.getBestScore({ difficulty: String(state.value.level + 1) }))
 const canUndo = computed(() => state.value.moves > 0)
@@ -130,6 +129,7 @@ function syncState() {
 
 function move(direction: SokobanDirection) {
   if (!engine.move(direction)) return
+  leaderboard.startTiming()
   syncState()
   recordWin()
 }
@@ -141,14 +141,12 @@ function undo() {
 function restart() {
   engine.reset()
   leaderboard.beginRound()
-  startedAt.value = Date.now()
   syncState()
 }
 
 function nextLevel() {
   if (engine.nextLevel()) {
     leaderboard.beginRound()
-    startedAt.value = Date.now()
     syncState()
   }
 }
@@ -157,13 +155,12 @@ function applySettings(config: ExtraPuzzleConfig) {
   settings.setConfig({ startLevel: Number(config.startLevel) })
   engine = new SokobanEngine(settings.state.config)
   leaderboard.beginRound()
-  startedAt.value = Date.now()
   syncState()
 }
 
 function recordWin() {
   if (!engine.isWin()) return
-  const duration = Math.floor((Date.now() - startedAt.value) / 1000)
+  const duration = leaderboard.durationSeconds()
   leaderboard.record({
     score: Math.max(1, engine.getScore() - duration),
     moves: state.value.moves,

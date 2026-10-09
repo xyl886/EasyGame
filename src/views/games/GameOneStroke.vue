@@ -106,7 +106,6 @@ const leaderboardDimensions: LeaderboardDimension[] = [{
 }]
 const leaderboard = useExtraPuzzleLeaderboard('one-stroke')
 const showLeaderboard = ref(false)
-const startedAt = ref(Date.now())
 const engine = new OneStrokeEngine(settings.state.config.startNode)
 const state = ref(engine.getState())
 const bestScore = computed(() => leaderboard.leaderboard.getBestScore({ difficulty: String(state.value.startNode) }))
@@ -127,10 +126,11 @@ function used(edge: [number, number]) {
 }
 
 function selectPoint(id: number) {
-  engine.move(id)
+  if (!engine.move(id)) return
+  leaderboard.startTiming()
   state.value = engine.getState()
   if (engine.isWin()) {
-    const duration = Math.floor((Date.now() - startedAt.value) / 1000)
+    const duration = leaderboard.durationSeconds()
     leaderboard.record({
       score: Math.max(1, 1000 - state.value.usedEdges.length * 5 - duration),
       moves: state.value.usedEdges.length,
@@ -144,7 +144,6 @@ function selectPoint(id: number) {
 function reset() {
   engine.reset()
   leaderboard.beginRound()
-  startedAt.value = Date.now()
   state.value = engine.getState()
 }
 
@@ -152,7 +151,6 @@ function applySettings(config: ExtraPuzzleConfig) {
   settings.setConfig({ startNode: Number(config.startNode) })
   engine.setStartNode(settings.state.config.startNode)
   leaderboard.beginRound()
-  startedAt.value = Date.now()
   state.value = engine.getState()
 }
 </script>

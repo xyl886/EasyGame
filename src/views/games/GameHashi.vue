@@ -123,7 +123,6 @@ const state = ref(engine.getState())
 const satisfiedCount = computed(() => state.value.islands.filter((island) => engine.degree(island.id) === island.required).length)
 const bestScore = computed(() => leaderboard.leaderboard.getBestScore({ difficulty: String(state.value.puzzleIndex) }))
 const moveCount = ref(0)
-const startedAt = ref(Date.now())
 const bridgeLines = computed(() => Object.entries(state.value.bridges).flatMap(([key, count]) => {
   const [a, b] = key.split('-').map(Number)
   const first = state.value.islands.find((island) => island.id === a)!
@@ -157,7 +156,8 @@ function islandClass(islandId: number) {
 
 function connect(islandId: number) {
   const previousBridgeCount = engine.totalBridges()
-  engine.move(islandId)
+  if (!engine.move(islandId)) return
+  leaderboard.startTiming()
   state.value = engine.getState()
   if (engine.totalBridges() !== previousBridgeCount) moveCount.value++
   if (engine.isWin()) recordWin()
@@ -166,7 +166,6 @@ function connect(islandId: number) {
 function clearBridges() {
   engine.loadState({ ...state.value, bridges: {}, selected: null, status: 'playing' })
   moveCount.value = 0
-  startedAt.value = Date.now()
   leaderboard.beginRound()
   state.value = engine.getState()
 }
@@ -174,7 +173,6 @@ function clearBridges() {
 function nextPuzzle() {
   engine.nextPuzzle()
   moveCount.value = 0
-  startedAt.value = Date.now()
   leaderboard.beginRound()
   state.value = engine.getState()
 }
@@ -183,13 +181,12 @@ function applySettings(config: ExtraPuzzleConfig) {
   settings.setConfig({ puzzleIndex: Number(config.puzzleIndex) })
   engine = new HashiEngine(settings.state.config.puzzleIndex)
   moveCount.value = 0
-  startedAt.value = Date.now()
   leaderboard.beginRound()
   state.value = engine.getState()
 }
 
 function recordWin() {
-  const duration = Math.floor((Date.now() - startedAt.value) / 1000)
+  const duration = leaderboard.durationSeconds()
   leaderboard.record({
     score: Math.max(1, 1000 - moveCount.value * 10 - duration),
     moves: moveCount.value,

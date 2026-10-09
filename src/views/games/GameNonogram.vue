@@ -119,13 +119,13 @@ const showLeaderboard = ref(false)
 let engine = new NonogramEngine(settings.state.config.puzzleIndex)
 const state = ref(engine.getState())
 const size = 5
-const startedAt = ref(Date.now())
 const filledCount = computed(() => state.value.filled.filter(Boolean).length)
 const currentPuzzleIndex = computed(() => Math.max(0, puzzleIds.indexOf(state.value.puzzleId)))
 const bestScore = computed(() => leaderboard.leaderboard.getBestScore({ difficulty: String(currentPuzzleIndex.value) }))
 
 function play(row: number, col: number) {
   if (!engine.move([row, col])) return
+  leaderboard.startTiming()
   state.value = engine.getState()
   recordWin()
 }
@@ -138,14 +138,12 @@ function toggleMarkMode() {
 function restart() {
   engine.reset()
   leaderboard.beginRound()
-  startedAt.value = Date.now()
   state.value = engine.getState()
 }
 
 function nextPuzzle() {
   engine.nextPuzzle()
   leaderboard.beginRound()
-  startedAt.value = Date.now()
   state.value = engine.getState()
 }
 
@@ -154,13 +152,12 @@ function applySettings(config: ExtraPuzzleConfig) {
   settings.setConfig({ puzzleIndex })
   engine = new NonogramEngine(settings.state.config.puzzleIndex)
   leaderboard.beginRound()
-  startedAt.value = Date.now()
   state.value = engine.getState()
 }
 
 function recordWin() {
   if (!engine.isWin()) return
-  const duration = Math.floor((Date.now() - startedAt.value) / 1000)
+  const duration = leaderboard.durationSeconds()
   leaderboard.record({
     score: Math.max(1, engine.getScore() - duration),
     moves: state.value.moves,
