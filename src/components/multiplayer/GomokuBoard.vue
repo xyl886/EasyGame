@@ -62,7 +62,7 @@ function cellAria(index: number): string {
   touch-action: manipulation;
 }
 
-:global(.dark) .gomoku-board {
+:global(.dark .gomoku-board) {
   background-color: #3a342c;
 }
 
@@ -78,7 +78,7 @@ function cellAria(index: number): string {
   transition: background-color 0.12s ease;
 }
 
-:global(.dark) .gomoku-cell {
+:global(.dark .gomoku-cell) {
   border-color: rgb(250 249 245 / 8%);
 }
 

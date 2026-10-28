@@ -605,13 +605,13 @@ onBeforeUnmount(() => {
   color: rgb(20 20 19);
 }
 
-:global(.dark) .quick-chip {
+:global(.dark .quick-chip) {
   background-color: rgb(31 31 29);
   color: rgb(176 174 165);
   box-shadow: inset 0 0 0 1px rgb(250 249 245 / 10%);
 }
 
-:global(.dark) .quick-chip:hover {
+:global(.dark .quick-chip:hover) {
   background-color: rgb(42 42 39);
   color: rgb(245 244 237);
 }
