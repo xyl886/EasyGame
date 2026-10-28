@@ -182,6 +182,7 @@
       :dimensions="leaderboardDimensions"
       size-suffix="×"
     />
+    <ShareSheet v-model="shareOpen" :card="shareCard" />
   </div>
 </template>
 
@@ -201,8 +202,6 @@ import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
 import { sound } from '../../utils/sound'
-import { shareOrCopy, shareUrl, gameShareText } from '../../utils/share'
-import { toast } from '../../utils/toast'
 import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
 import SoundToggle from '../../components/SoundToggle.vue'
@@ -211,6 +210,11 @@ import ScoreBox from './components/ScoreBox.vue'
 import KlotskiSettingsPanel from './components/KlotskiSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
 import AppIcon from '../../components/AppIcon.vue'
+import ShareSheet from '../../components/ShareSheet.vue'
+import type { ShareCardData } from '../../utils/shareCard'
+
+const shareOpen = ref(false)
+const shareCard = ref<ShareCardData | null>(null)
 
 const settings = useKlotskiSettingsStore()
 
@@ -432,12 +436,22 @@ function applySettings(config: KlotskiConfig) {
 }
 
 /** 分享成绩 */
-async function shareResult() {
-  const result = await shareOrCopy({
-    text: gameShareText('klotski', state.moves, state.size, true),
-    url: shareUrl('/game/klotski'),
-  })
-  toast(result === 'shared' ? '已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
+function shareResult() {
+  shareCard.value = {
+    gameId: 'klotski',
+    gameName: '数字华容道',
+    glyph: '华',
+    title: `${state.moves} 步`,
+    subtitle: `${state.size}×${state.size} · ${difficultyLabel.value}`,
+    stats: [
+      { label: '用时', value: elapsedText.value },
+      { label: '历史最少', value: state.bestMoves > 0 ? `${state.bestMoves} 步` : '—' },
+      { label: '尺寸', value: `${state.size}×${state.size}` },
+    ],
+    footer: state.moves === state.bestMoves ? '破纪录！' : '数字排好了',
+    route: '/game/klotski',
+  }
+  shareOpen.value = true
 }
 
 // ===== 键盘操作 =====

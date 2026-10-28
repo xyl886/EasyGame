@@ -266,6 +266,7 @@
       :dimensions="leaderboardDimensions"
       size-suffix="×"
     />
+    <ShareSheet v-model="shareOpen" :card="shareCard" />
   </div>
 </template>
 
@@ -286,7 +287,6 @@ import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
 import { sound } from '../../utils/sound'
-import { shareOrCopy, shareUrl } from '../../utils/share'
 import { toast } from '../../utils/toast'
 import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
@@ -295,6 +295,11 @@ import HowToPlay from '../../components/HowToPlay.vue'
 import SudokuSettingsPanel from './components/SudokuSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
 import AppIcon from '../../components/AppIcon.vue'
+import ShareSheet from '../../components/ShareSheet.vue'
+import type { ShareCardData } from '../../utils/shareCard'
+
+const shareOpen = ref(false)
+const shareCard = ref<ShareCardData | null>(null)
 
 const settings = useSudokuSettingsStore()
 
@@ -673,16 +678,22 @@ function applySettings(config: SudokuConfig) {
 }
 
 /** 分享成绩 */
-async function shareResult() {
-  const sec = finishedElapsed.value
-  const m = Math.floor(sec / 60)
-  const s = sec % 60
-  const time = m > 0 ? `${m}分${s}秒` : `${s}秒`
-  const result = await shareOrCopy({
-    text: `我在 EasyGame 数独用 ${time} 完成了「${specOf(state.size).label} · ${DIFFICULTY_LABELS[state.difficulty]}」难度，来挑战我！🔢`,
-    url: shareUrl('/game/sudoku'),
-  })
-  toast(result === 'shared' ? '已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
+function shareResult() {
+  shareCard.value = {
+    gameId: 'sudoku',
+    gameName: '数独',
+    glyph: '数',
+    title: `完成 · ${elapsedText.value}`,
+    subtitle: `${sizeLabel.value} · ${difficultyLabel.value}`,
+    stats: [
+      { label: '用时', value: elapsedText.value },
+      { label: '难度', value: difficultyLabel.value },
+      { label: '尺寸', value: sizeLabel.value },
+    ],
+    footer: '全盘填对了',
+    route: '/game/sudoku',
+  }
+  shareOpen.value = true
 }
 
 function syncState() {

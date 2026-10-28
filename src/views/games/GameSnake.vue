@@ -264,6 +264,7 @@
       :dimensions="leaderboardDimensions"
       size-suffix="×"
     />
+    <ShareSheet v-model="shareOpen" :card="shareCard" />
   </div>
 </template>
 
@@ -282,12 +283,15 @@ import ThemeToggle from '../../components/ThemeToggle.vue'
 import SoundToggle from '../../components/SoundToggle.vue'
 import HowToPlay from '../../components/HowToPlay.vue'
 import { sound } from '../../utils/sound'
-import { shareOrCopy, shareUrl, gameShareText } from '../../utils/share'
-import { toast } from '../../utils/toast'
 import ScoreBox from './components/ScoreBox.vue'
 import SnakeSettingsPanel from './components/SnakeSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
 import AppIcon from '../../components/AppIcon.vue'
+import ShareSheet from '../../components/ShareSheet.vue'
+import type { ShareCardData } from '../../utils/shareCard'
+
+const shareOpen = ref(false)
+const shareCard = ref<ShareCardData | null>(null)
 
 const settings = useSnakeSettingsStore()
 
@@ -561,12 +565,22 @@ function start() {
 }
 
 /** 分享本局成绩 */
-async function shareResult() {
-  const result = await shareOrCopy({
-    text: gameShareText('snake', state.score, undefined, state.won),
-    url: shareUrl('/game/snake'),
-  })
-  toast(result === 'shared' ? '已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
+function shareResult() {
+  shareCard.value = {
+    gameId: 'snake',
+    gameName: '贪吃蛇',
+    glyph: '蛇',
+    title: `${state.score} 分`,
+    subtitle: `${state.size}×${state.size} · ${speedLabel.value}`,
+    stats: [
+      { label: '最高分', value: String(state.bestScore) },
+      { label: '蛇身长度', value: String(state.snake.length) },
+      { label: '棋盘', value: `${state.size}×${state.size}` },
+    ],
+    footer: state.won ? '达成目标长度' : '再来一局',
+    route: '/game/snake',
+  }
+  shareOpen.value = true
 }
 
 function newGame() {

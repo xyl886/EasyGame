@@ -315,6 +315,7 @@
       :dimensions="leaderboardDimensions"
       size-suffix="×5"
     />
+    <ShareSheet v-model="shareOpen" :card="shareCard" />
   </div>
 </template>
 
@@ -336,7 +337,6 @@ import { useKlotskiSettingsStore } from '../../stores/klotski-settings'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
 import { sound } from '../../utils/sound'
-import { shareOrCopy, shareUrl, gameShareText } from '../../utils/share'
 import { toast } from '../../utils/toast'
 import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
@@ -346,6 +346,11 @@ import ScoreBox from './components/ScoreBox.vue'
 import KlotskiClassicSettingsPanel from './components/KlotskiClassicSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
 import AppIcon from '../../components/AppIcon.vue'
+import ShareSheet from '../../components/ShareSheet.vue'
+import type { ShareCardData } from '../../utils/shareCard'
+
+const shareOpen = ref(false)
+const shareCard = ref<ShareCardData | null>(null)
 
 const settings = useKlotskiSettingsStore()
 
@@ -750,12 +755,22 @@ function applySettings(config: ClassicConfig) {
 }
 
 /** 分享成绩 */
-async function shareResult() {
-  const result = await shareOrCopy({
-    text: gameShareText('klotski-classic', state.moves, undefined, true),
-    url: shareUrl('/game/klotski-classic'),
-  })
-  toast(result === 'shared' ? '已分享' : result === 'copied' ? '链接已复制' : '分享失败')
+function shareResult() {
+  shareCard.value = {
+    gameId: 'klotski-classic',
+    gameName: '三国华容道',
+    glyph: '曹',
+    title: `${state.moves} 步`,
+    subtitle: `${layoutLabel.value} · 4×5`,
+    stats: [
+      { label: '用时', value: elapsedText.value },
+      { label: '历史最少', value: state.bestMoves > 0 ? `${state.bestMoves} 步` : '—' },
+      { label: '布局', value: layoutLabel.value },
+    ],
+    footer: state.moves === state.bestMoves && state.bestMoves > 0 ? '破纪录！' : '曹操已救出',
+    route: '/game/klotski-classic',
+  }
+  shareOpen.value = true
 }
 
 // ===== 键盘操作 =====

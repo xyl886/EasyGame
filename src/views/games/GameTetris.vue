@@ -379,6 +379,7 @@
       game-name="俄罗斯方块"
       :dimensions="leaderboardDimensions"
     />
+    <ShareSheet v-model="shareOpen" :card="shareCard" />
   </div>
 </template>
 
@@ -403,12 +404,16 @@ import ThemeToggle from '../../components/ThemeToggle.vue'
 import SoundToggle from '../../components/SoundToggle.vue'
 import HowToPlay from '../../components/HowToPlay.vue'
 import { sound } from '../../utils/sound'
-import { shareOrCopy, shareUrl, gameShareText } from '../../utils/share'
 import { toast } from '../../utils/toast'
 import ScoreBox from './components/ScoreBox.vue'
 import TetrisSettingsPanel from './components/TetrisSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
 import AppIcon from '../../components/AppIcon.vue'
+import ShareSheet from '../../components/ShareSheet.vue'
+import type { ShareCardData } from '../../utils/shareCard'
+
+const shareOpen = ref(false)
+const shareCard = ref<ShareCardData | null>(null)
 
 const settings = useTetrisSettingsStore()
 
@@ -719,12 +724,23 @@ function start() {
 }
 
 /** 分享本局成绩 */
-async function shareResult() {
-  const result = await shareOrCopy({
-    text: gameShareText('tetris', state.score, state.lines, state.won),
-    url: shareUrl('/game/tetris'),
-  })
-  toast(result === 'shared' ? '已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
+function shareResult() {
+  shareCard.value = {
+    gameId: 'tetris',
+    gameName: '俄罗斯方块',
+    glyph: '方',
+    title: `${state.score} 分`,
+    subtitle: `消 ${state.lines} 行 · Lv ${state.level}`,
+    stats: [
+      { label: '最高分', value: String(state.bestScore) },
+      { label: '消行', value: String(state.lines) },
+      { label: '等级', value: `Lv ${state.level}` },
+      { label: '步数', value: String(state.moveCount) },
+    ],
+    footer: state.won ? '完成对局' : '再来一局',
+    route: '/game/tetris',
+  }
+  shareOpen.value = true
 }
 
 function newGame() {

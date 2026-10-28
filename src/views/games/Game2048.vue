@@ -220,6 +220,7 @@
       :dimensions="leaderboardDimensions"
       size-suffix="×"
     />
+    <ShareSheet v-model="shareOpen" :card="shareCard" />
   </div>
 </template>
 
@@ -249,12 +250,15 @@ import ThemeToggle from '../../components/ThemeToggle.vue'
 import SoundToggle from '../../components/SoundToggle.vue'
 import HowToPlay from '../../components/HowToPlay.vue'
 import { sound } from '../../utils/sound'
-import { shareOrCopy, shareUrl, gameShareText } from '../../utils/share'
-import { toast } from '../../utils/toast'
 import ScoreBox from './components/ScoreBox.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
 import AppIcon from '../../components/AppIcon.vue'
+import ShareSheet from '../../components/ShareSheet.vue'
+import type { ShareCardData } from '../../utils/shareCard'
+
+const shareOpen = ref(false)
+const shareCard = ref<ShareCardData | null>(null)
 
 const settings = useGame2048SettingsStore()
 
@@ -593,12 +597,22 @@ function applySettings(config: Game2048Config) {
 }
 
 /** 分享本局成绩 */
-async function shareResult() {
-  const result = await shareOrCopy({
-    text: gameShareText('2048', state.score, undefined, state.won),
-    url: shareUrl('/game/2048'),
-  })
-  toast(result === 'shared' ? '已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
+function shareResult() {
+  shareCard.value = {
+    gameId: '2048',
+    gameName: '2048',
+    glyph: '2048',
+    title: `${state.score} 分`,
+    subtitle: `${state.size}×${state.size} · ${difficultyLabel.value}`,
+    stats: [
+      { label: '最高分', value: String(state.bestScore) },
+      { label: '棋盘', value: `${state.size}×${state.size}` },
+      { label: '目标', value: String(winLabel.value) },
+    ],
+    footer: state.won ? '已合成目标数字' : '再挑战一次',
+    route: '/game/2048',
+  }
+  shareOpen.value = true
 }
 
 // ===== 键盘操作 =====

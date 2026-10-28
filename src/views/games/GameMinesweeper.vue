@@ -213,6 +213,7 @@
       game-name="扫雷"
       :dimensions="leaderboardDimensions"
     />
+    <ShareSheet v-model="shareOpen" :card="shareCard" />
   </div>
 </template>
 
@@ -233,8 +234,6 @@ import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
 import { sound } from '../../utils/sound'
-import { shareOrCopy, shareUrl } from '../../utils/share'
-import { toast } from '../../utils/toast'
 import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
 import SoundToggle from '../../components/SoundToggle.vue'
@@ -242,6 +241,11 @@ import HowToPlay from '../../components/HowToPlay.vue'
 import MinesweeperSettingsPanel from './components/MinesweeperSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
 import AppIcon from '../../components/AppIcon.vue'
+import ShareSheet from '../../components/ShareSheet.vue'
+import type { ShareCardData } from '../../utils/shareCard'
+
+const shareOpen = ref(false)
+const shareCard = ref<ShareCardData | null>(null)
 
 const settings = useMinesweeperSettingsStore()
 
@@ -517,12 +521,25 @@ function applySettings(config: MineConfig) {
 }
 
 /** 分享成绩 */
-async function shareResult() {
-  const result = await shareOrCopy({
-    text: `我在 EasyGame 扫雷用 ${elapsedText.value} 扫清了「${DIFFICULTY_LABELS[settings.config.difficulty]}」难度，来挑战我！💣`,
-    url: shareUrl('/game/minesweeper'),
-  })
-  toast(result === 'shared' ? '已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
+function shareResult() {
+  shareCard.value = {
+    gameId: 'minesweeper',
+    gameName: '扫雷',
+    glyph: '雷',
+    title: `扫雷成功 · ${elapsedText.value}`,
+    subtitle: `${difficultyLabel.value} · ${state.rows}×${state.cols}`,
+    stats: [
+      { label: '用时', value: elapsedText.value },
+      { label: '雷数', value: String(state.mines) },
+      { label: '翻开', value: `${state.moves} 格` },
+    ],
+    footer:
+      state.bestTime > 0 && finishedElapsed.value === state.bestTime
+        ? '刷新了个人最快纪录'
+        : '稳！',
+    route: '/game/minesweeper',
+  }
+  shareOpen.value = true
 }
 
 function syncState() {

@@ -59,6 +59,20 @@ test.describe('可访问性（axe）', () => {
     await expectNoBlockingViolations(page, '联机五子棋')
   })
 
+  test('成绩分享弹层', async ({ page }) => {
+    await page.goto('/#/multiplayer/connect4')
+    await page.getByRole('button', { name: '本机双人' }).click()
+
+    const board = page.getByTestId('connect4-board')
+    await expect(board).toBeVisible()
+    for (const col of [0, 4, 1, 5, 2, 6, 3]) {
+      await board.locator('button').nth(col).click()
+    }
+    await page.getByRole('button', { name: '分享战绩' }).click()
+    await expect(page.getByTestId('share-sheet')).toBeVisible()
+    await expectNoBlockingViolations(page, '成绩分享弹层')
+  })
+
   test('排行榜底部抽屉（移动端）', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/#/game/2048')

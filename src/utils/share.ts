@@ -20,29 +20,6 @@ export function shareUrl(route: string): string {
   return `${base}${hash}`
 }
 
-/** 各游戏的分享文案（带成绩） */
-export function gameShareText(
-  gameId: '2048' | 'snake' | 'tetris' | 'klotski' | 'klotski-classic',
-  score: number,
-  lines?: number,
-  won?: boolean,
-): string {
-  switch (gameId) {
-    case '2048':
-      return won
-        ? `我在 EasyGame 玩 2048 合成了 2048！得分 ${score}，来挑战我！🎯`
-        : `我在 EasyGame 玩 2048 得了 ${score} 分，来挑战我！🎯`
-    case 'snake':
-      return `我在 EasyGame 贪吃蛇拿了 ${score} 分，来挑战我！🐍`
-    case 'tetris':
-      return `我在 EasyGame 俄罗斯方块消了 ${lines ?? 0} 行、${score} 分，来挑战我！🧱`
-    case 'klotski':
-      return `我在 EasyGame 华容道用 ${score} 步解出了 ${lines ?? 4}×${lines ?? 4}，来挑战我！🧩`
-    case 'klotski-classic':
-      return `我在 EasyGame 三国华容道用 ${score} 步救出了曹操，来挑战我！🏮`
-  }
-}
-
 /** 分享或复制；返回实际发生的结果 */
 export async function shareOrCopy(payload: SharePayload): Promise<ShareResult> {
   const url = payload.url ?? location.href

@@ -271,6 +271,7 @@
       :dimensions="leaderboardDimensions"
       size-suffix="×"
     />
+    <ShareSheet v-model="shareOpen" :card="shareCard" />
   </div>
 </template>
 
@@ -296,7 +297,6 @@ import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
 import { sound } from '../../utils/sound'
-import { shareOrCopy, shareUrl } from '../../utils/share'
 import { toast } from '../../utils/toast'
 import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
@@ -306,6 +306,11 @@ import ScoreBox from './components/ScoreBox.vue'
 import EliminateSettingsPanel from './components/EliminateSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
 import AppIcon from '../../components/AppIcon.vue'
+import ShareSheet from '../../components/ShareSheet.vue'
+import type { ShareCardData } from '../../utils/shareCard'
+
+const shareOpen = ref(false)
+const shareCard = ref<ShareCardData | null>(null)
 
 const settings = useEliminateSettingsStore()
 
@@ -949,12 +954,22 @@ function applySettings(config: EliminateConfig) {
   showResume.value = false
 }
 
-async function shareResult() {
-  const result = await shareOrCopy({
-    text: `我在 EasyGame 消消乐拿了 ${state.score} 分通关「${DIFFICULTY_LABELS[state.difficulty]}」，剩 ${state.movesLeft} 步，来挑战我！✨`,
-    url: shareUrl('/game/eliminate'),
-  })
-  toast(result === 'shared' ? '已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
+function shareResult() {
+  shareCard.value = {
+    gameId: 'eliminate',
+    gameName: '消消乐',
+    glyph: '消',
+    title: `${state.score} 分`,
+    subtitle: `${difficultyLabel.value} · 剩 ${state.movesLeft} 步`,
+    stats: [
+      { label: '得分', value: String(state.score) },
+      { label: '最高分', value: String(state.bestScore) },
+      { label: '关卡', value: `第 ${state.level} 关` },
+    ],
+    footer: '通关啦',
+    route: '/game/eliminate',
+  }
+  shareOpen.value = true
 }
 
 // ===== 布局 =====

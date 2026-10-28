@@ -335,6 +335,7 @@
       :dimensions="leaderboardDimensions"
       size-suffix="×"
     />
+    <ShareSheet v-model="shareOpen" :card="shareCard" />
   </div>
 </template>
 
@@ -354,7 +355,6 @@ import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
 import { sound } from '../../utils/sound'
-import { shareOrCopy, shareUrl } from '../../utils/share'
 import { toast } from '../../utils/toast'
 import type { LeaderboardDimension } from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
@@ -364,6 +364,11 @@ import ScoreBox from './components/ScoreBox.vue'
 import LianliankanSettingsPanel from './components/LianliankanSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
 import AppIcon from '../../components/AppIcon.vue'
+import ShareSheet from '../../components/ShareSheet.vue'
+import type { ShareCardData } from '../../utils/shareCard'
+
+const shareOpen = ref(false)
+const shareCard = ref<ShareCardData | null>(null)
 
 const settings = useLianliankanSettingsStore()
 
@@ -748,12 +753,22 @@ function applySettings(config: LinkConfig) {
   showResume.value = false
 }
 
-async function shareResult() {
-  const result = await shareOrCopy({
-    text: `我在 EasyGame 连连看用了 ${elapsedText.value} 消除了 ${state.pairs} 对、${state.score} 分，来挑战我！🔗`,
-    url: shareUrl('/game/lianliankan'),
-  })
-  toast(result === 'shared' ? '已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
+function shareResult() {
+  shareCard.value = {
+    gameId: 'lianliankan',
+    gameName: '连连看',
+    glyph: '连',
+    title: `${state.score} 分`,
+    subtitle: `消除 ${state.pairs} 对 · ${elapsedText.value}`,
+    stats: [
+      { label: '消除', value: `${state.pairs} 对` },
+      { label: '最高分', value: String(state.bestScore) },
+      { label: '关卡', value: `第 ${state.level} 关` },
+    ],
+    footer: '全部配对完成',
+    route: '/game/lianliankan',
+  }
+  shareOpen.value = true
 }
 
 // ===== 键盘操作（方向键移动光标 + 空格/回车选择） =====

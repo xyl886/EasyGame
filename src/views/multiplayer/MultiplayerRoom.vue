@@ -222,7 +222,7 @@
               >
                 本机段位 {{ room.lastDelta.value > 0 ? '+' : '' }}{{ room.lastDelta.value }}
               </p>
-              <div class="flex justify-center gap-3">
+              <div class="flex flex-wrap justify-center gap-2">
                 <button
                   type="button"
                   class="eg-primary-btn"
@@ -231,7 +231,15 @@
                 >
                   再来一局
                 </button>
-                <button type="button" class="eg-secondary-btn" @click="backToMenu">返回</button>
+                <button
+                  v-if="!room.isSpectator.value"
+                  type="button"
+                  class="eg-secondary-btn"
+                  @click="shareResult"
+                >
+                  分享战绩
+                </button>
+                <button type="button" class="eg-ghost-btn" @click="backToMenu">返回</button>
               </div>
             </div>
           </div>
@@ -293,6 +301,7 @@
         >← 返回游戏大厅</RouterLink
       >
     </footer>
+    <ShareSheet v-model="shareOpen" :card="shareCard" />
   </div>
 </template>
 
@@ -302,9 +311,11 @@ import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../../components/AppIcon.vue'
 import SoundToggle from '../../components/SoundToggle.vue'
 import ThemeToggle from '../../components/ThemeToggle.vue'
+import ShareSheet from '../../components/ShareSheet.vue'
 import GomokuBoard from '../../components/multiplayer/GomokuBoard.vue'
 import Connect4Board from '../../components/multiplayer/Connect4Board.vue'
 import { useMultiplayerRoom } from '../../composables/useMultiplayerRoom'
+import type { ShareCardData } from '../../utils/shareCard'
 import { getGameAdapter, isGameId } from '../../game/multiplayer/adapters'
 import { nextTierGap, tierOf } from '../../game/multiplayer/profile'
 import { dropIndex } from '../../game/connect4/GameEngine'
@@ -331,6 +342,8 @@ const quickMessages = QUICK_MESSAGES.slice(0, 7)
 const showJoin = ref(false)
 const joinCode = ref('')
 const copyHint = ref('点击复制房号')
+const shareOpen = ref(false)
+const shareCard = ref<ShareCardData | null>(null)
 
 const tier = computed(() => tierOf(room.profile.value.rating))
 const nextTier = computed(() => nextTierGap(room.profile.value.rating))
@@ -473,6 +486,45 @@ function joinGame(): void {
 function startLocal(): void {
   room.startLocal()
   void router.replace({ query: {} })
+}
+
+function shareResult(): void {
+  if (!stateOver.value) return
+  const moves = (room.state.value as { moves?: number }).moves ?? 0
+  const mySeat = room.mySeat.value
+  const winner = adapter.winnerSeat(room.state.value)
+  const resultText = resultTitle.value
+  const isLocal = room.mode.value === 'local'
+  const stats: Array<{ label: string; value: string }> = []
+
+  if (isLocal) {
+    stats.push({ label: '模式', value: '本机双人' })
+  } else {
+    stats.push({ label: '我的执子', value: mySeat ? adapter.seatLabel(mySeat) : '观战' })
+  }
+  stats.push({ label: '结果', value: resultText || '—' })
+  if (!isLocal && room.lastDelta.value !== null) {
+    stats.push({
+      label: '本机段位',
+      value: `${room.lastDelta.value > 0 ? '+' : ''}${room.lastDelta.value}`,
+    })
+  }
+
+  shareCard.value = {
+    gameId,
+    gameName: `${adapter.name}联机`,
+    glyph: adapter.name.charAt(0),
+    title: resultText || '对局结束',
+    subtitle: `${adapter.name} · ${isLocal ? '本机双人' : '联机对战'} · 共 ${moves} 手`,
+    stats,
+    footer: isLocal
+      ? `${adapter.name} · 本机双人`
+      : winner
+        ? `${adapter.seatLabel(winner)}获胜`
+        : '平局',
+    route: `/multiplayer/${gameId}`,
+  }
+  shareOpen.value = true
 }
 
 function rematch(): void {

@@ -156,6 +156,14 @@ test.describe('联机对战（五子棋）', () => {
     const result = page.getByTestId('room-result')
     await expect(result).toBeVisible()
     await expect(result).toContainText('红方获胜')
+
+    await page.getByRole('button', { name: '分享战绩' }).click()
+    const shareSheet = page.getByTestId('share-sheet')
+    await expect(shareSheet).toBeVisible()
+    await expect(shareSheet.locator('img[alt="成绩分享卡片"]')).toBeVisible()
+
+    await page.keyboard.press('Escape')
+    await expect(shareSheet).toBeHidden()
   })
 
   test('创建房间会生成 6 位房号并可离开', async ({ page }) => {
