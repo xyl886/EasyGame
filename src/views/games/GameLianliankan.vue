@@ -26,7 +26,7 @@
           >
             连连看
           </h1>
-          <p class="text-[11px] opacity-70 mt-0.5 text-text-muted-light dark:text-text-muted-dark">
+          <p class="text-[11px] mt-0.5 text-text-muted-light dark:text-text-muted-dark">
             第 {{ state.level }} 关 · {{ difficultyLabel }} · {{ state.rows }}×{{ state.cols }}
             <span v-if="state.bestScore > 0"> · 最高 {{ state.bestScore }}</span>
           </p>
@@ -44,7 +44,7 @@
             <AppIcon name="help" :size="18" /> 玩法
           </button>
           <div
-            class="hidden sm:flex items-center gap-1 text-xs opacity-70 text-text-muted-light dark:text-text-muted-dark"
+            class="hidden sm:flex items-center gap-1 text-xs text-text-muted-light dark:text-text-muted-dark"
           >
             <span>⏱</span><span>{{ elapsedText }}</span>
             <span class="mx-1">·</span>
@@ -108,7 +108,6 @@
 
       <!-- 棋盘 -->
       <div
-        ref="boardRef"
         class="relative mx-auto select-none touch-none w-full rounded-2xl board-bg-light dark:board-bg-dark shadow-inner"
         :style="boardStyle"
       >
@@ -270,12 +269,17 @@
       </div>
 
       <!-- 操作说明（小屏） -->
-      <div v-if="!showResume" class="text-center text-xs opacity-60 mt-4 sm:hidden">
+      <div
+        v-if="!showResume"
+        class="text-center text-xs mt-4 text-text-muted-light dark:text-text-muted-dark sm:hidden"
+      >
         点击两张相同图案，能用最多两段直线连上即可消除 · PC 可用方向键 + 空格
       </div>
     </main>
 
-    <footer class="max-w-lg w-full mx-auto mt-5 py-3 text-center text-xs opacity-40">
+    <footer
+      class="max-w-lg w-full mx-auto mt-5 py-3 text-center text-xs text-text-faint-light dark:text-text-faint-dark"
+    >
       <RouterLink to="/" class="hover:opacity-100">← 返回游戏大厅</RouterLink>
     </footer>
 
@@ -466,7 +470,6 @@ const engine = shallowRef(new LianliankanEngine(settings.config))
 const state = reactive<LinkState>(engine.value.getState())
 const now = ref(Date.now())
 
-const boardRef = ref<HTMLDivElement | null>(null)
 const gap = ref(6)
 const padding = ref(8)
 const windowHeight = ref(typeof window !== 'undefined' ? window.innerHeight : 800)

@@ -55,3 +55,8 @@ docs/
 # 缓存 / TS 构建信息
 .vitest
 *.tsbuildinfo
+
+# Playwright
+test-results
+playwright-report
+blob-report

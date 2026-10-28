@@ -7,3 +7,5 @@ pnpm-lock.yaml
 docs/
 test-tailwind-output.css
 .dsh/
+test-results/
+playwright-report/

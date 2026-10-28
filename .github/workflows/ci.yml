@@ -39,3 +39,29 @@ jobs:
       # 与线上一致的子路径构建，避免 PR 绿 / 上线白屏
       - name: Build
         run: pnpm build --base=/EasyGame/
+
+  e2e:
+    name: E2E smoke + a11y
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run E2E (Playwright builds + previews the app)
+        run: pnpm test:e2e
