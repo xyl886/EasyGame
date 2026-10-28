@@ -1,17 +1,25 @@
 <template>
   <div class="eg-shell">
-    <!-- 顶部栏 -->
-    <header class="max-w-5xl w-full mx-auto flex items-center justify-between mb-6 md:mb-8">
-      <RouterLink to="/" class="flex items-center gap-3 group focus-visible:outline-none rounded-lg">
-        <div
-          class="w-11 h-11 rounded-2xl bg-accent-light dark:bg-accent-dark flex items-center justify-center shadow-claude-md group-hover:shadow-card-lift group-hover:-translate-y-0.5 transition-all duration-200"
+    <!-- 顶栏 -->
+    <header class="mx-auto flex w-full max-w-shell items-center justify-between py-2">
+      <RouterLink
+        to="/"
+        class="group flex items-center gap-3 rounded-xl focus-visible:outline-none"
+      >
+        <span
+          class="flex h-10 w-10 items-center justify-center rounded-xl bg-sand-light text-accent-light shadow-ring transition-colors group-hover:bg-accent-soft-light dark:bg-sand-dark dark:text-accent-dark dark:group-hover:bg-accent-soft-dark"
+          aria-hidden="true"
         >
-          <span class="text-white dark:text-bg-dark font-bold text-sm tracking-tight">EG</span>
-        </div>
-        <div>
-          <div class="text-lg font-semibold tracking-tight text-text-light dark:text-text-dark">EasyGame</div>
-          <div class="text-xs text-text-muted-light dark:text-text-muted-dark -mt-0.5">轻松玩，随时乐</div>
-        </div>
+          <AppIcon name="logo" :size="18" />
+        </span>
+        <span class="flex flex-col">
+          <span
+            class="font-display text-lg font-medium leading-tight tracking-tight text-text-light dark:text-text-dark"
+          >
+            EasyGame
+          </span>
+          <span class="eg-overline mt-0.5">益智小游戏集合</span>
+        </span>
       </RouterLink>
       <div class="flex items-center gap-2">
         <SoundToggle />
@@ -19,73 +27,73 @@
       </div>
     </header>
 
-    <!-- 主内容 -->
-    <main class="max-w-5xl w-full mx-auto flex-1 space-y-8 md:space-y-10">
-      <!-- Hero 横幅 -->
-      <section
-        class="relative rounded-3xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark shadow-claude-md p-7 md:p-12 overflow-hidden animate-rise-in"
-      >
-        <div
-          class="absolute -top-24 -right-16 w-72 h-72 bg-accent-light/10 dark:bg-accent-dark/10 rounded-full blur-3xl pointer-events-none"
-        ></div>
-        <div
-          class="absolute -bottom-28 left-10 w-56 h-56 bg-amber-400/10 dark:bg-amber-500/5 rounded-full blur-3xl pointer-events-none"
-        ></div>
-        <div class="relative max-w-2xl">
-          <div
-            class="inline-flex items-center gap-2 text-xs font-medium text-accent-light dark:text-accent-dark mb-5 px-3 py-1.5 rounded-full bg-accent-light/10 dark:bg-accent-dark/10 border border-accent-light/15 dark:border-accent-dark/20"
-          >
-            <span class="w-1.5 h-1.5 rounded-full bg-accent-light dark:bg-accent-dark animate-pulse"></span>
-            即开即玩 · 无需下载 · 离线可用
-          </div>
-          <h1 class="eg-hero-title mb-4">
-            经典益智小游戏
-            <span class="text-accent-light dark:text-accent-dark">合集</span>
+    <main class="mx-auto flex w-full max-w-shell flex-1 flex-col">
+      <!-- Hero -->
+      <section class="py-10 md:py-16">
+        <div class="max-w-2xl animate-rise-in">
+          <p class="eg-overline">Classic puzzle collection</p>
+          <h1 class="eg-display mt-3 text-balance">
+            经典益智，<span class="text-accent-light dark:text-accent-dark">随手一局</span>。
           </h1>
-          <p class="text-base md:text-lg text-text-muted-light dark:text-text-muted-dark leading-relaxed mb-6">
-            已上线
-            <template v-for="(g, i) in availableGames" :key="g.id">
-              <strong class="text-text-light dark:text-text-dark font-semibold">{{ g.name }}</strong
-              ><span v-if="i < availableGames.length - 1">、</span>
-            </template>
-            。扫码即可在手机畅玩。
+          <p class="eg-lead mt-5 max-w-xl">
+            无需下载、没有广告，打开浏览器就能玩。八款经得起反复玩的经典益智游戏，
+            电脑和手机都顺手，断网也能继续。
           </p>
-          <div class="flex flex-wrap items-center gap-3">
-            <div
-              class="inline-flex items-baseline gap-1.5 rounded-2xl bg-bg-light dark:bg-bg-dark border border-border-light dark:border-border-dark px-4 py-2.5"
-            >
-              <span class="text-2xl font-extrabold tabular-nums text-text-light dark:text-text-dark">{{
-                availableGames.length
-              }}</span>
-              <span class="text-xs text-text-muted-light dark:text-text-muted-dark">款游戏已上线</span>
-            </div>
-            <button type="button" class="eg-primary-btn" @click="scrollToLobby">浏览游戏大厅</button>
+          <p class="mt-4 text-caption text-text-faint-light dark:text-text-faint-dark">
+            已上线：
+            <span class="text-text-soft-light dark:text-text-soft-dark">{{ gameNames }}</span>
+          </p>
+          <div class="mt-7 flex flex-wrap items-center gap-3">
+            <button type="button" class="eg-primary-btn" @click="scrollToLobby">
+              <span>浏览游戏大厅</span>
+              <AppIcon name="arrow-right" :size="18" />
+            </button>
+            <a class="eg-ghost-btn" href="#online" @click.prevent="scrollToOnline">
+              <AppIcon name="share" :size="17" />
+              <span>分享到手机</span>
+            </a>
           </div>
+          <p
+            class="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-text-faint-light dark:text-text-faint-dark"
+          >
+            <span>{{ games.length }} 款游戏</span>
+            <span aria-hidden="true">·</span>
+            <span>离线可玩</span>
+            <span aria-hidden="true">·</span>
+            <span>无需账号</span>
+          </p>
         </div>
       </section>
 
       <!-- 游戏大厅 -->
-      <section id="lobby" class="scroll-mt-6">
-        <div class="eg-section-label">
-          <h2 class="text-base font-semibold text-text-light dark:text-text-dark">游戏大厅</h2>
-          <span class="text-xs text-text-muted-light dark:text-text-muted-dark ml-auto"
-            >共 {{ availableGames.length }} 款</span
+      <section
+        id="lobby"
+        class="scroll-mt-6 border-t border-border-subtle-light pt-8 dark:border-border-subtle-dark"
+      >
+        <div class="mb-5 flex items-end justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <h2 class="eg-heading">游戏大厅</h2>
+          </div>
+          <span class="text-caption text-text-faint-light dark:text-text-faint-dark"
+            >共 {{ games.length }} 款</span
           >
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+        <div class="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 md:gap-4">
           <GameCard
-            v-for="(g, i) in gameStore.games"
+            v-for="(g, i) in games"
             :key="g.id"
             :game="g"
-            :style="{ animationDelay: `${Math.min(i, 8) * 40}ms` }"
+            :index="i"
+            :style="{ animationDelay: `${Math.min(i, 8) * 45}ms` }"
+            class="animate-rise-in"
           />
         </div>
       </section>
 
       <!-- 扫码即玩 + 操作方式 -->
-      <section>
-        <div class="eg-section-label">
-          <h2 class="text-base font-semibold text-text-light dark:text-text-dark">上手与分享</h2>
+      <section id="online" class="mt-12 scroll-mt-6">
+        <div class="mb-5 flex items-end justify-between gap-3">
+          <h2 class="eg-heading">分享与上手</h2>
         </div>
         <OnlinePanel />
       </section>
@@ -93,24 +101,33 @@
 
     <!-- 页脚 -->
     <footer
-      class="max-w-5xl w-full mx-auto mt-10 py-5 border-t border-border-light dark:border-border-dark text-center text-xs text-text-muted-light dark:text-text-muted-dark"
+      class="mx-auto mt-14 flex w-full max-w-shell flex-col items-center gap-2 border-t border-border-subtle-light py-6 text-center dark:border-border-subtle-dark"
     >
-      <p>EasyGame · 用 ❤️ 和 Vue 3 构建 · MIT 开源</p>
+      <p class="text-caption text-text-faint-light dark:text-text-faint-dark">
+        EasyGame · 用 Vue 3 构建 · MIT 开源
+      </p>
+      <p class="text-caption text-text-faint-light dark:text-text-faint-dark">即开即玩，无需安装</p>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useGameStore } from '../stores/game'
+import AppIcon from '../components/AppIcon.vue'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import SoundToggle from '../components/SoundToggle.vue'
 import GameCard from '../components/GameCard.vue'
 import OnlinePanel from '../components/OnlinePanel.vue'
 
 const gameStore = useGameStore()
-const availableGames = gameStore.games.filter((g) => g.status === 'available')
+const games = gameStore.games
+const gameNames = games.map((g) => g.name).join('、')
 
 function scrollToLobby() {
   document.getElementById('lobby')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function scrollToOnline() {
+  document.getElementById('online')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 </script>

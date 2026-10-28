@@ -1,64 +1,63 @@
 <template>
   <RouterLink
-    v-if="game.status === 'available'"
     :to="game.route"
-    class="group relative flex flex-col overflow-hidden rounded-2xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark shadow-claude hover:shadow-card-lift hover:border-accent-light/35 dark:hover:border-accent-dark/35 transition-all duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-light/50 animate-rise-in"
+    class="group relative flex flex-col overflow-hidden rounded-2xl bg-card-light shadow-ring transition-all duration-200 ease-calm hover:-translate-y-0.5 hover:shadow-lift-strong focus-visible:outline-none dark:bg-card-dark"
+    :aria-label="`开始玩 ${game.name}`"
   >
+    <!-- 封面带：暖色底 + 字形主视觉 + 大字水印，给每款游戏一个可识别的锚点 -->
     <div
-      class="relative h-24 flex items-center justify-center bg-gradient-to-br overflow-hidden"
-      :class="game.accent"
+      class="relative flex h-16 items-center justify-between overflow-hidden px-4 transition-colors duration-200 md:h-[4.5rem]"
+      :class="coverClass"
     >
-      <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.35),transparent_55%)] opacity-60"></div>
       <span
-        class="relative text-4xl drop-shadow-sm group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300"
-        >{{ game.icon }}</span
+        class="relative z-10 font-display text-[1.6rem] font-medium leading-none"
+        aria-hidden="true"
+        >{{ game.glyph }}</span
       >
       <span
-        class="absolute bottom-2 right-2 text-[10px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded-full bg-black/15 text-white/95 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        class="pointer-events-none absolute -right-1 bottom-[-0.75rem] select-none font-display text-[4.5rem] leading-none opacity-[0.08]"
+        aria-hidden="true"
+        >{{ game.glyph }}</span
       >
-        开始玩
+      <span
+        class="relative z-10 translate-x-1 text-current opacity-0 transition-all duration-200 ease-calm group-hover:translate-x-0 group-hover:opacity-100"
+        aria-hidden="true"
+      >
+        <AppIcon name="arrow-right" :size="16" />
       </span>
     </div>
-    <div class="p-3.5 flex flex-col gap-1 flex-1 border-t border-border-light/60 dark:border-border-dark/60">
-      <div class="flex items-center justify-between gap-2">
-        <h3 class="text-sm font-semibold text-text-light dark:text-text-dark truncate">{{ game.name }}</h3>
-        <span
-          class="text-xs text-accent-light dark:text-accent-dark opacity-0 group-hover:opacity-100 transition-opacity duration-200 shrink-0"
-          aria-hidden="true"
-          >→</span
-        >
-      </div>
-      <p class="text-[11px] leading-snug text-text-muted-light dark:text-text-muted-dark line-clamp-2">
+    <div class="flex flex-1 flex-col p-3.5 md:p-4">
+      <h3
+        class="font-display text-[1rem] font-medium leading-snug tracking-tight text-text-light dark:text-text-dark"
+      >
+        {{ game.name }}
+      </h3>
+      <p
+        class="mt-1 line-clamp-2 text-[0.75rem] leading-relaxed text-text-muted-light dark:text-text-muted-dark"
+      >
         {{ game.description }}
       </p>
     </div>
   </RouterLink>
-
-  <div
-    v-else
-    class="relative flex flex-col overflow-hidden rounded-2xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark shadow-claude opacity-50 cursor-not-allowed animate-rise-in"
-  >
-    <div class="h-24 flex items-center justify-center bg-gradient-to-br" :class="game.accent">
-      <span class="text-4xl drop-shadow-sm">{{ game.icon }}</span>
-    </div>
-    <div class="p-3.5 relative border-t border-border-light/60 dark:border-border-dark/60">
-      <h3 class="text-sm font-semibold mb-0.5 text-text-light dark:text-text-dark">{{ game.name }}</h3>
-      <p class="text-[11px] leading-snug text-text-muted-light dark:text-text-muted-dark line-clamp-2">
-        {{ game.description }}
-      </p>
-      <span
-        class="absolute top-2 right-2 text-[9px] px-1.5 py-0.5 rounded-full bg-accent-light/15 dark:bg-accent-dark/15 text-accent-light dark:text-accent-dark font-medium"
-      >
-        即将上线
-      </span>
-    </div>
-  </div>
 </template>
 
 <script setup lang="ts">
-import type { GameMeta } from '../stores/game'
+import { computed } from 'vue'
+import type { LobbyGame } from '../stores/game'
+import AppIcon from './AppIcon.vue'
 
-defineProps<{
-  game: GameMeta
+const props = defineProps<{
+  game: LobbyGame
+  /** 大厅里的序号，用于循环三档暖色封面（保持低饱和、只用既有 token） */
+  index?: number
 }>()
+
+const coverClass = computed(() => {
+  const variants = [
+    'bg-sand-light text-accent-hover-light dark:bg-sand-dark dark:text-accent-dark',
+    'bg-accent-soft-light text-accent-hover-light dark:bg-accent-soft-dark dark:text-accent-dark',
+    'bg-bg-light text-text-soft-light dark:bg-bg-dark dark:text-text-soft-dark',
+  ]
+  return variants[(props.index ?? 0) % variants.length]
+})
 </script>

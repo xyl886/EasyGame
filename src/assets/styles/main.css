@@ -2,72 +2,166 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================================================================
+   设计 token（基于 Open Design「Claude」设计系统）
+   - 浅色：parchment 纸感底 + ivory 卡片 + terracotta 唯一强调色
+   - 深色：warm charcoal，保持同一套暖色中性
+   - 阴影以 1px ring 为主，辅以极轻的 lift；焦点环是系统中唯一的冷色
+   ========================================================================== */
+:root {
+  --shadow-ring: 0 0 0 1px #e8e6dc;
+  --shadow-ring-strong: 0 0 0 1px #d1cfc5;
+  --shadow-lift: 0 4px 24px rgba(20, 20, 19, 0.05);
+  --shadow-lift-strong: 0 8px 32px rgba(20, 20, 19, 0.08);
+  --shadow-inset: inset 0 0 0 1px rgba(20, 20, 19, 0.12);
+  --shadow-focus: 0 0 0 3px rgba(56, 152, 236, 0.35);
+  --focus-color: #3898ec;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+.dark {
+  --shadow-ring: 0 0 0 1px #30302e;
+  --shadow-ring-strong: 0 0 0 1px #45453f;
+  --shadow-lift: 0 4px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lift-strong: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --shadow-inset: inset 0 0 0 1px rgba(250, 249, 245, 0.14);
+  --shadow-focus: 0 0 0 3px rgba(108, 176, 240, 0.45);
+  --focus-color: #6cb0f0;
+}
+
 @layer base {
-  html, body, #app {
+  html {
+    color-scheme: light dark;
+    scroll-behavior: smooth;
+  }
+  html,
+  body,
+  #app {
     @apply h-full w-full m-0 p-0;
   }
   body {
-    @apply font-sans bg-bg-light text-text-light antialiased transition-colors duration-300;
+    @apply font-sans bg-bg-light text-text-light antialiased;
     -webkit-tap-highlight-color: transparent;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    text-rendering: optimizeLegibility;
   }
   .dark body {
     @apply bg-bg-dark text-text-dark;
   }
   ::selection {
-    background-color: rgba(232, 106, 91, 0.2);
-    @apply text-text-light;
+    background-color: var(--shadow-ring-strong);
+    color: inherit;
   }
-  .dark ::selection {
-    background-color: rgba(240, 122, 107, 0.2);
-    @apply text-text-dark;
+  /* 全局键盘焦点环：唯一冷色，只服务可访问性 */
+  :focus-visible {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
+  }
+  /* 标题使用衬线体承担「内容层级」，控件保持无衬线 */
+  h1,
+  h2 {
+    @apply font-display font-medium tracking-tight;
   }
 }
 
 @layer components {
-  .claude-card {
-    @apply rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude transition-all duration-200;
+  /* ---------- 排版 ---------- */
+  .eg-display {
+    @apply font-display text-display font-medium tracking-tight text-text-light dark:text-text-dark;
   }
-  .claude-btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-light/40 dark:focus-visible:ring-accent-dark/40;
+  .eg-heading {
+    @apply font-display text-heading font-medium text-text-light dark:text-text-dark;
   }
-  .claude-btn-primary {
-    @apply claude-btn bg-accent-light hover:bg-accent-hover-light text-white shadow-claude-md;
+  .eg-overline {
+    @apply text-overline font-medium uppercase text-text-faint-light dark:text-text-faint-dark;
   }
-  .dark .claude-btn-primary {
-    @apply bg-accent-dark hover:bg-accent-hover-dark text-bg-dark;
+  .eg-lead {
+    @apply text-lead text-text-muted-light dark:text-text-muted-dark;
   }
-  .claude-btn-secondary {
-    @apply claude-btn bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark hover:shadow-claude text-text-light dark:text-text-dark;
+  .eg-body {
+    @apply text-body text-text-soft-light dark:text-text-soft-dark;
   }
-  .claude-input {
-    @apply w-full rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark px-3 py-2 text-sm text-text-light dark:text-text-dark placeholder:text-text-muted-light dark:placeholder:text-text-muted-dark focus:outline-none focus:ring-2 transition-all;
+  .eg-caption {
+    @apply text-caption text-text-muted-light dark:text-text-muted-dark;
   }
-  .claude-input:focus {
-    --tw-ring-color: rgba(232, 106, 91, 0.3);
-  }
-  .dark .claude-input:focus {
-    --tw-ring-color: rgba(240, 122, 107, 0.3);
+  .eg-hint {
+    @apply text-caption text-text-faint-light dark:text-text-faint-dark leading-relaxed;
   }
 
-  /* ===== EasyGame 共享 UI（大厅 / 各游戏页统一） ===== */
+  /* ---------- 容器 ---------- */
   .eg-shell {
-    @apply min-h-screen w-full flex flex-col py-4 px-3 md:px-6;
+    @apply min-h-[100dvh] w-full flex flex-col px-4 md:px-6;
+    padding-top: max(1rem, var(--safe-top));
+    padding-bottom: max(1rem, var(--safe-bottom));
   }
+  .eg-card {
+    @apply rounded-2xl bg-card-light dark:bg-card-dark shadow-ring;
+  }
+  .eg-card-lift {
+    @apply transition-all duration-200 ease-calm hover:shadow-lift-strong;
+  }
+  /* 兼容旧类名 */
+  .claude-card {
+    @apply eg-card;
+  }
+
+  /* ---------- 按钮 ---------- */
   .eg-icon-btn {
-    @apply w-10 h-10 shrink-0 inline-flex items-center justify-center rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-accent-light/40 dark:hover:border-accent-dark/40 transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-light/40 dark:focus-visible:ring-accent-dark/40;
+    @apply inline-flex items-center justify-center shrink-0 rounded-xl bg-card-light text-text-muted-light shadow-ring transition-colors duration-150 ease-calm hover:text-text-light hover:shadow-ring-strong active:bg-sand-light dark:bg-card-dark dark:text-text-muted-dark dark:hover:text-text-dark dark:active:bg-sand-dark;
+    width: 2.75rem;
+    height: 2.75rem;
   }
   .eg-back-btn {
-    @apply eg-icon-btn text-lg group-hover:-translate-x-0.5;
-  }
-  .eg-game-title {
-    @apply text-base md:text-lg font-bold tracking-tight text-text-light dark:text-text-dark truncate;
-  }
-  .eg-ghost-btn {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-accent-light/40 dark:hover:border-accent-dark/40 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium text-text-light dark:text-text-dark whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-light/40 dark:focus-visible:ring-accent-dark/40;
+    @apply eg-icon-btn;
   }
   .eg-primary-btn {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2 bg-accent-light hover:bg-accent-hover-light dark:bg-accent-dark dark:hover:bg-accent-hover-dark text-white dark:text-bg-dark shadow-claude-md transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-bold whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-light/50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent-light px-4 py-2.5 text-sm font-semibold text-white shadow-ring transition-all duration-150 ease-calm hover:bg-accent-hover-light hover:shadow-lift active:translate-y-px disabled:cursor-not-allowed disabled:opacity-45 dark:bg-accent-dark dark:text-bg-dark dark:hover:bg-accent-hover-dark;
+    min-height: 2.75rem;
+    white-space: nowrap;
+  }
+  .eg-secondary-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-sand-light px-4 py-2.5 text-sm font-semibold text-text-light shadow-ring transition-all duration-150 ease-calm hover:brightness-[0.97] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-45 dark:bg-sand-dark dark:text-text-dark;
+    min-height: 2.75rem;
+    white-space: nowrap;
+  }
+  .eg-ghost-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-transparent px-4 py-2.5 text-sm font-medium text-text-soft-light shadow-ring transition-all duration-150 ease-calm hover:bg-sand-light hover:text-text-light hover:shadow-ring-strong active:translate-y-px disabled:cursor-not-allowed disabled:opacity-40 dark:text-text-soft-dark dark:hover:bg-sand-dark dark:hover:text-text-dark;
+    min-height: 2.75rem;
+    white-space: nowrap;
+  }
+  /* 兼容旧类名 */
+  .claude-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-150 ease-calm;
+    min-height: 2.75rem;
+  }
+  .claude-btn-primary {
+    @apply eg-primary-btn;
+  }
+  .claude-btn-secondary {
+    @apply eg-secondary-btn;
+  }
+
+  /* ---------- 表单 ---------- */
+  .claude-input,
+  .eg-input {
+    @apply w-full rounded-xl bg-bg-light px-3 py-2 text-sm text-text-light shadow-ring transition-shadow placeholder:text-text-faint-light focus:outline-none focus:shadow-focus dark:bg-bg-dark dark:text-text-dark dark:placeholder:text-text-faint-dark;
+    min-height: 2.75rem;
+  }
+  .eg-field-label {
+    @apply block text-sm font-semibold text-text-light dark:text-text-dark;
+  }
+  .eg-opt {
+    @apply inline-flex items-center justify-center rounded-xl bg-card-light px-3 py-2 text-sm font-medium text-text-soft-light shadow-ring transition-all duration-150 ease-calm hover:text-text-light hover:shadow-ring-strong active:translate-y-px dark:bg-card-dark dark:text-text-soft-dark dark:hover:text-text-dark;
+    min-height: 2.75rem;
+  }
+  .eg-opt-on {
+    @apply bg-accent-soft-light text-accent-hover-light shadow-inset hover:text-accent-light dark:bg-accent-soft-dark dark:text-accent-dark dark:hover:text-accent-hover-dark;
+  }
+
+  /* ---------- 游戏页工具栏 ---------- */
+  .eg-game-title {
+    @apply font-display text-base md:text-lg font-medium tracking-tight text-text-light dark:text-text-dark truncate;
   }
   .eg-toolbar {
     @apply flex flex-wrap items-center justify-between gap-2;
@@ -75,111 +169,155 @@
   .eg-score-row {
     @apply flex items-start justify-between gap-3 mb-4;
   }
+  .eg-kbd {
+    @apply rounded-md bg-sand-light px-1.5 py-0.5 font-mono text-xs text-text-soft-light shadow-ring dark:bg-sand-dark dark:text-text-soft-dark;
+  }
+  .eg-chip {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-sand-light px-2.5 py-1 text-caption font-medium text-text-soft-light dark:bg-sand-dark dark:text-text-soft-dark;
+  }
+
+  /* ---------- 大厅 ---------- */
   .eg-hero-title {
-    @apply text-3xl md:text-5xl font-extrabold tracking-tight leading-[1.1] text-text-light dark:text-text-dark;
+    @apply eg-display;
   }
   .eg-section-label {
     @apply flex items-center gap-2.5 mb-4;
   }
   .eg-section-label::before {
     content: '';
-    @apply w-1 h-4 rounded-full bg-accent-light dark:bg-accent-dark;
-  }
-  .eg-kbd {
-    @apply px-1.5 py-0.5 rounded-md bg-bg-light dark:bg-bg-dark border border-border-light dark:border-border-dark text-xs font-mono text-text-light dark:text-text-dark;
+    @apply h-4 w-1 rounded-full bg-accent-light dark:bg-accent-dark;
   }
 
-  /* ===== 模态弹层（设置 / 玩法 / 排行榜） ===== */
+  /* ---------- 弹层 ---------- */
   .eg-modal-overlay {
     @apply fixed inset-0 z-50 flex items-center justify-center p-4;
   }
   .eg-modal-mask {
-    @apply absolute inset-0 bg-black/40 backdrop-blur-sm;
+    @apply absolute inset-0 bg-black/45;
+    /* 关键：装饰遮罩不吞事件，点击空白处命中 overlay 本身才能关闭弹层 */
+    pointer-events: none;
   }
   .eg-modal-card {
-    @apply relative w-full max-w-md max-h-[85vh] overflow-y-auto rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude-lg p-5 space-y-5;
+    @apply relative z-10 w-full max-w-md max-h-[85dvh] overflow-y-auto rounded-2xl bg-card-light p-5 shadow-lift dark:bg-card-dark;
+    padding-bottom: max(1.25rem, var(--safe-bottom));
   }
   .eg-modal-card-plain {
-    @apply relative w-full max-w-md max-h-[85vh] overflow-y-auto rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude-lg p-5;
+    @apply relative z-10 w-full max-w-md max-h-[85dvh] overflow-y-auto rounded-2xl bg-card-light p-5 shadow-lift dark:bg-card-dark;
   }
   .eg-modal-card-col {
-    @apply relative w-full max-w-md max-h-[85vh] flex flex-col rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude-lg overflow-hidden;
+    @apply relative z-10 w-full max-w-md max-h-[85dvh] flex flex-col overflow-hidden rounded-2xl bg-card-light shadow-lift dark:bg-card-dark;
   }
   .eg-modal-head {
-    @apply flex items-center justify-between;
+    @apply flex items-center justify-between gap-3;
   }
   .eg-modal-title {
-    @apply text-lg font-bold flex items-center gap-2 text-text-light dark:text-text-dark;
+    @apply font-display text-title font-medium text-text-light dark:text-text-dark;
   }
   .eg-modal-close {
-    @apply w-8 h-8 shrink-0 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center transition-colors text-text-muted-light dark:text-text-muted-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-light/40;
+    @apply inline-flex items-center justify-center rounded-lg text-text-faint-light transition-colors hover:bg-sand-light hover:text-text-light dark:text-text-faint-dark dark:hover:bg-sand-dark dark:hover:text-text-dark;
+    width: 2.75rem;
+    height: 2.75rem;
   }
   .eg-modal-actions {
-    @apply flex gap-2 pt-3 border-t border-border-light dark:border-border-dark;
+    @apply flex gap-2 border-t border-border-subtle-light pt-3 dark:border-border-subtle-dark;
   }
   .eg-modal-actions .eg-ghost-btn,
   .eg-modal-actions .eg-primary-btn {
-    @apply flex-1 py-2.5;
+    @apply flex-1;
   }
-  .eg-modal-actions .eg-primary-btn {
-    @apply flex-[2];
+
+  /* 设置/玩法/排行榜弹层过渡（原 11 份重复 scoped style 统一到此） */
+  .eg-panel-enter-active,
+  .eg-panel-leave-active {
+    transition: opacity 0.18s cubic-bezier(0.2, 0, 0, 1);
   }
-  .eg-hint {
-    @apply text-xs text-text-muted-light dark:text-text-muted-dark leading-relaxed;
+  .eg-panel-enter-active .eg-modal-card,
+  .eg-panel-enter-active .eg-modal-card-col,
+  .eg-panel-enter-active .eg-modal-card-plain,
+  .eg-panel-leave-active .eg-modal-card,
+  .eg-panel-leave-active .eg-modal-card-col,
+  .eg-panel-leave-active .eg-modal-card-plain {
+    transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1);
   }
-  .eg-field-label {
-    @apply text-sm font-semibold block text-text-light dark:text-text-dark;
+  .eg-panel-enter-from,
+  .eg-panel-leave-to {
+    opacity: 0;
   }
-  .eg-opt {
-    @apply py-2 rounded-lg text-sm font-medium transition-all active:scale-95 border bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-accent-light/40 dark:hover:border-accent-dark/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-light/40;
+  .eg-panel-enter-from .eg-modal-card,
+  .eg-panel-enter-from .eg-modal-card-col,
+  .eg-panel-enter-from .eg-modal-card-plain,
+  .eg-panel-leave-to .eg-modal-card,
+  .eg-panel-leave-to .eg-modal-card-col,
+  .eg-panel-leave-to .eg-modal-card-plain {
+    transform: translateY(8px) scale(0.985);
   }
-  .eg-opt-on {
-    @apply bg-accent-light dark:bg-accent-dark !text-white border-transparent shadow-claude;
-  }
-  .dark .eg-opt-on {
-    @apply !text-bg-dark;
-  }
-  /* 设置面板选项按钮统一最小高度 */
-  .eg-modal-card .eg-opt {
-    @apply min-h-[40px];
-  }
-  .eg-modal-head + .space-y-2,
-  .eg-modal-card > .space-y-2 {
-    @apply pt-0;
+
+  /* 移动端底部抽屉：排行榜等长内容弹层从底部滑出，拇指可达 */
+  @media (max-width: 639px) {
+    .eg-modal-overlay.eg-sheet {
+      @apply items-end p-0;
+    }
+    .eg-sheet .eg-modal-card-col {
+      @apply max-h-[88dvh] w-full max-w-none rounded-b-none rounded-t-2xl;
+      padding-bottom: max(0.5rem, var(--safe-bottom));
+    }
+    .eg-sheet .eg-sheet-handle {
+      display: flex;
+    }
   }
 }
 
 @layer utilities {
-  .tile-text-light {
-    color: #4A4238;
-  }
-  .tile-text-dark {
-    color: #F7F3EE;
-  }
   .board-bg-light {
-    background-color: #E8E2D9;
+    background-color: #e8e6dc;
   }
   .board-bg-dark {
-    background-color: #252830;
+    background-color: #2a2a27;
   }
   .cell-bg-light {
-    background-color: rgba(0, 0, 0, 0.04);
+    background-color: rgba(20, 20, 19, 0.05);
   }
   .cell-bg-dark {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(250, 249, 245, 0.06);
+  }
+  .tile-text-light {
+    color: #4a4238;
+  }
+  .tile-text-dark {
+    color: #f7f3ee;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }
 
-/* 入场动画：尊重系统「减少动态效果」 */
+/* 聚焦环统一：键盘可见才出现，且不改变布局 */
+:where(button, a, input, [role='button']):focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+}
+
+/* 尊重系统「减少动态效果」：动效整体退化为近乎静止 */
 @media (prefers-reduced-motion: reduce) {
-  .animate-rise-in,
-  .animate-fade-in {
-    animation: none !important;
+  html {
+    scroll-behavior: auto;
   }
-  .eg-icon-btn,
-  .eg-ghost-btn,
-  .eg-primary-btn,
-  .claude-card {
-    transition: none !important;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-rise-in,
+  .animate-fade-in,
+  .animate-soft-pulse,
+  .animate-tile-pop,
+  .animate-tile-merge {
+    animation: none !important;
   }
 }

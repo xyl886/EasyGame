@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen w-full flex flex-col">
+  <div class="flex min-h-[100dvh] w-full flex-col">
     <router-view v-slot="{ Component }">
       <Suspense>
         <template #default>
@@ -12,26 +12,32 @@
     </router-view>
     <ToastHost />
     <!-- PWA 有新版本时提示手动更新（prompt 模式，不打断对局） -->
-    <div
-      v-if="needRefresh"
-      class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark shadow-claude-md px-4 py-2.5 text-sm"
-    >
-      <span class="text-text-light dark:text-text-dark">有新版本可用</span>
-      <button
-        type="button"
-        class="rounded-lg bg-accent-light dark:bg-accent-dark text-white px-3 py-1 text-xs font-semibold"
-        @click="onApplyUpdate"
+    <Transition name="update">
+      <div
+        v-if="needRefresh"
+        class="fixed bottom-4 left-1/2 z-50 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-3 rounded-xl bg-card-light px-4 py-2.5 shadow-lift dark:bg-card-dark"
+        role="status"
+        aria-live="polite"
       >
-        立即更新
-      </button>
-      <button
-        type="button"
-        class="text-xs text-text-muted-light dark:text-text-muted-dark"
-        @click="needRefresh = false"
-      >
-        稍后
-      </button>
-    </div>
+        <span class="whitespace-nowrap text-caption text-text-light dark:text-text-dark"
+          >有新版本可用</span
+        >
+        <button
+          type="button"
+          class="eg-primary-btn !min-h-0 !px-3 !py-1.5 !text-xs"
+          @click="onApplyUpdate"
+        >
+          立即更新
+        </button>
+        <button
+          type="button"
+          class="text-caption text-text-muted-light hover:text-text-light dark:text-text-muted-dark dark:hover:text-text-dark"
+          @click="needRefresh = false"
+        >
+          稍后
+        </button>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -67,3 +73,17 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', onDocClick, true)
 })
 </script>
+
+<style scoped>
+.update-enter-active,
+.update-leave-active {
+  transition:
+    opacity 0.2s cubic-bezier(0.2, 0, 0, 1),
+    transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+.update-enter-from,
+.update-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 8px);
+}
+</style>

@@ -1,29 +1,24 @@
 <template>
-  <transition name="panel">
-    <div
-      v-if="modelValue"
-      class="eg-modal-overlay"
-      @click.self="close"
-    >
-      <!-- 遮罩 -->
+  <transition name="eg-panel">
+    <div v-if="modelValue" class="eg-modal-overlay" @click.self="close">
+      <!-- 装饰遮罩：pointer-events 已由样式关闭，点击空白处命中 overlay -->
       <div class="eg-modal-mask"></div>
 
-      <!-- 面板 -->
-      <div class="eg-modal-card-plain max-h-[80vh]">
+      <div
+        class="eg-modal-card-plain max-h-[80dvh]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="howto-title"
+      >
         <div class="eg-modal-head mb-4">
-          <h3 class="eg-modal-title">
-            <span>🎮</span>
-            <span>{{ title }} · 玩法</span>
-          </h3>
-          <button
-            @click="close"
-            class="eg-modal-close"
-            aria-label="关闭"
-          >
-            ✕
+          <h3 id="howto-title" class="eg-modal-title">{{ title }} · 玩法</h3>
+          <button type="button" class="eg-modal-close" aria-label="关闭玩法说明" @click="close">
+            <AppIcon name="close" :size="18" />
           </button>
         </div>
-        <div class="space-y-3 text-sm text-text-light dark:text-text-dark leading-relaxed">
+        <div
+          class="space-y-3 text-[0.9375rem] leading-relaxed text-text-soft-light dark:text-text-soft-dark"
+        >
           <slot />
         </div>
       </div>
@@ -32,7 +27,10 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import AppIcon from './AppIcon.vue'
+import { useEscapeKey } from '../composables/useEscapeKey'
+
+const props = defineProps<{
   modelValue: boolean
   title: string
 }>()
@@ -44,23 +42,6 @@ const emit = defineEmits<{
 function close() {
   emit('update:modelValue', false)
 }
-</script>
 
-<style scoped>
-.panel-enter-active,
-.panel-leave-active {
-  transition: opacity 0.2s ease;
-}
-.panel-enter-active > div:last-child,
-.panel-leave-active > div:last-child {
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.panel-enter-from,
-.panel-leave-to {
-  opacity: 0;
-}
-.panel-enter-from > div:last-child,
-.panel-leave-to > div:last-child {
-  transform: scale(0.9) translateY(10px);
-}
-</style>
+useEscapeKey(() => props.modelValue, close)
+</script>

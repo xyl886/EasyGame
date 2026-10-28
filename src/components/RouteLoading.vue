@@ -1,11 +1,19 @@
 <template>
-  <div class="min-h-screen w-full flex flex-col items-center justify-center gap-4">
+  <div
+    class="flex min-h-[60dvh] w-full flex-col items-center justify-center gap-4"
+    role="status"
+    aria-live="polite"
+  >
     <div
-      class="w-12 h-12 rounded-xl bg-accent-light dark:bg-accent-dark flex items-center justify-center shadow-claude-md animate-pulse"
+      class="flex h-11 w-11 items-center justify-center rounded-xl bg-sand-light text-accent-light shadow-ring dark:bg-sand-dark dark:text-accent-dark"
       aria-hidden="true"
     >
-      <span class="text-white font-bold text-sm tracking-tight">EG</span>
+      <AppIcon name="logo" :size="20" />
     </div>
-    <p class="text-sm text-text-muted-light dark:text-text-muted-dark">加载中…</p>
+    <p class="text-caption text-text-muted-light dark:text-text-muted-dark">加载中…</p>
   </div>
 </template>
+
+<script setup lang="ts">
+import AppIcon from './AppIcon.vue'
+</script>
