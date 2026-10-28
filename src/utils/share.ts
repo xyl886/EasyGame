@@ -39,7 +39,7 @@ export function gameShareText(
     case 'klotski':
       return `我在 EasyGame 华容道用 ${score} 步解出了 ${lines ?? 4}×${lines ?? 4}，来挑战我！🧩`
     case 'klotski-classic':
-      return `我在 EasyGame 三国华容道用 ${score} 步救出了曹操，来挑战我！🧩`
+      return `我在 EasyGame 三国华容道用 ${score} 步救出了曹操，来挑战我！🏮`
   }
 }
 

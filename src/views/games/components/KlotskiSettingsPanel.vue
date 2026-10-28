@@ -1,5 +1,5 @@
 <template>
-  <transition name="panel">
+  <transition name="eg-panel">
     <div
       v-if="settings.showSettings"
       class="eg-modal-overlay"
@@ -9,17 +9,13 @@
       <div class="eg-modal-mask"></div>
 
       <!-- 面板 -->
-      <div class="eg-modal-card">
+      <div class="eg-modal-card" role="dialog" aria-modal="true" aria-label="游戏设置">
         <div class="eg-modal-head">
           <h3 class="eg-modal-title">
-            <span>⚙️</span>
             <span>华容道设置</span>
           </h3>
-          <button
-            @click="settings.closeSettings()"
-            class="eg-modal-close"
-          >
-            ✕
+          <button aria-label="关闭设置" @click="settings.closeSettings()" class="eg-modal-close">
+            <AppIcon name="close" :size="18" />
           </button>
         </div>
 
@@ -27,17 +23,8 @@
         <div class="space-y-2">
           <label class="eg-field-label">玩法</label>
           <div class="grid grid-cols-2 gap-2">
-            <button
-              class="eg-opt eg-opt-on"
-            >
-              🔢 数字版
-            </button>
-            <button
-              @click="goClassic"
-              class="eg-opt"
-            >
-              🧩 三国版
-            </button>
+            <button type="button" class="eg-opt eg-opt-on">数字版</button>
+            <button type="button" class="eg-opt" @click="goClassic">三国版</button>
           </div>
           <p class="eg-hint">三国版为经典滑块：曹操 2×2 + 关羽 + 五虎将 + 小兵，4×5 棋盘</p>
         </div>
@@ -46,7 +33,10 @@
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <label class="eg-field-label">棋盘尺寸</label>
-            <span class="eg-hint">{{ localConfig.size }}×{{ localConfig.size }} · 共 {{ localConfig.size * localConfig.size - 1 }} 个数字</span>
+            <span class="eg-hint"
+              >{{ localConfig.size }}×{{ localConfig.size }} · 共
+              {{ localConfig.size * localConfig.size - 1 }} 个数字</span
+            >
           </div>
           <div class="grid grid-cols-3 gap-2">
             <button
@@ -54,8 +44,7 @@
               :key="s"
               @click="localConfig.size = s"
               class="eg-opt"
-              :class="localConfig.size === s
-                 ? 'eg-opt-on' : ''"
+              :class="localConfig.size === s ? 'eg-opt-on' : ''"
             >
               {{ s }}×{{ s }}
             </button>
@@ -72,8 +61,7 @@
               :key="opt.value"
               @click="localConfig.difficulty = opt.value"
               class="eg-opt"
-              :class="localConfig.difficulty === opt.value
-                 ? 'eg-opt-on' : ''"
+              :class="localConfig.difficulty === opt.value ? 'eg-opt-on' : ''"
             >
               {{ opt.label }}
             </button>
@@ -83,18 +71,8 @@
 
         <!-- 底部按钮 -->
         <div class="eg-modal-actions">
-          <button
-            @click="resetDefault"
-            class="eg-ghost-btn"
-          >
-            恢复默认
-          </button>
-          <button
-            @click="apply"
-            class="eg-primary-btn"
-          >
-            应用并重新开始
-          </button>
+          <button @click="resetDefault" class="eg-ghost-btn">恢复默认</button>
+          <button @click="apply" class="eg-primary-btn">应用并重新开始</button>
         </div>
       </div>
     </div>
@@ -104,18 +82,29 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useKlotskiSettingsStore, SIZE_OPTIONS, DIFFICULTY_LABELS } from '../../../stores/klotski-settings'
+import {
+  useKlotskiSettingsStore,
+  SIZE_OPTIONS,
+  DIFFICULTY_LABELS,
+} from '../../../stores/klotski-settings'
 import { DEFAULT_CONFIG } from '../../../game/klotski/types'
 import type { KlotskiConfig, KlotskiDifficulty } from '../../../game/klotski/types'
+import { useEscapeKey } from '../../../composables/useEscapeKey'
+import AppIcon from '../../../components/AppIcon.vue'
 
 const settings = useKlotskiSettingsStore()
 const router = useRouter()
 
-/** 切换到三国版 */
+/** 切换到三国版（独立路由，不在大厅展示） */
 function goClassic() {
   settings.closeSettings()
   router.push('/game/klotski-classic')
 }
+
+useEscapeKey(
+  () => settings.showSettings,
+  () => settings.closeSettings(),
+)
 
 const DIFFICULTY_OPTIONS: Array<{ value: KlotskiDifficulty; label: string }> = (
   ['easy', 'normal', 'hard'] as KlotskiDifficulty[]
@@ -146,22 +135,3 @@ function resetDefault() {
   Object.assign(localConfig, DEFAULT_CONFIG)
 }
 </script>
-
-<style scoped>
-.panel-enter-active,
-.panel-leave-active {
-  transition: opacity 0.2s ease;
-}
-.panel-enter-active > div:last-child,
-.panel-leave-active > div:last-child {
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.panel-enter-from,
-.panel-leave-to {
-  opacity: 0;
-}
-.panel-enter-from > div:last-child,
-.panel-leave-to > div:last-child {
-  transform: scale(0.9) translateY(10px);
-}
-</style>

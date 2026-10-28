@@ -13,20 +13,25 @@ const demoDirections: Record<number, ClassicDirection> = {
 describe('ClassicKlotskiEngine', () => {
   beforeEach(() => localStorage.clear())
 
-  it.each(LEVELS.filter((level) => level.steps.length > 0))('$name 的内置演示步骤可以完整通关', (level) => {
-    const engine = new ClassicKlotskiEngine({ layout: level.id })
+  it.each(LEVELS.filter((level) => level.steps.length > 0))(
+    '$name 的内置演示步骤可以完整通关',
+    (level) => {
+      const engine = new ClassicKlotskiEngine({ layout: level.id })
 
-    for (const code of level.steps) {
-      const pieceId = Math.floor(code / 10)
-      const direction = demoDirections[code % 10]
-      expect(direction, `${level.id} 的演示步骤 ${code} 方向有效`).toBeDefined()
-      expect(engine.demoMove(pieceId, direction), `${level.id} 的演示步骤 ${code} 合法`).toBe(true)
-    }
+      for (const code of level.steps) {
+        const pieceId = Math.floor(code / 10)
+        const direction = demoDirections[code % 10]
+        expect(direction, `${level.id} 的演示步骤 ${code} 方向有效`).toBeDefined()
+        expect(engine.demoMove(pieceId, direction), `${level.id} 的演示步骤 ${code} 合法`).toBe(
+          true,
+        )
+      }
 
-    expect(engine.isWin(), `${level.id} 应能通关`).toBe(true)
-    expect(engine.isGameOver()).toBe(true)
-    expect(engine.getState().moves).toBe(level.steps.length)
-  })
+      expect(engine.isWin(), `${level.id} 应能通关`).toBe(true)
+      expect(engine.isGameOver()).toBe(true)
+      expect(engine.getState().moves).toBe(level.steps.length)
+    },
+  )
 
   it('“走投无路”未提供演示解法时仍能正常载入', () => {
     const level = LEVELS.find((item) => item.id === '走投无路')!

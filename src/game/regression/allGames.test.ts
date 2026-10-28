@@ -2,18 +2,11 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import type { BaseGame } from '../base/BaseGame'
 import { Game2048Engine } from '../2048/GameEngine'
 import { EliminateEngine } from '../eliminate/GameEngine'
-import { HashiEngine } from '../hashi/GameEngine'
 import { ClassicKlotskiEngine } from '../klotski-classic/GameEngine'
 import { KlotskiEngine } from '../klotski/GameEngine'
 import { LianliankanEngine } from '../lianliankan/GameEngine'
-import { LightsOutEngine } from '../lights-out/GameEngine'
-import { MemoryMatchEngine } from '../memory-match/GameEngine'
 import { MinesweeperEngine } from '../minesweeper/GameEngine'
-import { NonogramEngine } from '../nonogram/GameEngine'
-import { NumberChainEngine } from '../numberchain/GameEngine'
-import { OneStrokeEngine } from '../one-stroke/GameEngine'
 import { SnakeEngine } from '../snake/GameEngine'
-import { SokobanEngine } from '../sokoban/GameEngine'
 import { SudokuEngine } from '../sudoku/GameEngine'
 import { TetrisEngine } from '../tetris/GameEngine'
 import { gameRegistry } from '../registry'
@@ -68,10 +61,16 @@ function engineCase<State, Move>(
 }
 
 const engines: EngineCase[] = [
-  engineCase<Game2048State, Direction2048>('2048', () => new Game2048Engine(), (state) => ({
-    ...state,
-    grid: state.grid.map((row) => row.map((tile) => tile ? { value: tile.value, row: tile.row, col: tile.col } : null)),
-  })),
+  engineCase<Game2048State, Direction2048>(
+    '2048',
+    () => new Game2048Engine(),
+    (state) => ({
+      ...state,
+      grid: state.grid.map((row) =>
+        row.map((tile) => (tile ? { value: tile.value, row: tile.row, col: tile.col } : null)),
+      ),
+    }),
+  ),
   engineCase('tetris', () => new TetrisEngine()),
   engineCase('minesweeper', () => new MinesweeperEngine()),
   engineCase('sudoku', () => new SudokuEngine()),
@@ -79,19 +78,14 @@ const engines: EngineCase[] = [
   engineCase('klotski', () => new KlotskiEngine()),
   engineCase('lianliankan', () => new LianliankanEngine()),
   engineCase('eliminate', () => new EliminateEngine()),
-  engineCase('numberchain', () => new NumberChainEngine()),
   engineCase('klotski-classic', () => new ClassicKlotskiEngine()),
-  engineCase('memory-match', () => new MemoryMatchEngine()),
-  engineCase('lights-out', () => new LightsOutEngine()),
-  engineCase('one-stroke', () => new OneStrokeEngine()),
-  engineCase('sokoban', () => new SokobanEngine()),
-  engineCase('nonogram', () => new NonogramEngine()),
-  engineCase('hashi', () => new HashiEngine()),
 ]
 
 describe('游戏回归覆盖清单', () => {
   it('每个已注册游戏都有引擎契约用例', () => {
-    expect(new Set(engines.map((engine) => engine.id))).toEqual(new Set(gameRegistry.map((game) => game.id)))
+    expect(new Set(engines.map((engine) => engine.id))).toEqual(
+      new Set(gameRegistry.map((game) => game.id)),
+    )
   })
 })
 

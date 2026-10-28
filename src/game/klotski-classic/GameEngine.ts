@@ -8,12 +8,7 @@
  * 操作模型：点击选中/直接移动 → 方向键/滑动；演示用 demoMove 按棋子移动。
  */
 import type { BaseGame } from '../base/BaseGame'
-import type {
-  ClassicState,
-  ClassicConfig,
-  ClassicDirection,
-  Piece,
-} from './types'
+import type { ClassicState, ClassicConfig, ClassicDirection, Piece } from './types'
 import { PIECE_SIZE, ROWS, COLS, DEFAULT_CLASSIC_CONFIG } from './types'
 import { findLevel } from './levels'
 import { StorageAdapter } from '../../adapters/StorageAdapter'
@@ -217,9 +212,7 @@ export class ClassicKlotskiEngine implements BaseGame<ClassicState, ClassicDirec
   movableDirs(pieceId: number): ClassicDirection[] {
     const p = this.pieces.find((x) => x.id === pieceId)
     if (!p) return []
-    return (['up', 'down', 'left', 'right'] as ClassicDirection[]).filter((d) =>
-      this.canMove(p, d),
-    )
+    return (['up', 'down', 'left', 'right'] as ClassicDirection[]).filter((d) => this.canMove(p, d))
   }
 
   getSelectedId(): number | null {

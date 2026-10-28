@@ -2,24 +2,14 @@
   <div class="eg-shell">
     <!-- 顶部栏 -->
     <header class="max-w-xl w-full mx-auto flex items-center justify-between mb-5">
-      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅">
-        ←
-      </RouterLink>
-      <div class="eg-game-title">🧩 三国华容道</div>
+      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅"> ← </RouterLink>
+      <div class="eg-game-title">三国华容道</div>
       <div class="flex gap-2">
-        <button
-          @click="showLeaderboard = true"
-          class="eg-icon-btn"
-          aria-label="排行榜"
-        >
-          🏆
+        <button @click="showLeaderboard = true" class="eg-icon-btn" aria-label="排行榜">
+          <AppIcon name="trophy" :size="18" />
         </button>
-        <button
-          @click="settings.openSettings()"
-          class="eg-icon-btn"
-          aria-label="设置"
-        >
-          ⚙️
+        <button @click="settings.openSettings()" class="eg-icon-btn" aria-label="设置">
+          <AppIcon name="settings" :size="18" />
         </button>
         <SoundToggle />
         <ThemeToggle />
@@ -31,7 +21,9 @@
       <!-- 分数面板 -->
       <div class="eg-score-row">
         <div>
-          <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-text-light dark:text-text-dark">
+          <h1
+            class="text-4xl md:text-5xl font-extrabold tracking-tight text-text-light dark:text-text-dark"
+          >
             三国华容道
           </h1>
           <p class="text-xs opacity-70 mt-1 text-text-muted-light dark:text-text-muted-dark">
@@ -42,9 +34,15 @@
         </div>
         <div class="flex gap-2">
           <ScoreBox label="步数" :value="state.moves" />
-          <div class="flex flex-col items-end justify-center px-3 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[72px]">
-            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark">用时</span>
-            <span class="text-lg font-bold tabular-nums text-text-light dark:text-text-dark">{{ elapsedText }}</span>
+          <div
+            class="flex flex-col items-end justify-center px-3 rounded-xl bg-card-light dark:bg-card-dark shadow-ring min-w-[72px]"
+          >
+            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark"
+              >用时</span
+            >
+            <span class="text-lg font-bold tabular-nums text-text-light dark:text-text-dark">{{
+              elapsedText
+            }}</span>
           </div>
         </div>
       </div>
@@ -52,51 +50,35 @@
       <!-- 操作按钮 -->
       <div class="flex items-center justify-between mb-2 gap-2 flex-wrap">
         <div class="flex gap-2">
-          <button
-            @click="showHowTo = true"
-            class="eg-ghost-btn"
-          >
-            ❓ 玩法
+          <button @click="showHowTo = true" class="eg-ghost-btn">
+            <AppIcon name="help" :size="18" /> 玩法
           </button>
-          <button
-            @click="showLevelMenu = !showLevelMenu"
-            class="eg-ghost-btn"
-          >
+          <button @click="showLevelMenu = !showLevelMenu" class="eg-ghost-btn">
             {{ layoutLabel }} <span class="opacity-50 text-xs">▾</span>
           </button>
-          <button
-            @click="autoshow"
-            :disabled="!canDemo"
-            class="eg-ghost-btn"
-          >
-            {{ demoActive ? '⏹ 停止演示' : '▶️ 自动演示' }}
+          <button @click="autoshow" :disabled="!canDemo" class="eg-ghost-btn">
+            {{ demoActive ? '停止演示' : '自动演示' }}
           </button>
-          <button
-            v-if="demoActive"
-            @click="toggleDemoPause"
-            class="eg-ghost-btn"
-          >
-            {{ demoPaused ? '▶️ 继续' : '⏸️ 暂停' }}
+          <button v-if="demoActive" @click="toggleDemoPause" class="eg-ghost-btn">
+            {{ demoPaused ? '继续' : '暂停' }}
           </button>
         </div>
-        <div class="flex gap-2 w-full sm:w-auto justify-end">
-          <button
-            @click="undo"
-            :disabled="!canUndo"
-            class="eg-ghost-btn"
-          >
-            ↩️ 撤销
+        <div class="ml-auto flex gap-2">
+          <button @click="undo" :disabled="!canUndo" class="eg-ghost-btn">
+            <AppIcon name="undo" :size="18" /> 撤销
           </button>
-          <button
-            @click="newGame"
-            class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white shadow-claude-md transition-all active:scale-95 text-sm font-bold"
-          >
-            🔄 新游戏
+          <button @click="newGame" class="eg-primary-btn">
+            <AppIcon name="restart" :size="18" /> 新游戏
           </button>
         </div>
       </div>
       <div class="text-xs opacity-60 mb-4 text-text-muted-light dark:text-text-muted-dark">
-        点击棋子直接移动（多方向时弹出方向按钮）· 方向键 / <kbd class="px-1 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">WASD</kbd> 微调 · 目标：曹操移到下方出口
+        点击棋子直接移动（多方向时弹出方向按钮）· 方向键 /
+        <kbd
+          class="px-1 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
+          >WASD</kbd
+        >
+        微调 · 目标：曹操移到下方出口
       </div>
 
       <!-- 棋盘 -->
@@ -108,7 +90,11 @@
         <!-- 背景 20 格 -->
         <div
           class="grid w-full h-full"
-          :style="{ gridTemplateColumns: `repeat(${COLS}, 1fr)`, gridTemplateRows: `repeat(${ROWS}, 1fr)`, gap: gapPx }"
+          :style="{
+            gridTemplateColumns: `repeat(${COLS}, 1fr)`,
+            gridTemplateRows: `repeat(${ROWS}, 1fr)`,
+            gap: gapPx,
+          }"
         >
           <div
             v-for="i in ROWS * COLS"
@@ -119,7 +105,9 @@
 
         <!-- 出口标记（曹操目标区域） -->
         <div class="absolute pointer-events-none" :style="exitStyle">
-          <div class="w-full h-full rounded-lg border-2 border-dashed border-amber-400/70 dark:border-amber-300/70 flex items-center justify-center">
+          <div
+            class="w-full h-full rounded-lg border-2 border-dashed border-amber-400/70 dark:border-amber-300/70 flex items-center justify-center"
+          >
             <span class="text-[10px] font-bold text-amber-500 dark:text-amber-300/80">出口</span>
           </div>
         </div>
@@ -130,7 +118,13 @@
             v-for="p in state.pieces"
             :key="p.id"
             class="absolute rounded-lg cursor-pointer flex items-center justify-center font-bold transition-all duration-150 select-none"
-            :class="[pieceClass(p.kind), { 'ring-2 ring-amber-300 dark:ring-amber-200 z-10 shadow-claude-lg': p.id === state.selectedId }]"
+            :class="[
+              pieceClass(p.kind),
+              {
+                'ring-2 ring-amber-300 dark:ring-amber-200 z-10 shadow-lift-strong':
+                  p.id === state.selectedId,
+              },
+            ]"
             :style="pieceStyle(p)"
             @click="onPieceClick(p.id)"
           >
@@ -144,7 +138,7 @@
             v-if="dirOverlay.dirs.includes('up')"
             type="button"
             @click="moveViaOverlay('up')"
-            class="pointer-events-auto absolute left-1/2 -translate-x-1/2 -top-1.5 -translate-y-full w-8 h-8 rounded-full bg-amber-400 text-gray-900 shadow-claude-md font-bold text-base flex items-center justify-center active:scale-95"
+            class="eg-primary-btn"
           >
             ▲
           </button>
@@ -152,7 +146,7 @@
             v-if="dirOverlay.dirs.includes('down')"
             type="button"
             @click="moveViaOverlay('down')"
-            class="pointer-events-auto absolute left-1/2 -translate-x-1/2 -bottom-1.5 translate-y-full w-8 h-8 rounded-full bg-amber-400 text-gray-900 shadow-claude-md font-bold text-base flex items-center justify-center active:scale-95"
+            class="eg-primary-btn"
           >
             ▼
           </button>
@@ -160,7 +154,7 @@
             v-if="dirOverlay.dirs.includes('left')"
             type="button"
             @click="moveViaOverlay('left')"
-            class="pointer-events-auto absolute top-1/2 -translate-y-1/2 -left-1.5 -translate-x-full w-8 h-8 rounded-full bg-amber-400 text-gray-900 shadow-claude-md font-bold text-base flex items-center justify-center active:scale-95"
+            class="eg-primary-btn"
           >
             ◀
           </button>
@@ -168,7 +162,7 @@
             v-if="dirOverlay.dirs.includes('right')"
             type="button"
             @click="moveViaOverlay('right')"
-            class="pointer-events-auto absolute top-1/2 -translate-y-1/2 -right-1.5 translate-x-full w-8 h-8 rounded-full bg-amber-400 text-gray-900 shadow-claude-md font-bold text-base flex items-center justify-center active:scale-95"
+            class="eg-primary-btn"
           >
             ▶
           </button>
@@ -177,23 +171,19 @@
         <!-- 继续上次遮罩 -->
         <div
           v-if="showResume && !state.won"
-          class="absolute inset-0 rounded-2xl flex items-center justify-center backdrop-blur-sm bg-bg-light/70 dark:bg-bg-dark/70"
+          class="absolute inset-0 rounded-2xl flex items-center justify-center bg-bg-light dark:bg-bg-dark"
         >
           <div class="text-center space-y-4 px-4">
-            <div class="text-3xl md:text-4xl font-extrabold text-red-500 dark:text-red-300">🕹️ 上次进度还在</div>
-            <p class="opacity-80 text-text-light dark:text-text-dark text-sm">已走 {{ pendingAutosave?.moves ?? 0 }} 步，继续救曹操？</p>
+            <div class="font-display text-heading font-medium text-text-light dark:text-text-dark">
+              上次进度还在
+            </div>
+            <p class="opacity-80 text-text-light dark:text-text-dark text-sm">
+              已走 {{ pendingAutosave?.moves ?? 0 }} 步，继续救曹操？
+            </p>
             <div class="flex gap-3 justify-center flex-wrap">
-              <button
-                @click="resumeGame"
-                class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold shadow-claude-md transition-all active:scale-95"
-              >
-                ▶️ 继续上次
-              </button>
-              <button
-                @click="discardAutosave"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                🔄 重新开始
+              <button @click="resumeGame" class="eg-primary-btn">继续上次</button>
+              <button @click="discardAutosave" class="px-5 py-2.5 eg-secondary-btn">
+                <AppIcon name="restart" :size="18" /> 重新开始
               </button>
             </div>
           </div>
@@ -202,32 +192,29 @@
         <!-- 胜利遮罩 -->
         <div
           v-if="state.won"
-          class="absolute inset-0 rounded-2xl flex items-center justify-center backdrop-blur-sm bg-red-600/80"
+          class="absolute inset-0 flex items-center justify-center bg-bg-light/85 backdrop-blur-sm dark:bg-bg-dark/85"
         >
           <div class="text-center space-y-4 px-4">
-            <div class="text-4xl md:text-5xl font-extrabold text-yellow-200">🎉 曹操逃出！</div>
+            <div
+              class="text-4xl md:text-5xl font-display font-medium text-text-light dark:text-text-dark"
+            >
+              曹操逃出！
+            </div>
             <p class="opacity-90 text-white">
               {{ state.moves }} 步 · {{ elapsedText }}
-              <span v-if="state.bestMoves > 0 && state.moves === state.bestMoves" class="ml-2">🏅 刷新最少步数！</span>
+              <span v-if="state.bestMoves > 0 && state.moves === state.bestMoves" class="ml-2"
+                >刷新最少步数！</span
+              >
             </p>
             <div class="flex gap-3 justify-center flex-wrap">
-              <button
-                @click="showLeaderboard = true"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                🏆 查看排行榜
+              <button @click="showLeaderboard = true" class="px-5 py-2.5 eg-secondary-btn">
+                <AppIcon name="trophy" :size="18" /> 查看排行榜
               </button>
-              <button
-                @click="shareResult"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                📤 分享成绩
+              <button @click="shareResult" class="px-5 py-2.5 eg-secondary-btn">
+                <AppIcon name="share" :size="18" /> 分享成绩
               </button>
-              <button
-                @click="newGame"
-                class="px-5 py-2.5 rounded-xl bg-red-700 hover:bg-red-800 text-white font-bold shadow-claude-md transition-all active:scale-95"
-              >
-                🔄 再来一局
+              <button @click="newGame" class="eg-primary-btn">
+                <AppIcon name="restart" :size="18" /> 再来一局
               </button>
             </div>
           </div>
@@ -235,8 +222,8 @@
       </div>
 
       <!-- 操作说明（小屏） -->
-      <div class="text-center text-xs opacity-60 mt-4 sm:hidden">
-        👆 点击棋子直接移动（多方向可动时滑动选择）· 目标：把曹操移到下方出口
+      <div v-if="!showResume" class="text-center text-xs opacity-60 mt-4 sm:hidden">
+        点击棋子直接移动（多方向可动时滑动选择）· 目标：把曹操移到下方出口
       </div>
     </main>
 
@@ -252,9 +239,13 @@
         @click.self="showLevelMenu = false"
       >
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
-        <div class="relative w-full max-w-md max-h-[80vh] overflow-y-auto rounded-2xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude-lg p-4">
+        <div
+          class="relative w-full max-w-md max-h-[80vh] overflow-y-auto rounded-2xl bg-card-light dark:bg-card-dark shadow-lift-strong p-4"
+        >
           <div class="flex items-center justify-between mb-3">
-            <h3 class="text-base font-bold text-text-light dark:text-text-dark">选择布局 · 40 经典残局</h3>
+            <h3 class="text-base font-bold text-text-light dark:text-text-dark">
+              选择布局 · 40 经典残局
+            </h3>
             <button
               @click="showLevelMenu = false"
               class="w-8 h-8 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center transition-colors"
@@ -268,12 +259,17 @@
               :key="opt.id"
               @click="chooseLevel(opt.id)"
               class="px-3 py-2 rounded-lg text-sm border text-left flex items-center justify-between gap-1 transition-all active:scale-[0.98]"
-              :class="opt.id === state.layout
-                ? 'bg-amber-400 text-gray-900 border-transparent shadow-claude'
-                : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark hover:border-amber-400/50'"
+              :class="
+                opt.id === state.layout
+                  ? 'bg-accent-soft-light text-accent-hover-light shadow-inset dark:bg-accent-soft-dark dark:text-accent-dark'
+                  : 'bg-card-light dark:bg-card-dark shadow-ring text-text-light dark:text-text-dark hover:shadow-ring-strong'
+              "
             >
               <span class="truncate">{{ opt.label }}</span>
-              <span class="text-xs shrink-0" :class="opt.minSteps > 0 ? 'opacity-60' : 'opacity-40'">
+              <span
+                class="text-xs shrink-0"
+                :class="opt.minSteps > 0 ? 'opacity-60' : 'opacity-40'"
+              >
                 {{ opt.minSteps > 0 ? opt.minSteps + '步' : '无解' }}
               </span>
             </button>
@@ -288,10 +284,19 @@
     <!-- 玩法说明 -->
     <HowToPlay v-model="showHowTo" title="华容道 · 三国版">
       <ol class="list-decimal pl-5 space-y-2 opacity-90">
-        <li><strong>点击棋子</strong>直接移动（多方向时弹出方向按钮），或用方向键 / <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">WASD</kbd> 微调</li>
-        <li>目标：把<strong>曹操</strong>（红色大方块）移到棋盘下方中央的<strong>出口</strong>（虚线框）</li>
+        <li>
+          <strong>点击棋子</strong>直接移动（多方向时弹出方向按钮），或用方向键 /
+          <kbd
+            class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm"
+            >WASD</kbd
+          >
+          微调
+        </li>
+        <li>
+          目标：把<strong>曹操</strong>（红色大方块）移到棋盘下方中央的<strong>出口</strong>（虚线框）
+        </li>
         <li>棋子被挡住时，先移动小兵和将领为曹操<strong>让路</strong></li>
-        <li>共 <strong>40 种经典布局</strong>（附最少步数），顶栏可切换；「▶️ 自动演示」可播放解法</li>
+        <li>共 <strong>40 种经典布局</strong>（附最少步数），顶栏可切换；「自动演示」可播放解法</li>
       </ol>
     </HowToPlay>
 
@@ -317,12 +322,7 @@ import type {
   Piece,
   PieceKind,
 } from '../../game/klotski-classic/types'
-import {
-  PIECE_LABEL,
-  ROWS,
-  COLS,
-  classicScoreForMoves,
-} from '../../game/klotski-classic/types'
+import { PIECE_LABEL, ROWS, COLS, classicScoreForMoves } from '../../game/klotski-classic/types'
 import { LEVELS, findLevel } from '../../game/klotski-classic/levels'
 import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useKlotskiSettingsStore } from '../../stores/klotski-settings'
@@ -338,6 +338,7 @@ import HowToPlay from '../../components/HowToPlay.vue'
 import ScoreBox from './components/ScoreBox.vue'
 import KlotskiClassicSettingsPanel from './components/KlotskiClassicSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
+import AppIcon from '../../components/AppIcon.vue'
 
 const settings = useKlotskiSettingsStore()
 
@@ -411,8 +412,21 @@ function discardAutosave() {
   syncState()
 }
 
+/** 切后台暂停计时：回到前台时把隐藏时长补进 startTime，避免排行榜用时失真 */
+let hiddenAt = 0
 function onVisibilityChange() {
-  if (document.visibilityState === 'hidden' && !state.won) persistAutosave()
+  if (document.visibilityState === 'hidden') {
+    hiddenAt = Date.now()
+    if (!state.won) persistAutosave()
+    return
+  }
+  if (hiddenAt <= 0) return
+  const delta = Date.now() - hiddenAt
+  hiddenAt = 0
+  if (delta > 0 && state.startTime > 0 && !state.won) {
+    state.startTime += delta
+    now.value = Date.now()
+  }
 }
 function onPageHide() {
   if (!state.won) persistAutosave()
@@ -438,8 +452,8 @@ const boardStyle = computed(() => ({
 
 const gapPx = computed(() => `${gap.value}px`)
 
-const layoutLabel = computed(() =>
-  findLevel(state.layout)?.name ?? (state.layout === 'random' ? '随机开局' : state.layout),
+const layoutLabel = computed(
+  () => findLevel(state.layout)?.name ?? (state.layout === 'random' ? '随机开局' : state.layout),
 )
 
 // ===== 布局选择 =====
@@ -572,13 +586,13 @@ const elapsedText = computed(() => {
 function pieceClass(kind: PieceKind): string {
   switch (kind) {
     case 'caocao':
-      return 'bg-red-600 dark:bg-red-500 text-yellow-100 shadow-claude-lg'
+      return 'bg-accent-light text-white shadow-lift dark:bg-accent-dark dark:text-bg-dark'
     case 'guanyu':
-      return 'bg-green-600 dark:bg-green-500 text-white shadow-claude-md'
+      return 'bg-success-light text-white shadow-ring dark:bg-success-dark dark:text-bg-dark'
     case 'general':
-      return 'bg-blue-600 dark:bg-blue-500 text-white shadow-claude-md'
+      return 'bg-card-light text-text-light shadow-ring dark:bg-card-dark dark:text-text-dark'
     case 'soldier':
-      return 'bg-gray-500 dark:bg-gray-400 text-white shadow-claude'
+      return 'bg-card-light text-text-muted-light shadow-ring dark:bg-card-dark dark:text-text-muted-dark'
   }
 }
 
@@ -734,7 +748,7 @@ async function shareResult() {
     text: gameShareText('klotski-classic', state.moves, undefined, true),
     url: shareUrl('/game/klotski-classic'),
   })
-  toast(result === 'shared' ? '✅ 已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
+  toast(result === 'shared' ? '已分享' : result === 'copied' ? '链接已复制' : '分享失败')
 }
 
 // ===== 键盘操作 =====
@@ -742,8 +756,18 @@ function onKeydown(e: KeyboardEvent) {
   // 设置/排行榜/布局菜单弹窗打开时忽略游戏按键（ref 需 .value）
   if (settings.showSettings || showLeaderboard.value || showLevelMenu.value) return
   const map: Record<string, ClassicDirection> = {
-    ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
-    w: 'up', W: 'up', s: 'down', S: 'down', a: 'left', A: 'left', d: 'right', D: 'right',
+    ArrowUp: 'up',
+    ArrowDown: 'down',
+    ArrowLeft: 'left',
+    ArrowRight: 'right',
+    w: 'up',
+    W: 'up',
+    s: 'down',
+    S: 'down',
+    a: 'left',
+    A: 'left',
+    d: 'right',
+    D: 'right',
   }
   const dir = map[e.key]
   if (dir) {
@@ -791,7 +815,12 @@ function updateLayout() {
 // ===== 计时器 =====
 let timer: ReturnType<typeof setInterval> | null = null
 
-useGamePageEvents({ keydown: onKeydown, resize: updateLayout, visibilitychange: onVisibilityChange, pagehide: onPageHide })
+useGamePageEvents({
+  keydown: onKeydown,
+  resize: updateLayout,
+  visibilitychange: onVisibilityChange,
+  pagehide: onPageHide,
+})
 
 onMounted(() => {
   updateLayout()

@@ -2,11 +2,7 @@ import { defineStore } from 'pinia'
 import { StorageAdapter } from '../adapters/StorageAdapter'
 import type { KlotskiConfig, KlotskiDifficulty } from '../game/klotski/types'
 import type { ClassicLayoutId } from '../game/klotski-classic/types'
-import {
-  DEFAULT_CONFIG,
-  SIZE_OPTIONS,
-  DIFFICULTY_LABELS,
-} from '../game/klotski/types'
+import { DEFAULT_CONFIG, SIZE_OPTIONS, DIFFICULTY_LABELS } from '../game/klotski/types'
 
 const CONFIG_KEY = 'easygame-klotski-config'
 

@@ -6,18 +6,16 @@ import { ClassicKlotskiEngine } from '../klotski-classic/GameEngine'
 import { KlotskiEngine } from '../klotski/GameEngine'
 import { LianliankanEngine } from '../lianliankan/GameEngine'
 import { MinesweeperEngine } from '../minesweeper/GameEngine'
-import { NumberChainEngine } from '../numberchain/GameEngine'
 import { SnakeEngine } from '../snake/GameEngine'
 import { SudokuEngine } from '../sudoku/GameEngine'
 import { TetrisEngine } from '../tetris/GameEngine'
 import {
+  isClassicAutosave,
   isEliminateAutosave,
   isGame2048Autosave,
-  isClassicAutosave,
   isKlotskiAutosave,
   isLianliankanAutosave,
   isMinesweeperAutosave,
-  isNumberChainAutosave,
   isSnakeAutosave,
   isSudokuAutosave,
   isTetrisAutosave,
@@ -33,13 +31,21 @@ const guardCases = [
   { id: '数字华容道', create: () => new KlotskiEngine().getState(), guard: isKlotskiAutosave },
   { id: '连连看', create: () => new LianliankanEngine().getState(), guard: isLianliankanAutosave },
   { id: '消消乐', create: () => new EliminateEngine().getState(), guard: isEliminateAutosave },
-  { id: '数字连连', create: () => new NumberChainEngine().getState(), guard: isNumberChainAutosave },
-  { id: '三国华容道', create: () => new ClassicKlotskiEngine().getState(), guard: isClassicAutosave },
+  {
+    id: '三国华容道',
+    create: () => new ClassicKlotskiEngine().getState(),
+    guard: isClassicAutosave,
+  },
 ]
 
 function isScoreState(value: unknown): value is { score: number } {
-  return typeof value === 'object' && value !== null &&
-    'score' in value && typeof value.score === 'number' && Number.isFinite(value.score)
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'score' in value &&
+    typeof value.score === 'number' &&
+    Number.isFinite(value.score)
+  )
 }
 
 describe('已接入自动存档的游戏结构校验', () => {
@@ -77,7 +83,11 @@ describe('自动存档版本与兼容', () => {
     })
     expect(loadAutosave('future', isScoreState)).toBeNull()
 
-    StorageAdapter.set(autosaveKey('invalid'), { kind: 'easygame-autosave', version: 1, state: null })
+    StorageAdapter.set(autosaveKey('invalid'), {
+      kind: 'easygame-autosave',
+      version: 1,
+      state: null,
+    })
     expect(loadAutosave('invalid', isScoreState)).toBeNull()
   })
 
