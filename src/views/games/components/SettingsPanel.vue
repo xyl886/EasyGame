@@ -82,7 +82,9 @@
               :class="localConfig.difficulty === opt.value ? 'eg-opt-on' : ''"
             >
               <div class="font-semibold">{{ opt.label }}</div>
-              <div class="text-[10px] opacity-70">{{ opt.desc }}</div>
+              <div class="text-[10px] text-text-muted-light dark:text-text-muted-dark">
+                {{ opt.desc }}
+              </div>
             </button>
           </div>
         </div>
@@ -99,7 +101,9 @@
               :class="localConfig.skin === opt.value ? 'eg-opt-on' : ''"
             >
               <div class="font-semibold">{{ opt.label }}</div>
-              <div class="text-[10px] opacity-70">{{ opt.hint }}</div>
+              <div class="text-[10px] text-text-muted-light dark:text-text-muted-dark">
+                {{ opt.hint }}
+              </div>
             </button>
           </div>
         </div>

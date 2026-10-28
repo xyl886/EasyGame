@@ -38,7 +38,7 @@
               :class="localLayout === opt.value ? 'eg-opt-on' : ''"
             >
               <span class="truncate">{{ opt.label }}</span>
-              <span class="shrink-0 opacity-60">{{
+              <span class="shrink-0 text-text-muted-light dark:text-text-muted-dark">{{
                 opt.minSteps > 0 ? opt.minSteps + '步' : '无解'
               }}</span>
             </button>

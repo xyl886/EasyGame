@@ -2,7 +2,6 @@
   <RouterLink
     :to="game.route"
     class="group relative flex flex-col overflow-hidden rounded-2xl bg-card-light shadow-ring transition-all duration-200 ease-calm hover:-translate-y-0.5 hover:shadow-lift-strong focus-visible:outline-none dark:bg-card-dark"
-    :aria-label="`开始玩 ${game.name}`"
   >
     <!-- 封面带：暖色底 + 字形主视觉 + 大字水印，给每款游戏一个可识别的锚点 -->
     <div
@@ -11,11 +10,6 @@
     >
       <span
         class="relative z-10 font-display text-[1.6rem] font-medium leading-none"
-        aria-hidden="true"
-        >{{ game.glyph }}</span
-      >
-      <span
-        class="pointer-events-none absolute -right-1 bottom-[-0.75rem] select-none font-display text-[4.5rem] leading-none opacity-[0.08]"
         aria-hidden="true"
         >{{ game.glyph }}</span
       >

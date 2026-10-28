@@ -3,13 +3,15 @@
     class="rounded-2xl px-4 py-2.5 shadow-claude text-center min-w-[92px] border transition-all duration-200"
     :class="
       accent
-        ? 'bg-accent-light dark:bg-accent-dark text-white border-transparent shadow-claude-md'
+        ? 'bg-accent-light dark:bg-accent-dark text-white dark:text-bg-dark border-transparent shadow-claude-md'
         : 'bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark'
     "
   >
     <div
       class="text-[10px] uppercase tracking-[0.08em] font-semibold"
-      :class="accent ? 'text-white/75' : 'text-text-muted-light dark:text-text-muted-dark'"
+      :class="
+        accent ? 'text-white dark:text-bg-dark' : 'text-text-muted-light dark:text-text-muted-dark'
+      "
     >
       {{ label }}
     </div>

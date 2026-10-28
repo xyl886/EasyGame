@@ -26,7 +26,7 @@
           >
             贪吃蛇
           </h1>
-          <p class="text-xs opacity-70 mt-1 text-text-muted-light dark:text-text-muted-dark">
+          <p class="text-xs mt-1 text-text-muted-light dark:text-text-muted-dark">
             {{ state.size }}×{{ state.size }} · {{ speedLabel }}
             <span v-if="state.wallThrough"> · 穿墙</span>
             <span v-if="state.multiFood"> · 多食物</span>
@@ -46,9 +46,7 @@
           <button @click="showHowTo = true" class="eg-ghost-btn">
             <AppIcon name="help" :size="18" /> 玩法
           </button>
-          <div
-            class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark"
-          >
+          <div class="text-xs hidden sm:block text-text-muted-light dark:text-text-muted-dark">
             键盘
             <kbd
               class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
@@ -212,12 +210,17 @@
       </div>
 
       <!-- 操作说明（小屏） -->
-      <div v-if="!showResume" class="text-center text-xs opacity-60 mt-4 sm:hidden">
+      <div
+        v-if="!showResume"
+        class="text-center text-xs mt-4 text-text-muted-light dark:text-text-muted-dark sm:hidden"
+      >
         在棋盘上滑动手指控制方向
       </div>
     </main>
 
-    <footer class="max-w-xl w-full mx-auto mt-6 py-3 text-center text-xs opacity-40">
+    <footer
+      class="max-w-xl w-full mx-auto mt-6 py-3 text-center text-xs text-text-faint-light dark:text-text-faint-dark"
+    >
       <RouterLink to="/" class="hover:opacity-100">← 返回游戏大厅</RouterLink>
     </footer>
 

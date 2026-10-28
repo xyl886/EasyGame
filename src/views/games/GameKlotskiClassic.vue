@@ -26,7 +26,7 @@
           >
             三国华容道
           </h1>
-          <p class="text-xs opacity-70 mt-1 text-text-muted-light dark:text-text-muted-dark">
+          <p class="text-xs mt-1 text-text-muted-light dark:text-text-muted-dark">
             {{ layoutLabel }} · 4×5
             <span v-if="state.bestMoves > 0"> · 历史最少 {{ state.bestMoves }} 步</span>
             <span v-else> · 还没救出曹操</span>
@@ -37,9 +37,7 @@
           <div
             class="flex flex-col items-end justify-center px-3 rounded-xl bg-card-light dark:bg-card-dark shadow-ring min-w-[72px]"
           >
-            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark"
-              >用时</span
-            >
+            <span class="text-[10px] text-text-muted-light dark:text-text-muted-dark">用时</span>
             <span class="text-lg font-bold tabular-nums text-text-light dark:text-text-dark">{{
               elapsedText
             }}</span>
@@ -72,7 +70,7 @@
           </button>
         </div>
       </div>
-      <div class="text-xs opacity-60 mb-4 text-text-muted-light dark:text-text-muted-dark">
+      <div class="text-xs mb-4 text-text-muted-light dark:text-text-muted-dark">
         点击棋子直接移动（多方向时弹出方向按钮）· 方向键 /
         <kbd
           class="px-1 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
@@ -222,12 +220,17 @@
       </div>
 
       <!-- 操作说明（小屏） -->
-      <div v-if="!showResume" class="text-center text-xs opacity-60 mt-4 sm:hidden">
+      <div
+        v-if="!showResume"
+        class="text-center text-xs mt-4 text-text-muted-light dark:text-text-muted-dark sm:hidden"
+      >
         点击棋子直接移动（多方向可动时滑动选择）· 目标：把曹操移到下方出口
       </div>
     </main>
 
-    <footer class="max-w-xl w-full mx-auto mt-6 py-3 text-center text-xs opacity-40">
+    <footer
+      class="max-w-xl w-full mx-auto mt-6 py-3 text-center text-xs text-text-faint-light dark:text-text-faint-dark"
+    >
       <RouterLink to="/" class="hover:opacity-100">← 返回游戏大厅</RouterLink>
     </footer>
 
@@ -268,7 +271,11 @@
               <span class="truncate">{{ opt.label }}</span>
               <span
                 class="text-xs shrink-0"
-                :class="opt.minSteps > 0 ? 'opacity-60' : 'opacity-40'"
+                :class="
+                  opt.minSteps > 0
+                    ? 'text-text-muted-light dark:text-text-muted-dark'
+                    : 'text-text-faint-light dark:text-text-faint-dark'
+                "
               >
                 {{ opt.minSteps > 0 ? opt.minSteps + '步' : '无解' }}
               </span>

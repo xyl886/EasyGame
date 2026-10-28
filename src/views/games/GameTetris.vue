@@ -26,7 +26,7 @@
           >
             俄罗斯方块
           </h1>
-          <p class="text-xs opacity-70 mt-1 text-text-muted-light dark:text-text-muted-dark">
+          <p class="text-xs mt-1 text-text-muted-light dark:text-text-muted-dark">
             Lv {{ state.level }} · {{ state.lines }} 行
             <span v-if="state.targetLines > 0"> · 目标 {{ state.targetLines }}</span>
             <span v-else> · 无尽</span>
@@ -45,9 +45,7 @@
           <button @click="showHowTo = true" class="eg-ghost-btn">
             <AppIcon name="help" :size="18" /> 玩法
           </button>
-          <div
-            class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark"
-          >
+          <div class="text-xs hidden sm:block text-text-muted-light dark:text-text-muted-dark">
             <kbd
               class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
               >←→</kbd
@@ -102,7 +100,7 @@
       <div class="flex gap-3 justify-center items-start flex-wrap">
         <!-- Hold 槽（左侧，仅启用时显示） -->
         <div v-if="state.holdPiece" class="flex flex-col items-center">
-          <div class="text-xs opacity-70 mb-1 font-semibold">HOLD</div>
+          <div class="text-xs mb-1 font-semibold">HOLD</div>
           <div
             class="rounded-lg bg-white/50 dark:bg-bg-dark/40 shadow-inner p-1.5"
             :style="{ width: previewBoxPx, height: previewBoxPx }"
@@ -243,7 +241,7 @@
 
         <!-- 侧栏：下一个方块预览 -->
         <div class="flex flex-col items-center">
-          <div class="text-xs opacity-70 mb-1 font-semibold">下一个</div>
+          <div class="text-xs mb-1 font-semibold">下一个</div>
           <div class="flex flex-col gap-2">
             <div
               v-for="(piece, idx) in previewPieces"
@@ -268,7 +266,10 @@
       </div>
 
       <!-- 移动端操作说明 -->
-      <div v-if="!showResume" class="text-center text-xs opacity-60 mt-4 sm:hidden">
+      <div
+        v-if="!showResume"
+        class="text-center text-xs mt-4 text-text-muted-light dark:text-text-muted-dark sm:hidden"
+      >
         点击棋盘旋转 · 左右滑动移动 · 下滑软降 · 上滑硬降
       </div>
 
@@ -317,7 +318,9 @@
       </div>
     </main>
 
-    <footer class="max-w-3xl w-full mx-auto mt-6 py-3 text-center text-xs opacity-40">
+    <footer
+      class="max-w-3xl w-full mx-auto mt-6 py-3 text-center text-xs text-text-faint-light dark:text-text-faint-dark"
+    >
       <RouterLink to="/" class="hover:opacity-100">← 返回游戏大厅</RouterLink>
     </footer>
 

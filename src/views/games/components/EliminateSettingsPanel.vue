@@ -31,7 +31,7 @@
               :class="localConfig.difficulty === opt.value ? 'eg-opt-on' : ''"
             >
               <span>{{ opt.label }}</span>
-              <span class="text-xs opacity-70"
+              <span class="text-xs text-text-muted-light dark:text-text-muted-dark"
                 >{{ opt.rows }}×{{ opt.cols }} · 目标 {{ opt.targetScore }} 分 ·
                 {{ opt.moves }} 步</span
               >

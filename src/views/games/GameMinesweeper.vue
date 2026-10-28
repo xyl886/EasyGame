@@ -24,9 +24,7 @@
           <div
             class="flex flex-col items-center justify-center px-3 py-1 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[64px]"
           >
-            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark"
-              >剩余</span
-            >
+            <span class="text-[10px] text-text-muted-light dark:text-text-muted-dark">剩余</span>
             <span class="text-lg font-bold tabular-nums text-danger-light dark:text-danger-dark">{{
               minesLeft
             }}</span>
@@ -34,9 +32,7 @@
           <div
             class="flex flex-col items-center justify-center px-3 py-1 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[72px]"
           >
-            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark"
-              >⏱ 用时</span
-            >
+            <span class="text-[10px] text-text-muted-light dark:text-text-muted-dark">⏱ 用时</span>
             <span class="text-lg font-bold tabular-nums text-text-light dark:text-text-dark">{{
               elapsedText
             }}</span>
@@ -64,7 +60,7 @@
           </button>
         </div>
         <div class="flex items-center gap-2">
-          <span class="text-xs opacity-70 text-text-muted-light dark:text-text-muted-dark">
+          <span class="text-xs text-text-muted-light dark:text-text-muted-dark">
             {{ difficultyLabel }} · {{ state.rows }}×{{ state.cols }}
             <span v-if="state.bestTime > 0"> · 最快 {{ bestTimeText }}</span>
           </span>
@@ -173,7 +169,10 @@
       </div>
 
       <!-- 操作说明 -->
-      <div v-if="!showResume" class="text-center text-xs opacity-60 mt-3">
+      <div
+        v-if="!showResume"
+        class="text-center text-xs mt-3 text-text-muted-light dark:text-text-muted-dark"
+      >
         PC：左键翻开 · 右键标记 · 按住数字格快速展开
         <span class="sm:hidden block mt-1"
           >手机：点击翻开 · 长按或「<AppIcon name="flag" :size="18" /> 旗子」模式标记</span
@@ -181,7 +180,9 @@
       </div>
     </main>
 
-    <footer class="max-w-xl w-full mx-auto mt-6 py-3 text-center text-xs opacity-40">
+    <footer
+      class="max-w-xl w-full mx-auto mt-6 py-3 text-center text-xs text-text-faint-light dark:text-text-faint-dark"
+    >
       <RouterLink to="/" class="hover:opacity-100">← 返回游戏大厅</RouterLink>
     </footer>
 

@@ -156,7 +156,7 @@
     min-height: 2.75rem;
   }
   .eg-opt-on {
-    @apply bg-accent-soft-light text-accent-hover-light shadow-inset hover:text-accent-light dark:bg-accent-soft-dark dark:text-accent-dark dark:hover:text-accent-hover-dark;
+    @apply bg-accent-soft-light text-text-light shadow-inset dark:bg-accent-soft-dark dark:text-text-dark;
   }
 
   /* ---------- 游戏页工具栏 ---------- */

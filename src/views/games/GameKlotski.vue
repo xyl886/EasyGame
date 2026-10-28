@@ -26,7 +26,7 @@
           >
             华容道
           </h1>
-          <p class="text-xs opacity-70 mt-1 text-text-muted-light dark:text-text-muted-dark">
+          <p class="text-xs mt-1 text-text-muted-light dark:text-text-muted-dark">
             {{ state.size }}×{{ state.size }} · {{ difficultyLabel }}
             <span v-if="state.bestMoves > 0"> · 历史最少 {{ state.bestMoves }} 步</span>
             <span v-else> · 还没完成过</span>
@@ -37,9 +37,7 @@
           <div
             class="flex flex-col items-end justify-center px-3 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[72px]"
           >
-            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark"
-              >用时</span
-            >
+            <span class="text-[10px] text-text-muted-light dark:text-text-muted-dark">用时</span>
             <span class="text-lg font-bold tabular-nums text-text-light dark:text-text-dark">{{
               elapsedText
             }}</span>
@@ -53,9 +51,7 @@
           <button @click="showHowTo = true" class="eg-ghost-btn">
             <AppIcon name="help" :size="18" /> 玩法
           </button>
-          <div
-            class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark"
-          >
+          <div class="text-xs hidden sm:block text-text-muted-light dark:text-text-muted-dark">
             方向键 /
             <kbd
               class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
@@ -151,12 +147,17 @@
       </div>
 
       <!-- 操作说明（小屏） -->
-      <div v-if="!showResume" class="text-center text-xs opacity-60 mt-4 sm:hidden">
+      <div
+        v-if="!showResume"
+        class="text-center text-xs mt-4 text-text-muted-light dark:text-text-muted-dark sm:hidden"
+      >
         点击数字或滑动手指移动 · 目标：数字排好序，空格在右下角
       </div>
     </main>
 
-    <footer class="max-w-xl w-full mx-auto mt-6 py-3 text-center text-xs opacity-40">
+    <footer
+      class="max-w-xl w-full mx-auto mt-6 py-3 text-center text-xs text-text-faint-light dark:text-text-faint-dark"
+    >
       <RouterLink to="/" class="hover:opacity-100">← 返回游戏大厅</RouterLink>
     </footer>
 
