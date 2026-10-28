@@ -15,6 +15,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: `${game.name} · EasyGame` },
   })),
   {
+    path: '/multiplayer/gomoku',
+    name: 'MultiplayerGomoku',
+    component: () => import('../views/multiplayer/MultiplayerGomoku.vue'),
+    meta: { title: '五子棋联机 · EasyGame' },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('../views/NotFound.vue'),

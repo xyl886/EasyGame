@@ -59,5 +59,7 @@ describe('Home（大厅）', () => {
     expect(text).toContain('8 款游戏')
     expect(text).toContain('离线可玩')
     expect(text).toContain('无需账号')
+    expect(text).toContain('联机对战')
+    expect(text).toContain('五子棋')
   })
 })

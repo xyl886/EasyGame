@@ -91,3 +91,55 @@ test.describe('排行榜底部抽屉（移动端）', () => {
     await expect(dialog).toBeHidden()
   })
 })
+
+test.describe('联机对战（五子棋）', () => {
+  test('大厅有联机区块并可进入五子棋', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByRole('heading', { name: '联机对战' })).toBeVisible()
+    await page.locator('a[href*="/multiplayer/gomoku"]').click()
+    await expect(page.locator('.eg-game-title')).toContainText('五子棋')
+    await expect(page.getByRole('button', { name: '创建房间' })).toBeVisible()
+  })
+
+  test('本机双人：黑棋五连后显示获胜', async ({ page }) => {
+    await page.goto('/#/multiplayer/gomoku')
+    await page.getByRole('button', { name: '本机双人' }).click()
+
+    const board = page.getByTestId('gomoku-board')
+    await expect(board).toBeVisible()
+    const cell = (row: number, col: number) => board.locator('button').nth(row * 15 + col)
+
+    const black = [
+      [7, 3],
+      [7, 4],
+      [7, 5],
+      [7, 6],
+      [7, 7],
+    ]
+    const white = [
+      [0, 0],
+      [0, 1],
+      [0, 2],
+      [0, 3],
+    ]
+
+    for (let i = 0; i < black.length; i++) {
+      await cell(black[i][0], black[i][1]).click()
+      if (i < white.length) await cell(white[i][0], white[i][1]).click()
+    }
+
+    const result = page.getByTestId('gomoku-result')
+    await expect(result).toBeVisible()
+    await expect(result).toContainText('黑棋获胜')
+  })
+
+  test('创建房间会生成 6 位房号并可离开', async ({ page }) => {
+    await page.goto('/#/multiplayer/gomoku')
+    await page.getByRole('button', { name: '创建房间' }).click()
+
+    await expect(page.getByRole('button', { name: /^[A-HJ-NP-Z2-9]{6}$/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: '离开房间' })).toBeVisible()
+    await page.getByRole('button', { name: '离开房间' }).click()
+    await expect(page.getByRole('button', { name: '创建房间' })).toBeVisible()
+  })
+})
