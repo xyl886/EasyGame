@@ -6,8 +6,9 @@ import {
   normalizeRoomCode,
   peerIdFor,
 } from './roomCode'
-import { isNetMessage } from './protocol'
-import { createInitialState } from '../game/gomoku/GameEngine'
+import { isClientMessage, isHostMessage, isNetMessage } from './protocol'
+import { createInitialState as createGomokuState } from '../game/gomoku/GameEngine'
+import { createInitialState as createConnect4State } from '../game/connect4/GameEngine'
 
 describe('房号', () => {
   it('生成 6 位安全字符房号（不含 I/O/0/1）', () => {
@@ -35,33 +36,81 @@ describe('房号', () => {
     expect(isValidRoomCode('abc def')).toBe(false)
   })
 
-  it('peer id 与邀请链接', () => {
+  it('peer id 与邀请链接（按游戏区分路径）', () => {
     expect(peerIdFor('ABCD23')).toBe('easygame-gomoku-ABCD23')
-    expect(
-      inviteUrl('ABCD23', { origin: 'https://xyl886.github.io', pathname: '/EasyGame/' }),
-    ).toBe('https://xyl886.github.io/EasyGame/#/multiplayer/gomoku?room=ABCD23')
+    const location = { origin: 'https://xyl886.github.io', pathname: '/EasyGame/' }
+    expect(inviteUrl('ABCD23', 'gomoku', location)).toBe(
+      'https://xyl886.github.io/EasyGame/#/multiplayer/gomoku?room=ABCD23',
+    )
+    expect(inviteUrl('ABCD23', 'connect4', location)).toBe(
+      'https://xyl886.github.io/EasyGame/#/multiplayer/connect4?room=ABCD23',
+    )
   })
 })
 
-describe('P2P 消息协议校验', () => {
-  const state = createInitialState()
+describe('P2P 消息协议校验（v2）', () => {
+  const gomokuState = createGomokuState()
+  const connect4State = createConnect4State()
 
-  it('接受合法的 hello/move/state/rematch/bye', () => {
-    expect(isNetMessage({ t: 'hello', v: 1 })).toBe(true)
-    expect(isNetMessage({ t: 'rematch', v: 1 })).toBe(true)
-    expect(isNetMessage({ t: 'bye', v: 1 })).toBe(true)
-    expect(isNetMessage({ t: 'move', v: 1, index: 0 })).toBe(true)
-    expect(isNetMessage({ t: 'state', v: 1, state })).toBe(true)
+  it('接受合法客户端消息', () => {
+    expect(
+      isNetMessage({ t: 'hello', v: 2, game: 'gomoku', token: 'abcdef012345', role: 'player' }),
+    ).toBe(true)
+    expect(
+      isClientMessage({ t: 'hello', v: 2, game: 'connect4', token: 'x', role: 'spectator' }),
+    ).toBe(true)
+    expect(isClientMessage({ t: 'move', v: 2, move: 3 })).toBe(true)
+    expect(isClientMessage({ t: 'chat', v: 2, id: 'nice' })).toBe(true)
+    expect(isClientMessage({ t: 'rematch', v: 2 })).toBe(true)
+    expect(isClientMessage({ t: 'bye', v: 2 })).toBe(true)
   })
 
-  it('拒绝版本不符、未知类型与结构异常的消息', () => {
+  it('接受合法房主消息', () => {
+    expect(
+      isHostMessage({
+        t: 'welcome',
+        v: 2,
+        role: 'player',
+        seat: 'white',
+        state: gomokuState,
+        serial: 1,
+        resumed: false,
+        spectators: 0,
+      }),
+    ).toBe(true)
+    expect(
+      isHostMessage({ t: 'state', v: 2, state: connect4State, serial: 2, spectators: 1 }),
+    ).toBe(true)
+    expect(isHostMessage({ t: 'chat', v: 2, id: 'gg', seat: 'black' })).toBe(true)
+    expect(
+      isHostMessage({ t: 'status', v: 2, guest: true, spectators: 0, reconnecting: false }),
+    ).toBe(true)
+  })
+
+  it('拒绝版本不符、未知类型、非法字段', () => {
     expect(isNetMessage(null)).toBe(false)
-    expect(isNetMessage('hello')).toBe(false)
-    expect(isNetMessage({ t: 'hello', v: 2 })).toBe(false)
-    expect(isNetMessage({ t: 'unknown', v: 1 })).toBe(false)
-    expect(isNetMessage({ t: 'move', v: 1, index: -1 })).toBe(false)
-    expect(isNetMessage({ t: 'move', v: 1, index: 1.5 })).toBe(false)
-    expect(isNetMessage({ t: 'state', v: 1, state: { ...state, board: [] } })).toBe(false)
-    expect(isNetMessage({ t: 'state', v: 1, state: { ...state, current: 'red' } })).toBe(false)
+    expect(isNetMessage({ t: 'hello', v: 1 })).toBe(false)
+    expect(isNetMessage({ t: 'unknown', v: 2 })).toBe(false)
+    expect(isNetMessage({ t: 'hello', v: 2, game: 'chess', token: 'x', role: 'player' })).toBe(
+      false,
+    )
+    expect(isNetMessage({ t: 'hello', v: 2, game: 'gomoku', token: '', role: 'player' })).toBe(
+      false,
+    )
+    expect(isClientMessage({ t: 'move', v: 2, move: 'a' })).toBe(false)
+    expect(isClientMessage({ t: 'chat', v: 2, id: '' })).toBe(false)
+    expect(
+      isHostMessage({
+        t: 'welcome',
+        v: 2,
+        role: 'player',
+        seat: 'red',
+        state: gomokuState,
+        serial: 1,
+        resumed: false,
+        spectators: 0,
+      }),
+    ).toBe(false)
+    expect(isHostMessage({ t: 'state', v: 2, state: 'bad', serial: 1, spectators: 0 })).toBe(false)
   })
 })

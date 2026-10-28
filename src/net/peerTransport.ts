@@ -1,13 +1,41 @@
 import type { DataConnection, Peer as PeerInstance } from 'peerjs'
-import { isNetMessage, type NetErrorCode, type NetMessage, type NetStatus } from './protocol'
+import {
+  isClientMessage,
+  isNetMessage,
+  type ClientMessage,
+  type NetErrorCode,
+  type NetMessage,
+  type NetStatus,
+} from './protocol'
 import { peerIdFor } from './roomCode'
 
-export interface NetEvents {
+export interface HostClient {
+  id: string
+  send: (msg: NetMessage) => void
+  close: () => void
+}
+
+export interface HostRoomEvents {
+  onStatus: (status: NetStatus, detail?: string) => void
+  /** 收到 hello：由上层决定 player / spectator 并回 welcome */
+  onHello: (client: HostClient, msg: Extract<ClientMessage, { t: 'hello' }>) => void
+  onMessage: (client: HostClient, msg: ClientMessage) => void
+  onClose: (client: HostClient) => void
+}
+
+export interface HostRoom {
+  /** 发给单个客户端；clientId 为 '*' 时广播（exceptId 可排除自己） */
+  send: (clientId: string, msg: NetMessage) => void
+  broadcast: (msg: NetMessage, exceptId?: string) => void
+  close: () => void
+}
+
+export interface GuestRoomEvents {
   onStatus: (status: NetStatus, detail?: string) => void
   onMessage: (msg: NetMessage) => void
 }
 
-export interface NetConnection {
+export interface GuestRoom {
   send: (msg: NetMessage) => void
   close: () => void
 }
@@ -30,73 +58,87 @@ function mapPeerError(type: string | undefined): NetErrorCode {
   }
 }
 
-function safeSend(conn: DataConnection | null, msg: NetMessage): void {
-  if (conn?.open) conn.send(msg)
-}
-
-/**
- * 创建房主连接：peer id 直接由房号派生，先到先得；
- * 只接受一个 guest，重连时新连接替换旧连接。
- */
-export async function createHostConnection(
-  code: string,
-  events: NetEvents,
-): Promise<NetConnection> {
+/** 房主：同一房号可接入多个客户端（1 名玩家 + 多名观众） */
+export async function createHostRoom(code: string, events: HostRoomEvents): Promise<HostRoom> {
   events.onStatus('connecting')
 
   const { Peer } = await import('peerjs')
   const peer: PeerInstance = new Peer(peerIdFor(code), { debug: 0 })
-  let conn: DataConnection | null = null
+  const clients = new Map<string, { client: HostClient; conn: DataConnection }>()
   let closed = false
+  let seq = 0
 
-  function wire(next: DataConnection): void {
-    if (conn) {
-      next.close()
-      return
+  function wire(conn: DataConnection): void {
+    const id = conn.peer || `client-${++seq}`
+    const client: HostClient = {
+      id,
+      send: (msg) => {
+        if (conn.open) conn.send(msg)
+      },
+      close: () => {
+        conn.close()
+      },
     }
-    conn = next
-    next.on('open', () => {
-      if (!closed) events.onStatus('connected')
+
+    conn.on('open', () => {
+      if (!closed) events.onStatus('waiting')
     })
-    next.on('data', (data) => {
-      if (!closed && isNetMessage(data)) events.onMessage(data)
+    conn.on('data', (data) => {
+      if (closed || !isNetMessage(data)) return
+      if (data.t === 'hello') {
+        clients.set(id, { client, conn })
+        events.onHello(client, data)
+      } else if (isClientMessage(data) && clients.has(id)) {
+        events.onMessage(client, data)
+      }
     })
-    next.on('close', () => {
-      conn = null
-      if (!closed) events.onStatus('closed', 'connection-lost')
+    conn.on('close', () => {
+      if (!clients.has(id)) return
+      clients.delete(id)
+      if (!closed) events.onClose(client)
     })
-    next.on('error', () => {
-      if (!closed) events.onStatus('error', 'connection-lost')
+    conn.on('error', () => {
+      if (!clients.has(id)) return
+      clients.delete(id)
+      if (!closed) events.onClose(client)
     })
   }
 
   peer.on('open', () => {
     if (!closed) events.onStatus('waiting')
   })
-  peer.on('connection', (incoming) => wire(incoming))
+  peer.on('connection', (conn) => wire(conn))
   peer.on('error', (err) => {
-    if (closed) return
-    events.onStatus('error', mapPeerError(err.type))
+    if (!closed) events.onStatus('error', mapPeerError(err.type))
   })
   peer.on('disconnected', () => {
     if (!closed) peer.reconnect()
   })
 
   return {
-    send: (msg) => safeSend(conn, msg),
-    close: () => {
+    send(clientId, msg) {
+      if (clientId === '*') {
+        for (const { client } of clients.values()) client.send(msg)
+        return
+      }
+      clients.get(clientId)?.client.send(msg)
+    },
+    broadcast(msg, exceptId) {
+      for (const [id, { client }] of clients.entries()) {
+        if (id !== exceptId) client.send(msg)
+      }
+    },
+    close() {
       closed = true
-      conn?.close()
+      for (const { client } of clients.values()) client.close()
+      clients.clear()
       peer.destroy()
     },
   }
 }
 
-/** 加入房间：随机 guest id，连上房主后进入 connected */
-export async function createGuestConnection(
-  code: string,
-  events: NetEvents,
-): Promise<NetConnection> {
+/** 访客 / 观众：单条连接，断线由上层负责重连 */
+export async function createGuestRoom(code: string, events: GuestRoomEvents): Promise<GuestRoom> {
   events.onStatus('connecting')
 
   const { Peer } = await import('peerjs')
@@ -136,8 +178,10 @@ export async function createGuestConnection(
   })
 
   return {
-    send: (msg) => safeSend(conn, msg),
-    close: () => {
+    send(msg) {
+      if (conn?.open) conn.send(msg)
+    },
+    close() {
       closed = true
       clearTimeout(timer)
       conn?.close()

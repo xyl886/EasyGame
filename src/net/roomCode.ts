@@ -34,6 +34,10 @@ export function peerIdFor(code: string): string {
 }
 
 /** 邀请链接：hash 路由 + room 查询参数，打开后自动加入 */
-export function inviteUrl(code: string, location: { origin: string; pathname: string }): string {
-  return `${location.origin}${location.pathname}#/multiplayer/gomoku?room=${code}`
+export function inviteUrl(
+  code: string,
+  gameId: 'gomoku' | 'connect4',
+  location: { origin: string; pathname: string },
+): string {
+  return `${location.origin}${location.pathname}#/multiplayer/${gameId}?room=${code}`
 }
