@@ -1,5 +1,5 @@
 <template>
-  <transition name="panel">
+  <transition name="eg-panel">
     <div
       v-if="settings.showSettings"
       class="eg-modal-overlay"
@@ -9,17 +9,13 @@
       <div class="eg-modal-mask"></div>
 
       <!-- 面板 -->
-      <div class="eg-modal-card">
+      <div class="eg-modal-card" role="dialog" aria-modal="true" aria-label="游戏设置">
         <div class="eg-modal-head">
           <h3 class="eg-modal-title">
-            <span>⚙️</span>
             <span>俄罗斯方块设置</span>
           </h3>
-          <button
-            @click="settings.closeSettings()"
-            class="eg-modal-close"
-          >
-            ✕
+          <button aria-label="关闭设置" @click="settings.closeSettings()" class="eg-modal-close">
+            <AppIcon name="close" :size="18" />
           </button>
         </div>
 
@@ -32,8 +28,7 @@
               :key="opt.value"
               @click="localConfig.speed = opt.value"
               class="eg-opt"
-              :class="localConfig.speed === opt.value
-                 ? 'eg-opt-on' : ''"
+              :class="localConfig.speed === opt.value ? 'eg-opt-on' : ''"
             >
               {{ opt.label }}
             </button>
@@ -50,8 +45,7 @@
               :key="opt.value"
               @click="localConfig.targetLines = opt.value"
               class="eg-opt text-xs"
-              :class="localConfig.targetLines === opt.value
-                 ? 'eg-opt-on' : ''"
+              :class="localConfig.targetLines === opt.value ? 'eg-opt-on' : ''"
             >
               {{ opt.label }}
             </button>
@@ -68,8 +62,7 @@
               :key="n"
               @click="localConfig.previewCount = n"
               class="eg-opt"
-              :class="localConfig.previewCount === n
-                 ? 'eg-opt-on' : ''"
+              :class="localConfig.previewCount === n ? 'eg-opt-on' : ''"
             >
               {{ n }}
             </button>
@@ -83,16 +76,14 @@
             <button
               @click="localConfig.ghostPiece = false"
               class="eg-opt"
-              :class="!localConfig.ghostPiece
-                 ? 'eg-opt-on' : ''"
+              :class="!localConfig.ghostPiece ? 'eg-opt-on' : ''"
             >
               隐藏
             </button>
             <button
               @click="localConfig.ghostPiece = true"
               class="eg-opt"
-              :class="localConfig.ghostPiece
-                 ? 'eg-opt-on' : ''"
+              :class="localConfig.ghostPiece ? 'eg-opt-on' : ''"
             >
               显示落点轮廓
             </button>
@@ -106,16 +97,14 @@
             <button
               @click="localConfig.holdPiece = false"
               class="eg-opt"
-              :class="!localConfig.holdPiece
-                 ? 'eg-opt-on' : ''"
+              :class="!localConfig.holdPiece ? 'eg-opt-on' : ''"
             >
               关闭
             </button>
             <button
               @click="localConfig.holdPiece = true"
               class="eg-opt"
-              :class="localConfig.holdPiece
-                 ? 'eg-opt-on' : ''"
+              :class="localConfig.holdPiece ? 'eg-opt-on' : ''"
             >
               启用（每块仅一次）
             </button>
@@ -129,16 +118,14 @@
             <button
               @click="localConfig.hardDrop = false"
               class="eg-opt"
-              :class="!localConfig.hardDrop
-                 ? 'eg-opt-on' : ''"
+              :class="!localConfig.hardDrop ? 'eg-opt-on' : ''"
             >
               软降（+1 分/格）
             </button>
             <button
               @click="localConfig.hardDrop = true"
               class="eg-opt"
-              :class="localConfig.hardDrop
-                 ? 'eg-opt-on' : ''"
+              :class="localConfig.hardDrop ? 'eg-opt-on' : ''"
             >
               硬降（直接落底 +2 分/格）
             </button>
@@ -147,18 +134,8 @@
 
         <!-- 底部按钮 -->
         <div class="eg-modal-actions">
-          <button
-            @click="resetDefault"
-            class="eg-ghost-btn"
-          >
-            恢复默认
-          </button>
-          <button
-            @click="apply"
-            class="eg-primary-btn"
-          >
-            应用并重新开始
-          </button>
+          <button @click="resetDefault" class="eg-ghost-btn">恢复默认</button>
+          <button @click="apply" class="eg-primary-btn">应用并重新开始</button>
         </div>
       </div>
     </div>
@@ -167,11 +144,23 @@
 
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
-import { useTetrisSettingsStore, SPEED_OPTIONS, TARGET_LINES_OPTIONS, PREVIEW_COUNT_OPTIONS } from '../../../stores/tetris-settings'
+import {
+  useTetrisSettingsStore,
+  SPEED_OPTIONS,
+  TARGET_LINES_OPTIONS,
+  PREVIEW_COUNT_OPTIONS,
+} from '../../../stores/tetris-settings'
 import { DEFAULT_CONFIG } from '../../../game/tetris/types'
 import type { TetrisConfig } from '../../../game/tetris/types'
+import { useEscapeKey } from '../../../composables/useEscapeKey'
+import AppIcon from '../../../components/AppIcon.vue'
 
 const settings = useTetrisSettingsStore()
+
+useEscapeKey(
+  () => settings.showSettings,
+  () => settings.closeSettings(),
+)
 
 const localConfig = reactive<TetrisConfig>({ ...settings.config })
 
@@ -198,22 +187,3 @@ function resetDefault() {
   Object.assign(localConfig, DEFAULT_CONFIG)
 }
 </script>
-
-<style scoped>
-.panel-enter-active,
-.panel-leave-active {
-  transition: opacity 0.2s ease;
-}
-.panel-enter-active > div:last-child,
-.panel-leave-active > div:last-child {
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.panel-enter-from,
-.panel-leave-to {
-  opacity: 0;
-}
-.panel-enter-from > div:last-child,
-.panel-leave-to > div:last-child {
-  transform: scale(0.9) translateY(10px);
-}
-</style>

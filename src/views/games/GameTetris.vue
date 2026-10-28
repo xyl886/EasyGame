@@ -2,27 +2,17 @@
   <div class="eg-shell">
     <!-- 顶部栏 -->
     <header class="max-w-3xl w-full mx-auto flex items-center justify-between mb-5">
-      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅">
-        ←
-      </RouterLink>
-      <div class="eg-game-title">🧱 俄罗斯方块</div>
+      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅"> ← </RouterLink>
+      <div class="eg-game-title">俄罗斯方块</div>
       <div class="flex gap-2">
-        <button
-          @click="showLeaderboard = true"
-          class="eg-icon-btn"
-          aria-label="排行榜"
-        >
-          🏆
+        <button @click="showLeaderboard = true" class="eg-icon-btn" aria-label="排行榜">
+          <AppIcon name="trophy" :size="18" />
         </button>
-        <button
-          @click="settings.openSettings()"
-          class="eg-icon-btn"
-          aria-label="设置"
-        >
-          ⚙️
+        <button @click="settings.openSettings()" class="eg-icon-btn" aria-label="设置">
+          <AppIcon name="settings" :size="18" />
         </button>
-          <SoundToggle />
-          <ThemeToggle />
+        <SoundToggle />
+        <ThemeToggle />
       </div>
     </header>
 
@@ -31,7 +21,9 @@
       <!-- 标题 + 分数 -->
       <div class="eg-score-row flex-wrap">
         <div>
-          <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-text-light dark:text-text-dark">
+          <h1
+            class="text-3xl md:text-4xl font-extrabold tracking-tight text-text-light dark:text-text-dark"
+          >
             俄罗斯方块
           </h1>
           <p class="text-xs opacity-70 mt-1 text-text-muted-light dark:text-text-muted-dark">
@@ -50,42 +42,58 @@
       <!-- 操作按钮 -->
       <div class="eg-toolbar mb-4 flex-wrap">
         <div class="flex items-center gap-2">
-          <button
-            @click="showHowTo = true"
-            class="eg-ghost-btn"
-          >
-            ❓ 玩法
+          <button @click="showHowTo = true" class="eg-ghost-btn">
+            <AppIcon name="help" :size="18" /> 玩法
           </button>
-          <div class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark">
-            <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">←→</kbd> 移动 ·
-            <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">↑/W</kbd> 旋转 ·
-            <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">↓</kbd> 软降 ·
-            <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">空格</kbd> 硬降 ·
-            <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">C</kbd> Hold ·
-            <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">P</kbd> 暂停
+          <div
+            class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark"
+          >
+            <kbd
+              class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
+              >←→</kbd
+            >
+            移动 ·
+            <kbd
+              class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
+              >↑/W</kbd
+            >
+            旋转 ·
+            <kbd
+              class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
+              >↓</kbd
+            >
+            软降 ·
+            <kbd
+              class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
+              >空格</kbd
+            >
+            硬降 ·
+            <kbd
+              class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
+              >C</kbd
+            >
+            Hold ·
+            <kbd
+              class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
+              >P</kbd
+            >
+            暂停
           </div>
         </div>
-        <div class="flex gap-2 w-full sm:w-auto justify-end">
+        <div class="ml-auto flex gap-2">
           <button
             v-if="state.holdPiece"
             @click="hold"
             :disabled="state.over || !started || !state.canHold"
             class="eg-ghost-btn"
           >
-            🤚 Hold
+            <AppIcon name="hand" :size="18" /> Hold
           </button>
-          <button
-            @click="togglePause"
-            :disabled="state.over || !started"
-            class="eg-ghost-btn"
-          >
-            {{ state.paused ? '▶️ 继续' : '⏸️ 暂停' }}
+          <button @click="togglePause" :disabled="state.over || !started" class="eg-ghost-btn">
+            {{ state.paused ? '继续' : '暂停' }}
           </button>
-          <button
-            @click="newGame"
-            class="eg-primary-btn"
-          >
-            🔄 新游戏
+          <button @click="newGame" class="eg-primary-btn">
+            <AppIcon name="restart" :size="18" /> 新游戏
           </button>
         </div>
       </div>
@@ -99,7 +107,10 @@
             class="rounded-lg bg-white/50 dark:bg-bg-dark/40 shadow-inner p-1.5"
             :style="{ width: previewBoxPx, height: previewBoxPx }"
           >
-            <div class="w-full h-full grid" :style="{ gridTemplateColumns: `repeat(4, 1fr)`, gap: '1px' }">
+            <div
+              class="w-full h-full grid"
+              :style="{ gridTemplateColumns: `repeat(4, 1fr)`, gap: '1px' }"
+            >
               <div
                 v-for="i in 16"
                 :key="i - 1"
@@ -138,34 +149,33 @@
           <div
             v-if="state.over || state.won"
             class="absolute inset-0 rounded-2xl flex items-center justify-center backdrop-blur-sm"
-            :class="state.won ? 'bg-cyan-400/70' : 'bg-bg-light/80 dark:bg-bg-dark/80'"
+            :class="
+              state.won
+                ? 'bg-accent-soft-light dark:bg-accent-soft-dark'
+                : 'bg-bg-light/85 dark:bg-bg-dark/85'
+            "
           >
             <div class="text-center space-y-4 px-4">
-              <div class="text-4xl md:text-5xl font-extrabold" :class="state.won ? 'text-gray-900' : 'text-text-light dark:text-text-dark'">
-                {{ state.won ? '🎉 通关！' : '💤 游戏结束' }}
+              <div
+                class="text-4xl md:text-5xl font-display font-medium text-text-light dark:text-text-dark"
+              >
+                {{ state.won ? '通关！' : '游戏结束' }}
               </div>
               <p class="opacity-80 text-text-light dark:text-text-dark">
                 最终得分：<strong>{{ state.score }}</strong>
-                <span class="opacity-60 ml-2">· {{ state.lines }} 行 · Lv {{ state.level }} · {{ state.moveCount }} 步</span>
+                <span class="opacity-60 ml-2"
+                  >· {{ state.lines }} 行 · Lv {{ state.level }} · {{ state.moveCount }} 步</span
+                >
               </p>
               <div class="flex gap-3 justify-center flex-wrap">
-                <button
-                  @click="showLeaderboard = true"
-                  class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-                >
-                  🏆 查看排行榜
+                <button @click="showLeaderboard = true" class="eg-secondary-btn">
+                  <AppIcon name="trophy" :size="18" /> 查看排行榜
                 </button>
-                <button
-                  @click="shareResult"
-                  class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-                >
-                  📤 分享成绩
+                <button @click="shareResult" class="eg-secondary-btn">
+                  <AppIcon name="share" :size="18" /> 分享成绩
                 </button>
-                <button
-                  @click="newGame"
-                  class="px-5 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-500 text-gray-900 font-bold shadow-claude-md transition-all active:scale-95"
-                >
-                  🔄 再来一局
+                <button @click="newGame" class="eg-primary-btn">
+                  <AppIcon name="restart" :size="18" /> 再来一局
                 </button>
               </div>
             </div>
@@ -178,38 +188,45 @@
           >
             <!-- 有自动存档：提供继续/重开 -->
             <div v-if="showResume" class="text-center space-y-3 px-4">
-              <div class="text-3xl md:text-4xl font-extrabold text-cyan-600 dark:text-cyan-300">🕹️ 上次进度还在</div>
+              <div
+                class="font-display text-heading font-medium text-text-light dark:text-text-dark"
+              >
+                上次进度还在
+              </div>
               <p class="text-sm opacity-70 text-text-light dark:text-text-dark">
-                得分 {{ pendingAutosave?.score }} · {{ pendingAutosave?.lines }} 行 · Lv {{ pendingAutosave?.level }}，继续挑战？
+                得分 {{ pendingAutosave?.score }} · {{ pendingAutosave?.lines }} 行 · Lv
+                {{ pendingAutosave?.level }}，继续挑战？
               </p>
               <div class="flex gap-3 justify-center flex-wrap">
-                <button
-                  @click="resumeGame"
-                  class="px-6 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-500 text-gray-900 font-bold shadow-claude-md transition-all active:scale-95"
-                >
-                  ▶️ 继续上次
+                <button @click="resumeGame" class="eg-primary-btn">
+                  <AppIcon name="play" :size="18" /> 继续上次
                 </button>
-                <button
-                  @click="discardAutosave"
-                  class="px-6 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-                >
-                  🔄 重新开始
+                <button @click="discardAutosave" class="eg-secondary-btn">
+                  <AppIcon name="restart" :size="18" /> 重新开始
                 </button>
               </div>
             </div>
             <!-- 全新开局 -->
             <div v-else class="text-center space-y-3 px-4">
-              <div class="text-3xl md:text-4xl font-extrabold text-cyan-600 dark:text-cyan-300">▶️ 准备好了吗？</div>
-              <p class="text-sm opacity-70 text-text-light dark:text-text-dark">
-                按 <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">方向键</kbd>
-                / <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">空格</kbd> 开始
-              </p>
-              <button
-                @click="start"
-                class="px-6 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-500 text-gray-900 font-bold shadow-claude-md transition-all active:scale-95"
+              <div
+                class="font-display text-heading font-medium text-text-light dark:text-text-dark"
               >
-                🎮 开始游戏
-              </button>
+                <AppIcon name="play" :size="18" /> 准备好了吗？
+              </div>
+              <p class="text-sm opacity-70 text-text-light dark:text-text-dark">
+                按
+                <kbd
+                  class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
+                  >方向键</kbd
+                >
+                /
+                <kbd
+                  class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
+                  >空格</kbd
+                >
+                开始
+              </p>
+              <button @click="start" class="eg-primary-btn">开始游戏</button>
             </div>
           </div>
 
@@ -218,7 +235,9 @@
             v-if="state.paused && started && !state.over"
             class="absolute inset-0 rounded-2xl flex items-center justify-center bg-white/50 dark:bg-bg-dark/50 backdrop-blur-sm"
           >
-            <div class="text-3xl font-extrabold opacity-70">⏸️ 已暂停</div>
+            <div class="text-3xl font-extrabold opacity-70">
+              <AppIcon name="pause" :size="18" /> 已暂停
+            </div>
           </div>
         </div>
 
@@ -232,7 +251,10 @@
               class="rounded-lg bg-white/50 dark:bg-bg-dark/40 shadow-inner p-1.5"
               :style="{ width: previewBoxPx, height: previewBoxPx }"
             >
-              <div class="w-full h-full grid" :style="{ gridTemplateColumns: `repeat(4, 1fr)`, gap: '1px' }">
+              <div
+                class="w-full h-full grid"
+                :style="{ gridTemplateColumns: `repeat(4, 1fr)`, gap: '1px' }"
+              >
                 <div
                   v-for="i in 16"
                   :key="i - 1"
@@ -246,43 +268,52 @@
       </div>
 
       <!-- 移动端操作说明 -->
-      <div class="text-center text-xs opacity-60 mt-4 sm:hidden">
-        👆 点击棋盘旋转 · 左右滑动移动 · 下滑软降 · 上滑硬降
+      <div v-if="!showResume" class="text-center text-xs opacity-60 mt-4 sm:hidden">
+        点击棋盘旋转 · 左右滑动移动 · 下滑软降 · 上滑硬降
       </div>
 
       <!-- 移动端触控按钮 -->
-      <div class="grid grid-cols-6 gap-2 mt-3 sm:hidden max-w-[380px] mx-auto w-full">
+      <div
+        v-if="!showResume"
+        class="grid grid-cols-6 gap-2 mt-3 sm:hidden max-w-[380px] mx-auto w-full"
+      >
         <button
           @click="touchMove('left')"
           class="aspect-square rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude active:scale-90 active:bg-cyan-100 dark:active:bg-cyan-900/40 transition-all text-xl font-bold text-text-light dark:text-text-dark flex items-center justify-center"
           aria-label="左移"
-        >◀</button>
+        >
+          ◀
+        </button>
         <button
           @click="touchMove('right')"
           class="aspect-square rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude active:scale-90 active:bg-cyan-100 dark:active:bg-cyan-900/40 transition-all text-xl font-bold text-text-light dark:text-text-dark flex items-center justify-center"
           aria-label="右移"
-        >▶</button>
+        >
+          <AppIcon name="play" :size="18" />
+        </button>
         <button
           @click="touchRotate"
           class="aspect-square rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude active:scale-90 active:bg-cyan-100 dark:active:bg-cyan-900/40 transition-all text-xl font-bold text-text-light dark:text-text-dark flex items-center justify-center"
           aria-label="旋转"
-        >↻</button>
+        >
+          ↻
+        </button>
         <button
           @click="touchSoftDrop"
           class="aspect-square rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude active:scale-90 active:bg-cyan-100 dark:active:bg-cyan-900/40 transition-all text-xl font-bold text-text-light dark:text-text-dark flex items-center justify-center"
           aria-label="软降"
-        >▼</button>
-        <button
-          @click="touchHardDrop"
-          class="aspect-square rounded-xl bg-cyan-400 hover:bg-cyan-500 text-gray-900 shadow-claude-md active:scale-90 transition-all text-xl font-bold flex items-center justify-center"
-          aria-label="硬降"
-        >⏬</button>
+        >
+          ▼
+        </button>
+        <button @click="touchHardDrop" class="eg-primary-btn" aria-label="硬降">⏬</button>
         <button
           @click="touchHold"
           :disabled="state.over || !started || !state.canHold"
           class="aspect-square rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude active:scale-90 active:bg-cyan-100 dark:active:bg-cyan-900/40 transition-all text-xl font-bold text-text-light dark:text-text-dark disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
           aria-label="暂存"
-        >🤚</button>
+        >
+          <AppIcon name="hand" :size="18" />
+        </button>
       </div>
     </main>
 
@@ -296,11 +327,45 @@
     <!-- 玩法说明 -->
     <HowToPlay v-model="showHowTo" title="俄罗斯方块">
       <ol class="list-decimal pl-5 space-y-2 opacity-90">
-        <li><kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">←→</kbd>/<kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">A D</kbd> 左右移动，<kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">↑/W/X</kbd> 旋转，<kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">↓</kbd> 软降，<kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">空格</kbd> 硬降，<kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">C</kbd> 暂存，<kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">P</kbd> 暂停</li>
+        <li>
+          <kbd
+            class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm"
+            >←→</kbd
+          >/<kbd
+            class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm"
+            >A D</kbd
+          >
+          左右移动，<kbd
+            class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm"
+            >↑/W/X</kbd
+          >
+          旋转，<kbd
+            class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm"
+            >↓</kbd
+          >
+          软降，<kbd
+            class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm"
+            >空格</kbd
+          >
+          硬降，<kbd
+            class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm"
+            >C</kbd
+          >
+          暂存，<kbd
+            class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm"
+            >P</kbd
+          >
+          暂停
+        </li>
         <li>七种方块依次下落（Bag-7 随机），填满一整行即<strong>消除得分</strong></li>
         <li>消行越多等级越高、下落越快、得分越多</li>
         <li>达到目标行数即<strong>获胜</strong>（设置里可调）；方块堆到顶部则失败</li>
-        <li>💡 <strong>鬼影</strong>显示落点，<strong>Hold</strong> 可暂存当前方块备用</li>
+        <li>
+          <AppIcon name="lightbulb" :size="18" /> <strong>鬼影</strong>显示落点，<strong
+            >Hold</strong
+          >
+          可暂存当前方块备用
+        </li>
       </ol>
     </HowToPlay>
 
@@ -315,10 +380,16 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef } from 'vue'
+import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { TetrisEngine } from '../../game/tetris/GameEngine'
 import { isTetrisAutosave } from '../../game/base/autosaveGuards'
-import type { TetrisState, TetrisConfig, SpeedTier, Direction, Rotation } from '../../game/tetris/types'
+import type {
+  TetrisState,
+  TetrisConfig,
+  SpeedTier,
+  Direction,
+  Rotation,
+} from '../../game/tetris/types'
 import { SPEED_LABELS, TETROMINOES } from '../../game/tetris/types'
 import { useTetrisSettingsStore } from '../../stores/tetris-settings'
 import { useGamePageEvents } from '../../composables/useGamePageEvents'
@@ -334,6 +405,7 @@ import { toast } from '../../utils/toast'
 import ScoreBox from './components/ScoreBox.vue'
 import TetrisSettingsPanel from './components/TetrisSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
+import AppIcon from '../../components/AppIcon.vue'
 
 const settings = useTetrisSettingsStore()
 
@@ -418,7 +490,10 @@ function beginOrResume() {
 }
 
 function onVisibilityChange() {
-  if (document.visibilityState === 'hidden' && !state.over) autosaver.flush()
+  if (document.visibilityState !== 'hidden') return
+  if (!state.over) autosaver.flush()
+  // 后台定时器仍会被节流执行：自动暂停，避免回到页面时这一局已经输掉
+  if (started.value && !state.over && !state.paused) togglePause()
 }
 function onPageHide() {
   if (!state.over) autosaver.flush()
@@ -531,26 +606,42 @@ function previewCellClass(pieceType: number | null, idx: number, dim: boolean): 
 function pieceColorClass(typeId: number, solid: boolean): string {
   if (solid) {
     switch (typeId) {
-      case 1: return 'bg-cyan-400 dark:bg-cyan-300 shadow-sm' // I
-      case 2: return 'bg-yellow-400 dark:bg-yellow-300 shadow-sm' // O
-      case 3: return 'bg-purple-500 dark:bg-purple-400 shadow-sm' // T
-      case 4: return 'bg-green-500 dark:bg-green-400 shadow-sm' // S
-      case 5: return 'bg-red-500 dark:bg-red-400 shadow-sm' // Z
-      case 6: return 'bg-blue-600 dark:bg-blue-400 shadow-sm' // J
-      case 7: return 'bg-orange-500 dark:bg-orange-400 shadow-sm' // L
-      default: return 'bg-gray-400'
+      case 1:
+        return 'bg-cyan-400 dark:bg-cyan-300 shadow-sm' // I
+      case 2:
+        return 'bg-yellow-400 dark:bg-yellow-300 shadow-sm' // O
+      case 3:
+        return 'bg-purple-500 dark:bg-purple-400 shadow-sm' // T
+      case 4:
+        return 'bg-green-500 dark:bg-green-400 shadow-sm' // S
+      case 5:
+        return 'bg-danger-light dark:bg-danger-dark dark:bg-red-400 shadow-sm' // Z
+      case 6:
+        return 'bg-blue-600 dark:bg-blue-400 shadow-sm' // J
+      case 7:
+        return 'bg-orange-500 dark:bg-orange-400 shadow-sm' // L
+      default:
+        return 'bg-gray-400'
     }
   }
   // 鬼影：半透明轮廓
   switch (typeId) {
-    case 1: return 'bg-cyan-400/20 border border-cyan-400/50'
-    case 2: return 'bg-yellow-400/20 border border-yellow-400/50'
-    case 3: return 'bg-purple-500/20 border border-purple-500/50'
-    case 4: return 'bg-green-500/20 border border-green-500/50'
-    case 5: return 'bg-red-500/20 border border-red-500/50'
-    case 6: return 'bg-blue-600/20 border border-blue-600/50'
-    case 7: return 'bg-orange-500/20 border border-orange-500/50'
-    default: return 'bg-gray-400/20 border border-gray-400/50'
+    case 1:
+      return 'bg-cyan-400/20 border border-cyan-400/50'
+    case 2:
+      return 'bg-yellow-400/20 border border-yellow-400/50'
+    case 3:
+      return 'bg-purple-500/20 border border-purple-500/50'
+    case 4:
+      return 'bg-green-500/20 border border-green-500/50'
+    case 5:
+      return 'bg-danger-light dark:bg-danger-dark/20 border border-red-500/50'
+    case 6:
+      return 'bg-blue-600/20 border border-blue-600/50'
+    case 7:
+      return 'bg-orange-500/20 border border-orange-500/50'
+    default:
+      return 'bg-gray-400/20 border border-gray-400/50'
   }
 }
 
@@ -630,7 +721,7 @@ async function shareResult() {
     text: gameShareText('tetris', state.score, state.lines, state.won),
     url: shareUrl('/game/tetris'),
   })
-  toast(result === 'shared' ? '✅ 已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
+  toast(result === 'shared' ? '已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
 }
 
 function newGame() {
@@ -655,6 +746,20 @@ function togglePause() {
   }
 }
 
+/** 设置/玩法/排行榜弹层打开时自动暂停对局，关闭后恢复（仅恢复由弹层触发的暂停） */
+const pausedByUi = ref(false)
+const modalOpen = computed(() => settings.showSettings || showLeaderboard.value || showHowTo.value)
+watch(modalOpen, (open) => {
+  if (!started.value || state.over) return
+  if (open && !state.paused) {
+    togglePause()
+    pausedByUi.value = true
+  } else if (!open && pausedByUi.value) {
+    pausedByUi.value = false
+    if (state.paused) togglePause()
+  }
+})
+
 function applySettings(config: TetrisConfig) {
   engine.value = new TetrisEngine(config)
   syncState()
@@ -674,14 +779,26 @@ function hold() {
 // ===== 键盘操作 =====
 function onKeydown(e: KeyboardEvent) {
   // 设置/排行榜弹窗打开时忽略游戏按键，避免误操作背后的棋盘
-  if (settings.showSettings || showLeaderboard.value) return
+  if (settings.showSettings || showLeaderboard.value || showHowTo.value) return
   const moveMap: Record<string, Direction> = {
-    ArrowLeft: 'left', ArrowRight: 'right', ArrowDown: 'down',
-    a: 'left', A: 'left', d: 'right', D: 'right', s: 'down', S: 'down',
+    ArrowLeft: 'left',
+    ArrowRight: 'right',
+    ArrowDown: 'down',
+    a: 'left',
+    A: 'left',
+    d: 'right',
+    D: 'right',
+    s: 'down',
+    S: 'down',
   }
   const rotateMap: Record<string, Rotation> = {
-    ArrowUp: 'cw', w: 'cw', W: 'cw', x: 'cw', X: 'cw',
-    z: 'ccw', Z: 'ccw',
+    ArrowUp: 'cw',
+    w: 'cw',
+    W: 'cw',
+    x: 'cw',
+    X: 'cw',
+    z: 'ccw',
+    Z: 'ccw',
   }
   const k = e.key
   if (moveMap[k]) {
@@ -842,7 +959,12 @@ function updateLayout() {
   padding.value = Math.max(3, Math.floor(cell / 8))
 }
 
-useGamePageEvents({ keydown: onKeydown, resize: updateLayout, visibilitychange: onVisibilityChange, pagehide: onPageHide })
+useGamePageEvents({
+  keydown: onKeydown,
+  resize: updateLayout,
+  visibilitychange: onVisibilityChange,
+  pagehide: onPageHide,
+})
 
 onMounted(() => {
   updateLayout()

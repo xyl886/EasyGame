@@ -1,5 +1,5 @@
 <template>
-  <transition name="panel">
+  <transition name="eg-panel">
     <div
       v-if="settings.showSettings"
       class="eg-modal-overlay"
@@ -9,17 +9,13 @@
       <div class="eg-modal-mask"></div>
 
       <!-- 面板 -->
-      <div class="eg-modal-card">
+      <div class="eg-modal-card" role="dialog" aria-modal="true" aria-label="游戏设置">
         <div class="eg-modal-head">
           <h3 class="eg-modal-title">
-            <span>⚙️</span>
             <span>连连看设置</span>
           </h3>
-          <button
-            @click="settings.closeSettings()"
-            class="eg-modal-close"
-          >
-            ✕
+          <button aria-label="关闭设置" @click="settings.closeSettings()" class="eg-modal-close">
+            <AppIcon name="close" :size="18" />
           </button>
         </div>
 
@@ -32,11 +28,12 @@
               :key="opt.value"
               @click="localConfig.difficulty = opt.value"
               class="eg-opt w-full text-left flex items-center justify-between"
-              :class="localConfig.difficulty === opt.value
-                 ? 'eg-opt-on' : ''"
+              :class="localConfig.difficulty === opt.value ? 'eg-opt-on' : ''"
             >
               <span>{{ opt.label }}</span>
-              <span class="text-xs opacity-70">{{ opt.rows }}×{{ opt.cols }} · {{ opt.symbolCount }} 种图案</span>
+              <span class="text-xs opacity-70"
+                >{{ opt.rows }}×{{ opt.cols }} · {{ opt.symbolCount }} 种图案</span
+              >
             </button>
           </div>
         </div>
@@ -50,8 +47,7 @@
               :key="value"
               @click="localConfig.theme = value"
               class="eg-opt text-center"
-              :class="localConfig.theme === value
-                 ? 'eg-opt-on' : ''"
+              :class="localConfig.theme === value ? 'eg-opt-on' : ''"
             >
               {{ THEME_ICON[value] }} {{ label }}
             </button>
@@ -60,18 +56,8 @@
 
         <!-- 底部按钮 -->
         <div class="eg-modal-actions">
-          <button
-            @click="resetDefault"
-            class="eg-ghost-btn"
-          >
-            恢复默认
-          </button>
-          <button
-            @click="apply"
-            class="eg-primary-btn"
-          >
-            应用并重新开始
-          </button>
+          <button @click="resetDefault" class="eg-ghost-btn">恢复默认</button>
+          <button @click="apply" class="eg-primary-btn">应用并重新开始</button>
         </div>
       </div>
     </div>
@@ -80,11 +66,23 @@
 
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
-import { useLianliankanSettingsStore, DIFFICULTY_LABELS, THEME_LABELS, LINK_PRESETS } from '../../../stores/lianliankan-settings'
+import {
+  useLianliankanSettingsStore,
+  DIFFICULTY_LABELS,
+  THEME_LABELS,
+  LINK_PRESETS,
+} from '../../../stores/lianliankan-settings'
 import { DEFAULT_LINK_CONFIG } from '../../../game/lianliankan/types'
 import type { LinkConfig, LinkDifficulty, LinkTheme } from '../../../game/lianliankan/types'
+import { useEscapeKey } from '../../../composables/useEscapeKey'
+import AppIcon from '../../../components/AppIcon.vue'
 
 const settings = useLianliankanSettingsStore()
+
+useEscapeKey(
+  () => settings.showSettings,
+  () => settings.closeSettings(),
+)
 
 const THEME_ICON: Record<LinkTheme, string> = {
   fruit: '🍇',
@@ -124,22 +122,3 @@ function resetDefault() {
   Object.assign(localConfig, DEFAULT_LINK_CONFIG)
 }
 </script>
-
-<style scoped>
-.panel-enter-active,
-.panel-leave-active {
-  transition: opacity 0.2s ease;
-}
-.panel-enter-active > div:last-child,
-.panel-leave-active > div:last-child {
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.panel-enter-from,
-.panel-leave-to {
-  opacity: 0;
-}
-.panel-enter-from > div:last-child,
-.panel-leave-to > div:last-child {
-  transform: scale(0.9) translateY(10px);
-}
-</style>

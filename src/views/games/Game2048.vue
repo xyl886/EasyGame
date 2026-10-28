@@ -2,27 +2,17 @@
   <div class="eg-shell">
     <!-- 顶部栏 -->
     <header class="max-w-xl w-full mx-auto flex items-center justify-between mb-5">
-      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅">
-        ←
-      </RouterLink>
-      <div class="eg-game-title">🎯 2048</div>
+      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅"> ← </RouterLink>
+      <div class="eg-game-title">2048</div>
       <div class="flex gap-2">
-        <button
-          @click="showLeaderboard = true"
-          class="eg-icon-btn"
-          aria-label="排行榜"
-        >
-          🏆
+        <button @click="showLeaderboard = true" class="eg-icon-btn" aria-label="排行榜">
+          <AppIcon name="trophy" :size="18" />
         </button>
-        <button
-          @click="settings.openSettings()"
-          class="eg-icon-btn"
-          aria-label="设置"
-        >
-          ⚙️
+        <button @click="settings.openSettings()" class="eg-icon-btn" aria-label="设置">
+          <AppIcon name="settings" :size="18" />
         </button>
-          <SoundToggle />
-          <ThemeToggle />
+        <SoundToggle />
+        <ThemeToggle />
       </div>
     </header>
 
@@ -31,12 +21,15 @@
       <!-- 分数面板 -->
       <div class="eg-score-row">
         <div>
-          <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-text-light dark:text-text-dark">
+          <p class="eg-overline mb-1">目标</p>
+          <h1
+            class="font-display text-4xl font-medium tracking-tight text-text-light dark:text-text-dark md:text-5xl"
+          >
             {{ winLabel }}
           </h1>
           <p class="text-xs opacity-70 mt-1 text-text-muted-light dark:text-text-muted-dark">
             {{ state.size }}×{{ state.size }} · {{ difficultyLabel }}
-            <span v-if="isCakeSkin"> · 🧁 小蛋糕版</span>
+            <span v-if="isCakeSkin"> · 小蛋糕版</span>
           </p>
         </div>
         <div class="flex gap-2">
@@ -48,30 +41,26 @@
       <!-- 操作按钮 -->
       <div class="eg-toolbar mb-4">
         <div class="flex items-center gap-2">
-          <button
-            @click="showHowTo = true"
-            class="eg-ghost-btn"
-          >
-            ❓ 玩法
+          <button @click="showHowTo = true" class="eg-ghost-btn">
+            <AppIcon name="help" :size="18" /> 玩法
           </button>
-          <div class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark">
-            键盘 <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">↑↓←→</kbd>
+          <div
+            class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark"
+          >
+            键盘
+            <kbd
+              class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
+              >↑↓←→</kbd
+            >
             或手机滑动操作
           </div>
         </div>
-        <div class="flex gap-2 w-full sm:w-auto justify-end">
-          <button
-            @click="undo"
-            :disabled="!canUndo"
-            class="eg-ghost-btn"
-          >
-            ↩️ 撤销
+        <div class="ml-auto flex gap-2">
+          <button @click="undo" :disabled="!canUndo" class="eg-ghost-btn">
+            <AppIcon name="undo" :size="18" /> 撤销
           </button>
-          <button
-            @click="newGame"
-            class="eg-primary-btn"
-          >
-            🔄 新游戏
+          <button @click="newGame" class="eg-primary-btn">
+            <AppIcon name="restart" :size="18" /> 新游戏
           </button>
         </div>
       </div>
@@ -95,8 +84,13 @@
         </div>
 
         <!-- 空棋盘大 logo（经典 2048 风格，被方块层自然盖住） -->
-        <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-          <span class="text-5xl md:text-6xl font-extrabold tracking-tight text-text-light dark:text-text-dark opacity-10">{{ winLabel }}</span>
+        <div
+          class="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
+        >
+          <span
+            class="text-5xl md:text-6xl font-extrabold tracking-tight text-text-light dark:text-text-dark opacity-10"
+            >{{ winLabel }}</span
+          >
         </div>
 
         <!-- 方块层（绝对定位 + left/top 百分比，平滑过渡） -->
@@ -112,7 +106,12 @@
               :class="[tileClass(tile.value), tileAnimClass(tile)]"
             >
               <span v-if="isCakeSkin" class="tile-emoji">{{ tileDisplay(tile.value) }}</span>
-              <span v-else class="min-w-0 overflow-hidden whitespace-nowrap px-1" :class="tileTextClass(tile.value)">{{ tile.value }}</span>
+              <span
+                v-else
+                class="min-w-0 overflow-hidden whitespace-nowrap px-1"
+                :class="tileTextClass(tile.value)"
+                >{{ tile.value }}</span
+              >
             </div>
           </div>
         </div>
@@ -120,23 +119,21 @@
         <!-- 自动存档恢复遮罩 -->
         <div
           v-if="showResume"
-          class="absolute inset-0 rounded-2xl flex items-center justify-center backdrop-blur-sm bg-bg-light/70 dark:bg-bg-dark/70"
+          class="absolute inset-0 rounded-2xl flex items-center justify-center bg-bg-light dark:bg-bg-dark"
         >
           <div class="text-center space-y-4 px-4">
-            <div class="text-3xl md:text-4xl font-extrabold text-text-light dark:text-text-dark">🕹️ 上次进度还在</div>
-            <p class="opacity-80 text-text-light dark:text-text-dark text-sm">上次游戏尚未完成，是否继续？</p>
+            <div class="text-3xl md:text-4xl font-extrabold text-text-light dark:text-text-dark">
+              上次进度还在
+            </div>
+            <p class="opacity-80 text-text-light dark:text-text-dark text-sm">
+              上次游戏尚未完成，是否继续？
+            </p>
             <div class="flex gap-3 justify-center flex-wrap">
-              <button
-                @click="resumeGame"
-                class="px-5 py-2.5 rounded-xl bg-accent-light dark:bg-accent-dark hover:bg-accent-hover-light dark:hover:bg-accent-hover-dark text-white font-bold shadow-claude-md transition-all active:scale-95"
-              >
-                ▶️ 继续上次
+              <button @click="resumeGame" class="eg-primary-btn">
+                <AppIcon name="play" :size="18" /> 继续上次
               </button>
-              <button
-                @click="discardAutosave"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                🔄 重新开始
+              <button @click="discardAutosave" class="eg-secondary-btn">
+                <AppIcon name="restart" :size="18" /> 重新开始
               </button>
             </div>
           </div>
@@ -149,29 +146,24 @@
           :class="state.over ? 'bg-bg-light/80 dark:bg-bg-dark/80' : 'bg-accent-light/70'"
         >
           <div class="text-center space-y-4 px-4">
-            <div class="text-4xl md:text-5xl font-extrabold" :class="state.over ? 'text-text-light dark:text-text-dark' : 'text-white'">
-              {{ activeWin ? '🎉 你赢了！' : '💤 游戏结束' }}
+            <div
+              class="text-4xl md:text-5xl font-extrabold"
+              :class="state.over ? 'text-text-light dark:text-text-dark' : 'text-white'"
+            >
+              {{ activeWin ? '你赢了！' : '游戏结束' }}
             </div>
-            <p class="opacity-80 text-text-light dark:text-text-dark">最终得分：<strong>{{ state.score }}</strong></p>
+            <p class="opacity-80 text-text-light dark:text-text-dark">
+              最终得分：<strong>{{ state.score }}</strong>
+            </p>
             <div class="flex gap-3 justify-center flex-wrap">
-              <button
-                v-if="activeWin"
-                @click="continueGame"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
+              <button v-if="activeWin" @click="continueGame" class="eg-secondary-btn">
                 继续挑战
               </button>
-              <button
-                @click="shareResult"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                📤 分享成绩
+              <button @click="shareResult" class="eg-secondary-btn">
+                <AppIcon name="share" :size="18" /> 分享成绩
               </button>
-              <button
-                @click="newGame"
-                class="px-5 py-2.5 rounded-xl bg-accent-light dark:bg-accent-dark hover:bg-accent-hover-light dark:hover:bg-accent-hover-dark text-white font-bold shadow-claude-md transition-all active:scale-95"
-              >
-                🔄 再来一局
+              <button @click="newGame" class="eg-primary-btn">
+                <AppIcon name="restart" :size="18" /> 再来一局
               </button>
             </div>
           </div>
@@ -179,8 +171,8 @@
       </div>
 
       <!-- 操作说明（小屏） -->
-      <div class="text-center text-xs opacity-60 mt-4 sm:hidden">
-        👆 在棋盘上滑动手指即可移动方块
+      <div v-if="!showResume" class="text-center text-xs opacity-60 mt-4 sm:hidden">
+        在棋盘上滑动手指即可移动方块
       </div>
     </main>
 
@@ -194,12 +186,26 @@
     <!-- 玩法说明 -->
     <HowToPlay v-model="showHowTo" title="2048">
       <ol class="list-decimal pl-5 space-y-2 opacity-90">
-        <li>用 <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">方向键</kbd> / <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">WASD</kbd> 或<strong>滑动屏幕</strong>，让所有方块整体移动</li>
+        <li>
+          用
+          <kbd
+            class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm"
+            >方向键</kbd
+          >
+          /
+          <kbd
+            class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm"
+            >WASD</kbd
+          >
+          或<strong>滑动屏幕</strong>，让所有方块整体移动
+        </li>
         <li>相同的数字撞在一起会<strong>合并</strong>（2+2=4、4+4=8…），合并计入得分</li>
         <li>每次移动后棋盘会随机生成一个新方块（2 或 4）</li>
         <li>合成目标数字（默认 2048）即<strong>获胜</strong>，之后可继续挑战更高分</li>
         <li>棋盘被填满且无法再合并时，游戏结束</li>
-        <li>💡 手滑了？<strong>撤销</strong>按钮可以退回一步</li>
+        <li>
+          <AppIcon name="lightbulb" :size="18" /> 手滑了？<strong>撤销</strong>按钮可以退回一步
+        </li>
       </ol>
     </HowToPlay>
 
@@ -218,14 +224,24 @@
 import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef } from 'vue'
 import { Game2048Engine } from '../../game/2048/GameEngine'
 import { isGame2048Autosave } from '../../game/base/autosaveGuards'
-import type { Game2048State, Tile, Direction, Game2048Config, Difficulty } from '../../game/2048/types'
+import type {
+  Game2048State,
+  Tile,
+  Direction,
+  Game2048Config,
+  Difficulty,
+} from '../../game/2048/types'
 import { DIFFICULTY_LABELS, CAKE_EMOJI, CAKE_OVERFLOW_EMOJI } from '../../game/2048/types'
 import { useGame2048SettingsStore, SIZE_OPTIONS } from '../../stores/game2048-settings'
 import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useLeaderboardStore } from '../../stores/leaderboard'
 import { StorageAdapter } from '../../adapters/StorageAdapter'
 import { loadAutosave, saveAutosave, clearAutosave } from '../../utils/autosave'
-import { genEntryId, type LeaderboardDimension, type LeaderboardEntry } from '../../game/base/leaderboard'
+import {
+  genEntryId,
+  type LeaderboardDimension,
+  type LeaderboardEntry,
+} from '../../game/base/leaderboard'
 import ThemeToggle from '../../components/ThemeToggle.vue'
 import SoundToggle from '../../components/SoundToggle.vue'
 import HowToPlay from '../../components/HowToPlay.vue'
@@ -235,6 +251,7 @@ import { toast } from '../../utils/toast'
 import ScoreBox from './components/ScoreBox.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
+import AppIcon from '../../components/AppIcon.vue'
 
 const settings = useGame2048SettingsStore()
 
@@ -448,10 +465,38 @@ function tileClass(value: number): string {
 
 // 字号二维表：按棋盘尺寸 × 数字位数查表，避免字符串 replace 脆弱匹配
 const TILE_FONT_TABLE: Record<number, Record<number, string>> = {
-  4: { 1: 'text-4xl md:text-5xl', 2: 'text-4xl md:text-5xl', 3: 'text-3xl md:text-4xl', 4: 'text-2xl md:text-3xl', 5: 'text-xl md:text-2xl', 6: 'text-lg md:text-xl' },
-  5: { 1: 'text-3xl md:text-4xl', 2: 'text-3xl md:text-4xl', 3: 'text-2xl md:text-3xl', 4: 'text-xl md:text-2xl', 5: 'text-lg md:text-xl',  6: 'text-base md:text-lg' },
-  6: { 1: 'text-2xl md:text-3xl', 2: 'text-2xl md:text-3xl', 3: 'text-xl md:text-2xl', 4: 'text-lg md:text-xl',  5: 'text-base md:text-lg', 6: 'text-sm md:text-base' },
-  7: { 1: 'text-xl md:text-2xl',  2: 'text-xl md:text-2xl',  3: 'text-lg md:text-xl',  4: 'text-base md:text-lg', 5: 'text-sm md:text-base',  6: 'text-xs md:text-sm' },
+  4: {
+    1: 'text-4xl md:text-5xl',
+    2: 'text-4xl md:text-5xl',
+    3: 'text-3xl md:text-4xl',
+    4: 'text-2xl md:text-3xl',
+    5: 'text-xl md:text-2xl',
+    6: 'text-lg md:text-xl',
+  },
+  5: {
+    1: 'text-3xl md:text-4xl',
+    2: 'text-3xl md:text-4xl',
+    3: 'text-2xl md:text-3xl',
+    4: 'text-xl md:text-2xl',
+    5: 'text-lg md:text-xl',
+    6: 'text-base md:text-lg',
+  },
+  6: {
+    1: 'text-2xl md:text-3xl',
+    2: 'text-2xl md:text-3xl',
+    3: 'text-xl md:text-2xl',
+    4: 'text-lg md:text-xl',
+    5: 'text-base md:text-lg',
+    6: 'text-sm md:text-base',
+  },
+  7: {
+    1: 'text-xl md:text-2xl',
+    2: 'text-xl md:text-2xl',
+    3: 'text-lg md:text-xl',
+    4: 'text-base md:text-lg',
+    5: 'text-sm md:text-base',
+    6: 'text-xs md:text-sm',
+  },
 }
 
 function tileTextClass(value: number): string {
@@ -550,7 +595,7 @@ async function shareResult() {
     text: gameShareText('2048', state.score, undefined, state.won),
     url: shareUrl('/game/2048'),
   })
-  toast(result === 'shared' ? '✅ 已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
+  toast(result === 'shared' ? '已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
 }
 
 // ===== 键盘操作 =====
@@ -558,8 +603,18 @@ function onKeydown(e: KeyboardEvent) {
   // 设置/排行榜弹窗打开时忽略游戏按键，避免误操作背后的棋盘
   if (settings.showSettings || showLeaderboard.value) return
   const map: Record<string, Direction> = {
-    ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
-    w: 'up', W: 'up', s: 'down', S: 'down', a: 'left', A: 'left', d: 'right', D: 'right',
+    ArrowUp: 'up',
+    ArrowDown: 'down',
+    ArrowLeft: 'left',
+    ArrowRight: 'right',
+    w: 'up',
+    W: 'up',
+    s: 'down',
+    S: 'down',
+    a: 'left',
+    A: 'left',
+    d: 'right',
+    D: 'right',
   }
   const dir = map[e.key]
   if (dir) {
@@ -601,9 +656,9 @@ function onTouchEnd(e: TouchEvent) {
 // 屏幕档位：mobile(<480) / tablet(<768) / desktop(>=768)
 // 棋盘越大 gap 越小，让单格尺寸保持稳定，避免 6×6/7×7 在大屏上格子被间隙挤掉
 const GAP_TABLE: Record<'mobile' | 'tablet' | 'desktop', Record<number, number>> = {
-  mobile:  { 4: 8,  5: 7,  6: 6,  7: 5  },
-  tablet:  { 4: 10, 5: 8,  6: 7,  7: 6  },
-  desktop: { 4: 12, 5: 10, 6: 8,  7: 7  },
+  mobile: { 4: 8, 5: 7, 6: 6, 7: 5 },
+  tablet: { 4: 10, 5: 8, 6: 7, 7: 6 },
+  desktop: { 4: 12, 5: 10, 6: 8, 7: 7 },
 }
 
 function updateLayout() {
@@ -617,7 +672,12 @@ function updateLayout() {
   padding.value = g + 4
 }
 
-useGamePageEvents({ keydown: onKeydown, resize: updateLayout, visibilitychange: onVisibilityChange, pagehide: onPageHide })
+useGamePageEvents({
+  keydown: onKeydown,
+  resize: updateLayout,
+  visibilitychange: onVisibilityChange,
+  pagehide: onPageHide,
+})
 
 onMounted(() => {
   updateLayout()
@@ -647,8 +707,9 @@ onBeforeUnmount(() => {
 <style scoped>
 /* 外层：负责 left/top 定位 + 移动过渡 */
 .tile-move {
-  transition: left 0.13s cubic-bezier(0.25, 1, 0.5, 1),
-              top 0.13s cubic-bezier(0.25, 1, 0.5, 1);
+  transition:
+    left 0.13s cubic-bezier(0.25, 1, 0.5, 1),
+    top 0.13s cubic-bezier(0.25, 1, 0.5, 1);
 }
 /* 内层：阴影 + 动画（transform scale 不影响定位） */
 .tile-shadow {

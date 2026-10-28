@@ -1,5 +1,5 @@
 <template>
-  <transition name="panel">
+  <transition name="eg-panel">
     <div
       v-if="settings.showSettings"
       class="eg-modal-overlay"
@@ -9,17 +9,13 @@
       <div class="eg-modal-mask"></div>
 
       <!-- 面板 -->
-      <div class="eg-modal-card">
+      <div class="eg-modal-card" role="dialog" aria-modal="true" aria-label="游戏设置">
         <div class="eg-modal-head">
           <h3 class="eg-modal-title">
-            <span>⚙️</span>
             <span>扫雷设置</span>
           </h3>
-          <button
-            @click="settings.closeSettings()"
-            class="eg-modal-close"
-          >
-            ✕
+          <button aria-label="关闭设置" @click="settings.closeSettings()" class="eg-modal-close">
+            <AppIcon name="close" :size="18" />
           </button>
         </div>
 
@@ -32,29 +28,20 @@
               :key="opt.value"
               @click="localConfig.difficulty = opt.value"
               class="eg-opt w-full text-left flex items-center justify-between"
-              :class="localConfig.difficulty === opt.value
-                 ? 'eg-opt-on' : ''"
+              :class="localConfig.difficulty === opt.value ? 'eg-opt-on' : ''"
             >
               <span>{{ opt.label }}</span>
-              <span class="text-xs opacity-70">{{ opt.rows }}×{{ opt.cols }} · {{ opt.mines }} 雷</span>
+              <span class="text-xs opacity-70"
+                >{{ opt.rows }}×{{ opt.cols }} · {{ opt.mines }} 雷</span
+              >
             </button>
           </div>
         </div>
 
         <!-- 底部按钮 -->
         <div class="eg-modal-actions">
-          <button
-            @click="resetDefault"
-            class="eg-ghost-btn"
-          >
-            恢复默认
-          </button>
-          <button
-            @click="apply"
-            class="eg-primary-btn"
-          >
-            应用并重新开始
-          </button>
+          <button @click="resetDefault" class="eg-ghost-btn">恢复默认</button>
+          <button @click="apply" class="eg-primary-btn">应用并重新开始</button>
         </div>
       </div>
     </div>
@@ -63,17 +50,29 @@
 
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
-import { useMinesweeperSettingsStore, DIFFICULTY_LABELS } from '../../../stores/minesweeper-settings'
+import {
+  useMinesweeperSettingsStore,
+  DIFFICULTY_LABELS,
+} from '../../../stores/minesweeper-settings'
 import { MINE_PRESETS, DEFAULT_MINE_CONFIG } from '../../../game/minesweeper/types'
 import type { MineConfig, MineDifficulty } from '../../../game/minesweeper/types'
+import { useEscapeKey } from '../../../composables/useEscapeKey'
+import AppIcon from '../../../components/AppIcon.vue'
 
 const settings = useMinesweeperSettingsStore()
 
-const DIFFICULTY_OPTIONS = (['beginner', 'intermediate', 'expert'] as MineDifficulty[]).map((d) => ({
-  value: d,
-  label: DIFFICULTY_LABELS[d],
-  ...MINE_PRESETS[d],
-}))
+useEscapeKey(
+  () => settings.showSettings,
+  () => settings.closeSettings(),
+)
+
+const DIFFICULTY_OPTIONS = (['beginner', 'intermediate', 'expert'] as MineDifficulty[]).map(
+  (d) => ({
+    value: d,
+    label: DIFFICULTY_LABELS[d],
+    ...MINE_PRESETS[d],
+  }),
+)
 
 const localConfig = reactive<MineConfig>({ ...settings.config })
 
@@ -100,22 +99,3 @@ function resetDefault() {
   Object.assign(localConfig, DEFAULT_MINE_CONFIG)
 }
 </script>
-
-<style scoped>
-.panel-enter-active,
-.panel-leave-active {
-  transition: opacity 0.2s ease;
-}
-.panel-enter-active > div:last-child,
-.panel-leave-active > div:last-child {
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.panel-enter-from,
-.panel-leave-to {
-  opacity: 0;
-}
-.panel-enter-from > div:last-child,
-.panel-leave-to > div:last-child {
-  transform: scale(0.9) translateY(10px);
-}
-</style>

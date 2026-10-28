@@ -2,24 +2,14 @@
   <div class="eg-shell">
     <!-- 顶部栏 -->
     <header class="max-w-lg w-full mx-auto flex items-center justify-between mb-5">
-      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅">
-        ←
-      </RouterLink>
-      <div class="eg-game-title">🔗 连连看</div>
+      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅"> ← </RouterLink>
+      <div class="eg-game-title">连连看</div>
       <div class="flex gap-2">
-        <button
-          @click="showLeaderboard = true"
-          class="eg-icon-btn"
-          aria-label="排行榜"
-        >
-          🏆
+        <button @click="showLeaderboard = true" class="eg-icon-btn" aria-label="排行榜">
+          <AppIcon name="trophy" :size="18" />
         </button>
-        <button
-          @click="settings.openSettings()"
-          class="eg-icon-btn"
-          aria-label="设置"
-        >
-          ⚙️
+        <button @click="settings.openSettings()" class="eg-icon-btn" aria-label="设置">
+          <AppIcon name="settings" :size="18" />
         </button>
         <SoundToggle />
         <ThemeToggle />
@@ -31,7 +21,9 @@
       <!-- 分数面板（紧凑单行） -->
       <div class="eg-score-row !mb-3">
         <div>
-          <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-text-light dark:text-text-dark">
+          <h1
+            class="text-2xl md:text-3xl font-extrabold tracking-tight text-text-light dark:text-text-dark"
+          >
             连连看
           </h1>
           <p class="text-[11px] opacity-70 mt-0.5 text-text-muted-light dark:text-text-muted-dark">
@@ -48,45 +40,43 @@
       <!-- 操作按钮（单行紧凑） -->
       <div class="eg-toolbar !mb-3">
         <div class="flex items-center gap-2">
-          <button
-            @click="showHowTo = true"
-            class="eg-ghost-btn"
-          >
-            ❓ 玩法
+          <button @click="showHowTo = true" class="eg-ghost-btn">
+            <AppIcon name="help" :size="18" /> 玩法
           </button>
-          <div class="hidden sm:flex items-center gap-1 text-xs opacity-70 text-text-muted-light dark:text-text-muted-dark">
+          <div
+            class="hidden sm:flex items-center gap-1 text-xs opacity-70 text-text-muted-light dark:text-text-muted-dark"
+          >
             <span>⏱</span><span>{{ elapsedText }}</span>
             <span class="mx-1">·</span>
             <span>👣 {{ state.moves }} 次</span>
           </div>
         </div>
-        <div class="flex gap-2 w-full sm:w-auto justify-end">
+        <div class="ml-auto flex gap-2">
           <button
             @click="doUndo"
             :disabled="showResume || !canUndoNow || state.status !== 'playing'"
             class="eg-ghost-btn"
           >
-            ↩️ 撤销{{ state.undoLeft > 0 ? `(${state.undoLeft})` : '' }}
+            <AppIcon name="undo" :size="18" /> 撤销{{
+              state.undoLeft > 0 ? `(${state.undoLeft})` : ''
+            }}
           </button>
           <button
             @click="doHint"
             :disabled="showResume || state.status !== 'playing'"
             class="eg-ghost-btn"
           >
-            💡 提示
+            <AppIcon name="lightbulb" :size="18" /> 提示
           </button>
           <button
             @click="doReshuffle"
             :disabled="showResume || state.status !== 'playing'"
             class="eg-ghost-btn"
           >
-            🔀 洗牌
+            <AppIcon name="shuffle" :size="18" /> 洗牌
           </button>
-          <button
-            @click="newGame"
-            class="eg-primary-btn"
-          >
-            🔄 新游戏
+          <button @click="newGame" class="eg-primary-btn">
+            <AppIcon name="restart" :size="18" /> 新游戏
           </button>
         </div>
       </div>
@@ -96,13 +86,21 @@
         <div class="flex-1 h-2.5 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
           <div
             class="h-full rounded-full transition-all duration-1000"
-            :class="state.timeLeft <= 10 ? 'bg-red-500' : 'bg-gradient-to-r from-indigo-400 to-indigo-500'"
+            :class="
+              state.timeLeft <= 10
+                ? 'bg-danger-light dark:bg-danger-dark'
+                : 'bg-accent-light dark:bg-accent-dark'
+            "
             :style="{ width: `${Math.max(0, (state.timeLeft / state.timeLimit) * 100)}%` }"
           ></div>
         </div>
         <div
           class="text-xs font-bold tabular-nums whitespace-nowrap"
-          :class="state.timeLeft <= 10 ? 'text-red-500 animate-pulse' : 'text-text-light dark:text-text-dark'"
+          :class="
+            state.timeLeft <= 10
+              ? 'text-danger-light animate-pulse dark:text-danger-dark'
+              : 'text-text-light dark:text-text-dark'
+          "
         >
           ⏰ {{ formatTime(state.timeLeft) }}
         </div>
@@ -114,7 +112,13 @@
         class="relative mx-auto select-none touch-none w-full rounded-2xl board-bg-light dark:board-bg-dark shadow-inner"
         :style="boardStyle"
       >
-        <div class="grid w-full h-full" :style="{ gridTemplateColumns: `repeat(${state.cols}, 1fr)`, gridTemplateRows: `repeat(${state.rows}, 1fr)` }">
+        <div
+          class="grid w-full h-full"
+          :style="{
+            gridTemplateColumns: `repeat(${state.cols}, 1fr)`,
+            gridTemplateRows: `repeat(${state.rows}, 1fr)`,
+          }"
+        >
           <button
             v-for="i in state.rows * state.cols"
             :key="i - 1"
@@ -160,7 +164,14 @@
             class="link-line-flow"
           />
           <!-- 端点圆点 -->
-          <circle v-for="(pt, i) in connectPath" :key="i" :cx="ptPct(pt)[0]" :cy="ptPct(pt)[1]" :r="0.8" fill="#6366f1" />
+          <circle
+            v-for="(pt, i) in connectPath"
+            :key="i"
+            :cx="ptPct(pt)[0]"
+            :cy="ptPct(pt)[1]"
+            :r="0.8"
+            fill="#6366f1"
+          />
         </svg>
 
         <!-- 金卡连带消除连线（紫红色区分） -->
@@ -181,31 +192,35 @@
             stroke-linecap="round"
             stroke-linejoin="round"
           />
-          <circle v-for="(pt, i) in extraPath" :key="i" :cx="ptPct(pt)[0]" :cy="ptPct(pt)[1]" :r="0.8" fill="#d946ef" />
+          <circle
+            v-for="(pt, i) in extraPath"
+            :key="i"
+            :cx="ptPct(pt)[0]"
+            :cy="ptPct(pt)[1]"
+            :r="0.8"
+            fill="#d946ef"
+          />
         </svg>
 
         <!-- 继续上次遮罩 -->
         <div
           v-if="showResume && state.status !== 'won'"
-          class="absolute inset-0 rounded-2xl flex items-center justify-center backdrop-blur-sm bg-bg-light/70 dark:bg-bg-dark/70"
+          class="absolute inset-0 rounded-2xl flex items-center justify-center bg-bg-light dark:bg-bg-dark"
         >
           <div class="text-center space-y-4 px-4">
-            <div class="text-3xl md:text-4xl font-extrabold text-indigo-500 dark:text-indigo-300">🕹️ 上次进度还在</div>
+            <div class="font-display text-heading font-medium text-text-light dark:text-text-dark">
+              上次进度还在
+            </div>
             <p class="opacity-80 text-text-light dark:text-text-dark text-sm">
-              已消除 {{ pendingAutosave?.pairs ?? state.pairs }} 对 · {{ pendingAutosave?.score ?? state.score }} 分，继续？
+              已消除 {{ pendingAutosave?.pairs ?? state.pairs }} 对 ·
+              {{ pendingAutosave?.score ?? state.score }} 分，继续？
             </p>
             <div class="flex gap-3 justify-center flex-wrap">
-              <button
-                @click="resumeGame"
-                class="px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold shadow-claude-md transition-all active:scale-95"
-              >
-                ▶️ 继续上次
+              <button @click="resumeGame" class="eg-primary-btn">
+                <AppIcon name="play" :size="18" /> 继续上次
               </button>
-              <button
-                @click="discardAutosave"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                🔄 重新开始
+              <button @click="discardAutosave" class="eg-secondary-btn">
+                <AppIcon name="restart" :size="18" /> 重新开始
               </button>
             </div>
           </div>
@@ -214,38 +229,24 @@
         <!-- 胜利遮罩 -->
         <div
           v-if="state.status === 'won'"
-          class="absolute inset-0 rounded-2xl flex items-center justify-center backdrop-blur-sm bg-indigo-500/80"
+          class="absolute inset-0 flex items-center justify-center bg-bg-light/85 backdrop-blur-sm dark:bg-bg-dark/85"
         >
           <div class="text-center space-y-4 px-4">
-            <div class="text-4xl md:text-5xl font-extrabold text-white">🎉 全部消除！</div>
+            <div class="text-4xl md:text-5xl font-extrabold text-white">全部消除！</div>
             <p class="opacity-90 text-white">
               {{ state.pairs }} 对 · {{ state.score }} 分 · {{ elapsedText }}
-              <span v-if="isNewBest" class="ml-2">🏅 新纪录！</span>
+              <span v-if="isNewBest" class="ml-2">新纪录！</span>
             </p>
             <div class="flex gap-3 justify-center flex-wrap">
-              <button
-                @click="showLeaderboard = true"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                🏆 查看排行榜
+              <button @click="showLeaderboard = true" class="eg-secondary-btn">
+                <AppIcon name="trophy" :size="18" /> 查看排行榜
               </button>
-              <button
-                @click="shareResult"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                📤 分享成绩
+              <button @click="shareResult" class="eg-secondary-btn">
+                <AppIcon name="share" :size="18" /> 分享成绩
               </button>
-              <button
-                @click="nextLevel"
-                class="px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold shadow-claude-md transition-all active:scale-95"
-              >
-                ➡️ 下一关
-              </button>
-              <button
-                @click="newGame"
-                class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-claude-md transition-all active:scale-95"
-              >
-                🔄 再来一局
+              <button @click="nextLevel" class="eg-primary-btn">下一关</button>
+              <button @click="newGame" class="eg-primary-btn">
+                <AppIcon name="restart" :size="18" /> 再来一局
               </button>
             </div>
           </div>
@@ -254,19 +255,14 @@
         <!-- 超时失败遮罩 -->
         <div
           v-if="state.status === 'lost'"
-          class="absolute inset-0 rounded-2xl flex items-center justify-center backdrop-blur-sm bg-red-500/80"
+          class="absolute inset-0 flex items-center justify-center bg-bg-light/85 backdrop-blur-sm dark:bg-bg-dark/85"
         >
           <div class="text-center space-y-4 px-4">
             <div class="text-4xl md:text-5xl font-extrabold text-white">⏰ 时间到</div>
-            <p class="opacity-90 text-white">
-              已消除 {{ state.pairs }} 对 · {{ state.score }} 分
-            </p>
+            <p class="opacity-90 text-white">已消除 {{ state.pairs }} 对 · {{ state.score }} 分</p>
             <div class="flex gap-3 justify-center flex-wrap">
-              <button
-                @click="newGame"
-                class="px-6 py-2.5 rounded-xl bg-white text-red-600 font-bold shadow-claude-md transition-all active:scale-95"
-              >
-                🔄 再来一局
+              <button @click="newGame" class="eg-secondary-btn">
+                <AppIcon name="restart" :size="18" /> 再来一局
               </button>
             </div>
           </div>
@@ -274,8 +270,8 @@
       </div>
 
       <!-- 操作说明（小屏） -->
-      <div class="text-center text-xs opacity-60 mt-4 sm:hidden">
-        👆 点击两张相同图案，能用最多两段直线连上即可消除 · PC 可用方向键 + 空格
+      <div v-if="!showResume" class="text-center text-xs opacity-60 mt-4 sm:hidden">
+        点击两张相同图案，能用最多两段直线连上即可消除 · PC 可用方向键 + 空格
       </div>
     </main>
 
@@ -289,11 +285,41 @@
     <!-- 玩法说明 -->
     <HowToPlay v-model="showHowTo" title="连连看">
       <ol class="list-decimal pl-5 space-y-2 opacity-90">
-        <li>点击一张图案选中，再<strong>点击另一张相同图案</strong>，若两者之间能用<strong>最多拐两次弯</strong>的直线路径相连（路径上无其它图案，可走棋盘边缘外侧），即消除这一对。</li>
-        <li>PC 也可用 <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">方向键</kbd> 移动光标 + <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">空格</kbd> 选择，<kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">Esc</kbd> 取消光标。</li>
-        <li>消除路径拐弯越少，得分越高；金框图案为 <strong>✨ 金卡</strong>：金卡与同图案的普通卡可以互消，<strong>两张金卡相消</strong>额外 +50 分并自动连带消除一对。</li>
-        <li>找不到可消除的一对时点 <strong>🔀 洗牌</strong> 重铺；卡住时用 <strong>💡 提示</strong> 高亮一对可消除的图案；消除错了可用 <strong>↩️ 撤销</strong>（次数有限，不返还时间）。</li>
-        <li>清空全部图案即<strong>获胜</strong>，用时越短、剩余时间越多得分越高；倒计时归零则失败。</li>
+        <li>
+          点击一张图案选中，再<strong>点击另一张相同图案</strong>，若两者之间能用<strong>最多拐两次弯</strong>的直线路径相连（路径上无其它图案，可走棋盘边缘外侧），即消除这一对。
+        </li>
+        <li>
+          PC 也可用
+          <kbd
+            class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm"
+            >方向键</kbd
+          >
+          移动光标 +
+          <kbd
+            class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm"
+            >空格</kbd
+          >
+          选择，<kbd
+            class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm"
+            >Esc</kbd
+          >
+          取消光标。
+        </li>
+        <li>
+          消除路径拐弯越少，得分越高；金框图案为
+          <strong>金卡</strong>：金卡与同图案的普通卡可以互消，<strong>两张金卡相消</strong>额外 +50
+          分并自动连带消除一对。
+        </li>
+        <li>
+          找不到可消除的一对时点
+          <strong><AppIcon name="shuffle" :size="18" /> 洗牌</strong> 重铺；卡住时用
+          <strong><AppIcon name="lightbulb" :size="18" /> 提示</strong>
+          高亮一对可消除的图案；消除错了可用
+          <strong><AppIcon name="undo" :size="18" /> 撤销</strong>（次数有限，不返还时间）。
+        </li>
+        <li>
+          清空全部图案即<strong>获胜</strong>，用时越短、剩余时间越多得分越高；倒计时归零则失败。
+        </li>
       </ol>
     </HowToPlay>
 
@@ -313,7 +339,12 @@ import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef, watch 
 import { LianliankanEngine } from '../../game/lianliankan/GameEngine'
 import { isLianliankanAutosave } from '../../game/base/autosaveGuards'
 import type { LinkState, LinkConfig, LinkDifficulty } from '../../game/lianliankan/types'
-import { DIFFICULTY_LABELS, SYMBOL_POOL, isSpecialTile, baseSymbol } from '../../game/lianliankan/types'
+import {
+  DIFFICULTY_LABELS,
+  SYMBOL_POOL,
+  isSpecialTile,
+  baseSymbol,
+} from '../../game/lianliankan/types'
 import { useLianliankanSettingsStore } from '../../stores/lianliankan-settings'
 import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useLeaderboardStore } from '../../stores/leaderboard'
@@ -328,6 +359,7 @@ import HowToPlay from '../../components/HowToPlay.vue'
 import ScoreBox from './components/ScoreBox.vue'
 import LianliankanSettingsPanel from './components/LianliankanSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
+import AppIcon from '../../components/AppIcon.vue'
 
 const settings = useLianliankanSettingsStore()
 
@@ -386,7 +418,11 @@ function persistAutosave() {
     clearAutosave(AUTOSAVE_GAME_ID)
     return
   }
-  saveAutosave(AUTOSAVE_GAME_ID, { v: AUTOSAVE_VERSION, ...engine.value.getState(), savedAt: Date.now() })
+  saveAutosave(AUTOSAVE_GAME_ID, {
+    v: AUTOSAVE_VERSION,
+    ...engine.value.getState(),
+    savedAt: Date.now(),
+  })
 }
 
 function resumeGame() {
@@ -448,7 +484,9 @@ const boardStyle = computed(() => {
   }
 })
 
-const difficultyLabel = computed(() => DIFFICULTY_LABELS[state.difficulty] ?? DIFFICULTY_LABELS[settings.config.difficulty])
+const difficultyLabel = computed(
+  () => DIFFICULTY_LABELS[state.difficulty] ?? DIFFICULTY_LABELS[settings.config.difficulty],
+)
 
 const themePool = computed(() => SYMBOL_POOL[state.theme] ?? SYMBOL_POOL.fruit)
 
@@ -461,7 +499,7 @@ const tileFontStyle = computed(() => {
   // 纵向棋盘：高度优先（与 boardStyle 一致），格子高 = (棋盘高 - padding×2) / 行数
   const boardH = Math.min(windowHeight.value - 340, 720)
   const cellH = (boardH - 2 * padding.value) / state.rows
-  const baseVmin = 92 / Math.max(state.rows, state.cols) * 0.62
+  const baseVmin = (92 / Math.max(state.rows, state.cols)) * 0.62
   return {
     fontSize: `min(${(cellH * 0.62).toFixed(1)}px, ${baseVmin.toFixed(2)}vmin)`,
   }
@@ -470,7 +508,8 @@ const tileFontStyle = computed(() => {
 const wonElapsed = ref(0)
 
 const elapsedText = computed(() => {
-  const sec = state.status === 'won' ? wonElapsed.value : Math.floor((now.value - state.startTime) / 1000)
+  const sec =
+    state.status === 'won' ? wonElapsed.value : Math.floor((now.value - state.startTime) / 1000)
   const m = Math.floor(sec / 60)
   const s = sec % 60
   return m > 0 ? `${m}分${s}秒` : `${s}秒`
@@ -489,7 +528,7 @@ function tileValue(idx: number): string {
   const v = state.grid[r][c]
   if (v === 0) return ''
   const base = isSpecialTile(v) ? baseSymbol(v) : v
-  return (themePool.value[base - 1] ?? '❔')
+  return themePool.value[base - 1] ?? '❔'
 }
 
 function tileClass(idx: number): string {
@@ -497,7 +536,9 @@ function tileClass(idx: number): string {
   const c = idx % state.cols
   const v = state.grid[r][c]
   if (v === 0) return 'invisible'
-  const classes: string[] = ['rounded-lg bg-card-light dark:bg-card-dark shadow-claude-md border border-border-light dark:border-border-dark transition-all duration-100 active:scale-90 m-[2px] sm:m-[2.5px]']
+  const classes: string[] = [
+    'rounded-lg bg-card-light dark:bg-card-dark shadow-claude-md border border-border-light dark:border-border-dark transition-all duration-100 active:scale-90 m-[2px] sm:m-[2.5px]',
+  ]
   if (isSpecialTile(v)) {
     classes.push('ring-2 ring-amber-300 border-amber-300 bg-amber-50 dark:bg-amber-200/20')
   }
@@ -540,7 +581,7 @@ function onTileClick(idx: number) {
       const extra = engine.value.lastExtra
       if (extra) {
         flashExtraLine(extra.path)
-        toast('✨ 金卡连消一对 +50')
+        toast('金卡连消一对 +50')
       }
     } else {
       sound.play('click')
@@ -607,7 +648,7 @@ function doHint() {
   if (engine.value.hintNow()) {
     syncState()
     sound.play('start')
-    toast('💡 高亮的这对可以消除')
+    toast('高亮的这对可以消除')
   } else {
     toast('当前没有可消除的一对，建议洗牌')
   }
@@ -623,7 +664,7 @@ function doReshuffle() {
   if (extraTimer) clearTimeout(extraTimer)
   extraPath.value = null
   sound.play('rotate')
-  toast('🔀 已洗牌')
+  toast('已洗牌')
 }
 
 function doUndo() {
@@ -709,7 +750,7 @@ async function shareResult() {
     text: `我在 EasyGame 连连看用了 ${elapsedText.value} 消除了 ${state.pairs} 对、${state.score} 分，来挑战我！🔗`,
     url: shareUrl('/game/lianliankan'),
   })
-  toast(result === 'shared' ? '✅ 已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
+  toast(result === 'shared' ? '已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
 }
 
 // ===== 键盘操作（方向键移动光标 + 空格/回车选择） =====
@@ -718,8 +759,18 @@ const cursor = ref<{ r: number; c: number } | null>(null)
 function onKeydown(e: KeyboardEvent) {
   if (settings.showSettings || showLeaderboard.value || showHowTo.value) return
   const map: Record<string, [number, number]> = {
-    ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1],
-    w: [-1, 0], W: [-1, 0], s: [1, 0], S: [1, 0], a: [0, -1], A: [0, -1], d: [0, 1], D: [0, 1],
+    ArrowUp: [-1, 0],
+    ArrowDown: [1, 0],
+    ArrowLeft: [0, -1],
+    ArrowRight: [0, 1],
+    w: [-1, 0],
+    W: [-1, 0],
+    s: [1, 0],
+    S: [1, 0],
+    a: [0, -1],
+    A: [0, -1],
+    d: [0, 1],
+    D: [0, 1],
   }
   const k = e.key
   if (map[k]) {
@@ -767,7 +818,9 @@ function updateLayout() {
 }
 
 // ===== 弹窗打开时挂起倒计时（续档遮罩/设置/玩法/排行榜） =====
-const modalOpen = computed(() => settings.showSettings || showHowTo.value || showLeaderboard.value || showResume.value)
+const modalOpen = computed(
+  () => settings.showSettings || showHowTo.value || showLeaderboard.value || showResume.value,
+)
 watch(modalOpen, (open, prev) => {
   if (state.status !== 'playing') return
   if (open && !prev) engine.value.pauseClock()
@@ -777,7 +830,12 @@ watch(modalOpen, (open, prev) => {
 // ===== 计时器 =====
 let timer: ReturnType<typeof setInterval> | null = null
 
-useGamePageEvents({ keydown: onKeydown, resize: updateLayout, visibilitychange: onVisibilityChange, pagehide: onPageHide })
+useGamePageEvents({
+  keydown: onKeydown,
+  resize: updateLayout,
+  visibilitychange: onVisibilityChange,
+  pagehide: onPageHide,
+})
 
 onMounted(() => {
   updateLayout()

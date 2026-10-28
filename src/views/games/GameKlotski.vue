@@ -2,24 +2,14 @@
   <div class="eg-shell">
     <!-- 顶部栏 -->
     <header class="max-w-xl w-full mx-auto flex items-center justify-between mb-5">
-      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅">
-        ←
-      </RouterLink>
-      <div class="eg-game-title">🧩 华容道</div>
+      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅"> ← </RouterLink>
+      <div class="eg-game-title">华容道</div>
       <div class="flex gap-2">
-        <button
-          @click="showLeaderboard = true"
-          class="eg-icon-btn"
-          aria-label="排行榜"
-        >
-          🏆
+        <button @click="showLeaderboard = true" class="eg-icon-btn" aria-label="排行榜">
+          <AppIcon name="trophy" :size="18" />
         </button>
-        <button
-          @click="settings.openSettings()"
-          class="eg-icon-btn"
-          aria-label="设置"
-        >
-          ⚙️
+        <button @click="settings.openSettings()" class="eg-icon-btn" aria-label="设置">
+          <AppIcon name="settings" :size="18" />
         </button>
         <SoundToggle />
         <ThemeToggle />
@@ -31,7 +21,9 @@
       <!-- 分数面板 -->
       <div class="eg-score-row">
         <div>
-          <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-text-light dark:text-text-dark">
+          <h1
+            class="text-4xl md:text-5xl font-extrabold tracking-tight text-text-light dark:text-text-dark"
+          >
             华容道
           </h1>
           <p class="text-xs opacity-70 mt-1 text-text-muted-light dark:text-text-muted-dark">
@@ -42,9 +34,15 @@
         </div>
         <div class="flex gap-2">
           <ScoreBox label="步数" :value="state.moves" />
-          <div class="flex flex-col items-end justify-center px-3 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[72px]">
-            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark">用时</span>
-            <span class="text-lg font-bold tabular-nums text-text-light dark:text-text-dark">{{ elapsedText }}</span>
+          <div
+            class="flex flex-col items-end justify-center px-3 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[72px]"
+          >
+            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark"
+              >用时</span
+            >
+            <span class="text-lg font-bold tabular-nums text-text-light dark:text-text-dark">{{
+              elapsedText
+            }}</span>
           </div>
         </div>
       </div>
@@ -52,30 +50,26 @@
       <!-- 操作按钮 -->
       <div class="eg-toolbar mb-4">
         <div class="flex items-center gap-2">
-          <button
-            @click="showHowTo = true"
-            class="eg-ghost-btn"
-          >
-            ❓ 玩法
+          <button @click="showHowTo = true" class="eg-ghost-btn">
+            <AppIcon name="help" :size="18" /> 玩法
           </button>
-          <div class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark">
-            方向键 / <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">WASD</kbd>
+          <div
+            class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark"
+          >
+            方向键 /
+            <kbd
+              class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
+              >WASD</kbd
+            >
             或点击数字移动 · 目标：数字按顺序排好，空格在右下角
           </div>
         </div>
-        <div class="flex gap-2 w-full sm:w-auto justify-end">
-          <button
-            @click="undo"
-            :disabled="!canUndo"
-            class="eg-ghost-btn"
-          >
-            ↩️ 撤销
+        <div class="ml-auto flex gap-2">
+          <button @click="undo" :disabled="!canUndo" class="eg-ghost-btn">
+            <AppIcon name="undo" :size="18" /> 撤销
           </button>
-          <button
-            @click="newGame"
-            class="eg-primary-btn"
-          >
-            🔄 新游戏
+          <button @click="newGame" class="eg-primary-btn">
+            <AppIcon name="restart" :size="18" /> 新游戏
           </button>
         </div>
       </div>
@@ -108,23 +102,21 @@
         <!-- 继续上次遮罩 -->
         <div
           v-if="showResume && !state.won"
-          class="absolute inset-0 rounded-2xl flex items-center justify-center backdrop-blur-sm bg-bg-light/70 dark:bg-bg-dark/70"
+          class="absolute inset-0 rounded-2xl flex items-center justify-center bg-bg-light dark:bg-bg-dark"
         >
           <div class="text-center space-y-4 px-4">
-            <div class="text-3xl md:text-4xl font-extrabold text-rose-500 dark:text-rose-300">🕹️ 上次进度还在</div>
-            <p class="opacity-80 text-text-light dark:text-text-dark text-sm">已走 {{ pendingAutosave?.moves ?? 0 }} 步，继续挑战？</p>
+            <div class="font-display text-heading font-medium text-text-light dark:text-text-dark">
+              上次进度还在
+            </div>
+            <p class="opacity-80 text-text-light dark:text-text-dark text-sm">
+              已走 {{ pendingAutosave?.moves ?? 0 }} 步，继续挑战？
+            </p>
             <div class="flex gap-3 justify-center flex-wrap">
-              <button
-                @click="resumeGame"
-                class="px-5 py-2.5 rounded-xl bg-rose-400 hover:bg-rose-500 text-white font-bold shadow-claude-md transition-all active:scale-95"
-              >
-                ▶️ 继续上次
+              <button @click="resumeGame" class="eg-primary-btn">
+                <AppIcon name="play" :size="18" /> 继续上次
               </button>
-              <button
-                @click="discardAutosave"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                🔄 重新开始
+              <button @click="discardAutosave" class="eg-secondary-btn">
+                <AppIcon name="restart" :size="18" /> 重新开始
               </button>
             </div>
           </div>
@@ -133,32 +125,25 @@
         <!-- 胜利遮罩 -->
         <div
           v-if="state.won"
-          class="absolute inset-0 rounded-2xl flex items-center justify-center backdrop-blur-sm bg-rose-400/70"
+          class="absolute inset-0 flex items-center justify-center bg-bg-light/85 backdrop-blur-sm dark:bg-bg-dark/85"
         >
           <div class="text-center space-y-4 px-4">
-            <div class="text-4xl md:text-5xl font-extrabold text-white">🎉 解出成功！</div>
+            <div class="text-4xl md:text-5xl font-extrabold text-white">解出成功！</div>
             <p class="opacity-90 text-white">
               {{ state.moves }} 步 · {{ elapsedText }}
-              <span v-if="state.bestMoves > 0 && state.moves === state.bestMoves" class="ml-2">🏅 刷新最少步数！</span>
+              <span v-if="state.bestMoves > 0 && state.moves === state.bestMoves" class="ml-2"
+                >刷新最少步数！</span
+              >
             </p>
             <div class="flex gap-3 justify-center flex-wrap">
-              <button
-                @click="showLeaderboard = true"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                🏆 查看排行榜
+              <button @click="showLeaderboard = true" class="eg-secondary-btn">
+                <AppIcon name="trophy" :size="18" /> 查看排行榜
               </button>
-              <button
-                @click="shareResult"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                📤 分享成绩
+              <button @click="shareResult" class="eg-secondary-btn">
+                <AppIcon name="share" :size="18" /> 分享成绩
               </button>
-              <button
-                @click="newGame"
-                class="px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold shadow-claude-md transition-all active:scale-95"
-              >
-                🔄 再来一局
+              <button @click="newGame" class="eg-primary-btn">
+                <AppIcon name="restart" :size="18" /> 再来一局
               </button>
             </div>
           </div>
@@ -166,8 +151,8 @@
       </div>
 
       <!-- 操作说明（小屏） -->
-      <div class="text-center text-xs opacity-60 mt-4 sm:hidden">
-        👆 点击数字或滑动手指移动 · 目标：数字排好序，空格在右下角
+      <div v-if="!showResume" class="text-center text-xs opacity-60 mt-4 sm:hidden">
+        点击数字或滑动手指移动 · 目标：数字排好序，空格在右下角
       </div>
     </main>
 
@@ -203,7 +188,12 @@
 import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef } from 'vue'
 import { KlotskiEngine } from '../../game/klotski/GameEngine'
 import { isKlotskiAutosave } from '../../game/base/autosaveGuards'
-import type { KlotskiState, KlotskiConfig, KlotskiDirection, KlotskiDifficulty } from '../../game/klotski/types'
+import type {
+  KlotskiState,
+  KlotskiConfig,
+  KlotskiDirection,
+  KlotskiDifficulty,
+} from '../../game/klotski/types'
 import { DIFFICULTY_LABELS, scoreForMoves } from '../../game/klotski/types'
 import { useKlotskiSettingsStore } from '../../stores/klotski-settings'
 import { useGamePageEvents } from '../../composables/useGamePageEvents'
@@ -219,6 +209,7 @@ import HowToPlay from '../../components/HowToPlay.vue'
 import ScoreBox from './components/ScoreBox.vue'
 import KlotskiSettingsPanel from './components/KlotskiSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
+import AppIcon from '../../components/AppIcon.vue'
 
 const settings = useKlotskiSettingsStore()
 
@@ -291,8 +282,21 @@ function discardAutosave() {
   updateLayout()
 }
 
+/** 切后台暂停计时：回到前台时把隐藏时长补进 startTime，避免排行榜用时失真 */
+let hiddenAt = 0
 function onVisibilityChange() {
-  if (document.visibilityState === 'hidden' && !state.won) persistAutosave()
+  if (document.visibilityState === 'hidden') {
+    hiddenAt = Date.now()
+    if (!state.won) persistAutosave()
+    return
+  }
+  if (hiddenAt <= 0) return
+  const delta = Date.now() - hiddenAt
+  hiddenAt = 0
+  if (delta > 0 && state.startTime > 0 && !state.won) {
+    state.startTime += delta
+    now.value = Date.now()
+  }
 }
 function onPageHide() {
   if (!state.won) persistAutosave()
@@ -339,7 +343,7 @@ const elapsedText = computed(() => {
 
 function tileClass(v: number): string {
   if (v === 0) return 'bg-transparent'
-  return 'bg-gradient-to-br from-rose-400 to-rose-600 dark:from-rose-500 dark:to-rose-700 text-white shadow-claude-md hover:from-rose-500 hover:to-rose-700 dark:hover:from-rose-400 dark:hover:to-rose-600 transition-transform active:scale-95'
+  return 'bg-card-light dark:bg-card-dark text-text-light dark:text-text-dark shadow-ring hover:bg-accent-soft-light hover:text-accent-hover-light dark:hover:bg-accent-soft-dark dark:hover:text-accent-dark transition-transform active:scale-95'
 }
 
 function syncState() {
@@ -432,7 +436,7 @@ async function shareResult() {
     text: gameShareText('klotski', state.moves, state.size, true),
     url: shareUrl('/game/klotski'),
   })
-  toast(result === 'shared' ? '✅ 已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
+  toast(result === 'shared' ? '已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
 }
 
 // ===== 键盘操作 =====
@@ -440,8 +444,18 @@ function onKeydown(e: KeyboardEvent) {
   // 设置/排行榜弹窗打开时忽略游戏按键（注意 ref 需 .value）
   if (settings.showSettings || showLeaderboard.value) return
   const map: Record<string, KlotskiDirection> = {
-    ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
-    w: 'up', W: 'up', s: 'down', S: 'down', a: 'left', A: 'left', d: 'right', D: 'right',
+    ArrowUp: 'up',
+    ArrowDown: 'down',
+    ArrowLeft: 'left',
+    ArrowRight: 'right',
+    w: 'up',
+    W: 'up',
+    s: 'down',
+    S: 'down',
+    a: 'left',
+    A: 'left',
+    d: 'right',
+    D: 'right',
   }
   const dir = map[e.key]
   if (dir) {
@@ -499,7 +513,12 @@ function updateLayout() {
 // ===== 计时器（仅未完成时刷新显示） =====
 let timer: ReturnType<typeof setInterval> | null = null
 
-useGamePageEvents({ keydown: onKeydown, resize: updateLayout, visibilitychange: onVisibilityChange, pagehide: onPageHide })
+useGamePageEvents({
+  keydown: onKeydown,
+  resize: updateLayout,
+  visibilitychange: onVisibilityChange,
+  pagehide: onPageHide,
+})
 
 onMounted(() => {
   updateLayout()

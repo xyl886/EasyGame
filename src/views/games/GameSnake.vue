@@ -2,27 +2,17 @@
   <div class="eg-shell">
     <!-- 顶部栏 -->
     <header class="max-w-xl w-full mx-auto flex items-center justify-between mb-5">
-      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅">
-        ←
-      </RouterLink>
-      <div class="eg-game-title">🐍 贪吃蛇</div>
+      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅"> ← </RouterLink>
+      <div class="eg-game-title">贪吃蛇</div>
       <div class="flex gap-2">
-        <button
-          @click="showLeaderboard = true"
-          class="eg-icon-btn"
-          aria-label="排行榜"
-        >
-          🏆
+        <button @click="showLeaderboard = true" class="eg-icon-btn" aria-label="排行榜">
+          <AppIcon name="trophy" :size="18" />
         </button>
-        <button
-          @click="settings.openSettings()"
-          class="eg-icon-btn"
-          aria-label="设置"
-        >
-          ⚙️
+        <button @click="settings.openSettings()" class="eg-icon-btn" aria-label="设置">
+          <AppIcon name="settings" :size="18" />
         </button>
-          <SoundToggle />
-          <ThemeToggle />
+        <SoundToggle />
+        <ThemeToggle />
       </div>
     </header>
 
@@ -31,7 +21,9 @@
       <!-- 分数面板 -->
       <div class="eg-score-row">
         <div>
-          <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-text-light dark:text-text-dark">
+          <h1
+            class="text-4xl md:text-5xl font-extrabold tracking-tight text-text-light dark:text-text-dark"
+          >
             贪吃蛇
           </h1>
           <p class="text-xs opacity-70 mt-1 text-text-muted-light dark:text-text-muted-dark">
@@ -51,31 +43,36 @@
       <!-- 操作按钮 -->
       <div class="eg-toolbar mb-4">
         <div class="flex items-center gap-2">
-          <button
-            @click="showHowTo = true"
-            class="eg-ghost-btn"
-          >
-            ❓ 玩法
+          <button @click="showHowTo = true" class="eg-ghost-btn">
+            <AppIcon name="help" :size="18" /> 玩法
           </button>
-          <div class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark">
-            键盘 <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">↑↓←→</kbd>
-            或 <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">WASD</kbd> ·
-            <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">空格</kbd> 暂停
+          <div
+            class="text-xs opacity-70 hidden sm:block text-text-muted-light dark:text-text-muted-dark"
+          >
+            键盘
+            <kbd
+              class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
+              >↑↓←→</kbd
+            >
+            或
+            <kbd
+              class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
+              >WASD</kbd
+            >
+            ·
+            <kbd
+              class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
+              >空格</kbd
+            >
+            暂停
           </div>
         </div>
-        <div class="flex gap-2 w-full sm:w-auto justify-end">
-          <button
-            @click="togglePause"
-            :disabled="state.over || !started"
-            class="eg-ghost-btn"
-          >
-            {{ state.paused ? '▶️ 继续' : '⏸️ 暂停' }}
+        <div class="ml-auto flex gap-2">
+          <button @click="togglePause" :disabled="state.over || !started" class="eg-ghost-btn">
+            {{ state.paused ? '继续' : '暂停' }}
           </button>
-          <button
-            @click="newGame"
-            class="eg-primary-btn"
-          >
-            🔄 新游戏
+          <button @click="newGame" class="eg-primary-btn">
+            <AppIcon name="restart" :size="18" /> 新游戏
           </button>
         </div>
       </div>
@@ -108,7 +105,7 @@
         <div
           v-if="foodPop"
           :key="foodPop.id"
-          class="absolute pointer-events-none select-none z-20 food-pop font-extrabold text-lg text-amber-500 dark:text-amber-300 drop-shadow"
+          class="absolute pointer-events-none select-none z-20 food-pop font-extrabold text-lg text-accent-light dark:text-accent-dark dark:text-amber-300 drop-shadow"
           :style="{
             left: `${((foodPop.x + 0.5) / state.size) * 100}%`,
             top: `${((foodPop.y + 0.5) / state.size) * 100}%`,
@@ -121,34 +118,33 @@
         <div
           v-if="state.over || state.won"
           class="absolute inset-0 rounded-2xl flex items-center justify-center backdrop-blur-sm"
-          :class="state.won ? 'bg-lime-400/70' : 'bg-bg-light/80 dark:bg-bg-dark/80'"
+          :class="
+            state.won
+              ? 'bg-accent-soft-light dark:bg-accent-soft-dark'
+              : 'bg-bg-light/85 dark:bg-bg-dark/85'
+          "
         >
           <div class="text-center space-y-4 px-4">
-            <div class="text-4xl md:text-5xl font-extrabold" :class="state.won ? 'text-gray-900' : 'text-text-light dark:text-text-dark'">
-              {{ state.won ? '🎉 通关！' : '💤 游戏结束' }}
+            <div
+              class="text-4xl md:text-5xl font-display font-medium text-text-light dark:text-text-dark"
+            >
+              {{ state.won ? '通关！' : '游戏结束' }}
             </div>
             <p class="opacity-80 text-text-light dark:text-text-dark">
               最终得分：<strong>{{ state.score }}</strong>
-              <span class="opacity-60 ml-2">· 长度 {{ state.snake.length }} · {{ state.moveCount }} 步</span>
+              <span class="opacity-60 ml-2"
+                >· 长度 {{ state.snake.length }} · {{ state.moveCount }} 步</span
+              >
             </p>
             <div class="flex gap-3 justify-center flex-wrap">
-              <button
-                @click="showLeaderboard = true"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                🏆 查看排行榜
+              <button @click="showLeaderboard = true" class="eg-secondary-btn">
+                <AppIcon name="trophy" :size="18" /> 查看排行榜
               </button>
-              <button
-                @click="shareResult"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                📤 分享成绩
+              <button @click="shareResult" class="eg-secondary-btn">
+                <AppIcon name="share" :size="18" /> 分享成绩
               </button>
-              <button
-                @click="newGame"
-                class="px-5 py-2.5 rounded-xl bg-lime-400 hover:bg-lime-500 text-gray-900 font-bold shadow-claude-md transition-all active:scale-95"
-              >
-                🔄 再来一局
+              <button @click="newGame" class="eg-primary-btn">
+                <AppIcon name="restart" :size="18" /> 再来一局
               </button>
             </div>
           </div>
@@ -161,39 +157,46 @@
         >
           <!-- 有自动存档：提供继续/重开 -->
           <div v-if="showResume" class="text-center space-y-3 px-4">
-            <div class="text-3xl md:text-4xl font-extrabold text-lime-600 dark:text-lime-300">🕹️ 上次进度还在</div>
+            <div class="font-display text-heading font-medium text-text-light dark:text-text-dark">
+              上次进度还在
+            </div>
             <p class="text-sm opacity-70 text-text-light dark:text-text-dark">
-              得分 {{ pendingAutosave?.score }} · 长度 {{ pendingAutosave?.snake.length ?? 0 }}，继续挑战？
+              得分 {{ pendingAutosave?.score }} · 长度
+              {{ pendingAutosave?.snake.length ?? 0 }}，继续挑战？
             </p>
             <div class="flex gap-3 justify-center flex-wrap">
-              <button
-                @click="resumeGame"
-                class="px-6 py-2.5 rounded-xl bg-lime-400 hover:bg-lime-500 text-gray-900 font-bold shadow-claude-md transition-all active:scale-95"
-              >
-                ▶️ 继续上次
+              <button @click="resumeGame" class="eg-primary-btn">
+                <AppIcon name="play" :size="18" /> 继续上次
               </button>
-              <button
-                @click="discardAutosave"
-                class="px-6 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                🔄 重新开始
+              <button @click="discardAutosave" class="eg-secondary-btn">
+                <AppIcon name="restart" :size="18" /> 重新开始
               </button>
             </div>
           </div>
           <!-- 全新开局 -->
           <div v-else class="text-center space-y-3 px-4">
-            <div class="text-3xl md:text-4xl font-extrabold text-lime-600 dark:text-lime-300">▶️ 准备好了吗？</div>
+            <div class="font-display text-heading font-medium text-text-light dark:text-text-dark">
+              <AppIcon name="play" :size="18" /> 准备好了吗？
+            </div>
             <p class="text-sm opacity-70 text-text-light dark:text-text-dark">
-              按 <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">方向键</kbd>
-              / <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">WASD</kbd>
-              / <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm">空格</kbd> 开始
+              按
+              <kbd
+                class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
+                >方向键</kbd
+              >
+              /
+              <kbd
+                class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
+                >WASD</kbd
+              >
+              /
+              <kbd
+                class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark shadow-sm"
+                >空格</kbd
+              >
+              开始
             </p>
-            <button
-              @click="start"
-              class="px-6 py-2.5 rounded-xl bg-lime-400 hover:bg-lime-500 text-gray-900 font-bold shadow-claude-md transition-all active:scale-95"
-            >
-              🎮 开始游戏
-            </button>
+            <button @click="start" class="eg-primary-btn">开始游戏</button>
           </div>
         </div>
 
@@ -202,13 +205,15 @@
           v-if="state.paused && started && !state.over"
           class="absolute inset-0 rounded-2xl flex items-center justify-center bg-white/50 dark:bg-bg-dark/50 backdrop-blur-sm"
         >
-          <div class="text-3xl font-extrabold opacity-70">⏸️ 已暂停</div>
+          <div class="text-3xl font-extrabold opacity-70">
+            <AppIcon name="pause" :size="18" /> 已暂停
+          </div>
         </div>
       </div>
 
       <!-- 操作说明（小屏） -->
-      <div class="text-center text-xs opacity-60 mt-4 sm:hidden">
-        👆 在棋盘上滑动手指控制方向
+      <div v-if="!showResume" class="text-center text-xs opacity-60 mt-4 sm:hidden">
+        在棋盘上滑动手指控制方向
       </div>
     </main>
 
@@ -222,11 +227,29 @@
     <!-- 玩法说明 -->
     <HowToPlay v-model="showHowTo" title="贪吃蛇">
       <ol class="list-decimal pl-5 space-y-2 opacity-90">
-        <li>用 <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">方向键</kbd> / <kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">WASD</kbd> 或<strong>滑动屏幕</strong>控制蛇的移动方向</li>
+        <li>
+          用
+          <kbd
+            class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm"
+            >方向键</kbd
+          >
+          /
+          <kbd
+            class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm"
+            >WASD</kbd
+          >
+          或<strong>滑动屏幕</strong>控制蛇的移动方向
+        </li>
         <li>吃到食物得分并<strong>变长</strong>；金色 bonus 食物 +5 分</li>
         <li>撞墙、撞到自己或障碍物即失败（设置里开启<strong>穿墙</strong>可绕到对面）</li>
         <li>蛇身达到目标长度即<strong>获胜</strong>（设置里可调，0 为无尽模式）</li>
-        <li><kbd class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm">空格</kbd> 暂停 / 继续</li>
+        <li>
+          <kbd
+            class="px-1.5 py-0.5 rounded bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-xs shadow-sm"
+            >空格</kbd
+          >
+          暂停 / 继续
+        </li>
       </ol>
     </HowToPlay>
 
@@ -242,7 +265,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef } from 'vue'
+import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { SnakeEngine } from '../../game/snake/GameEngine'
 import { isSnakeAutosave } from '../../game/base/autosaveGuards'
 import type { SnakeState, SnakeConfig, SpeedTier, Direction } from '../../game/snake/types'
@@ -261,6 +284,7 @@ import { toast } from '../../utils/toast'
 import ScoreBox from './components/ScoreBox.vue'
 import SnakeSettingsPanel from './components/SnakeSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
+import AppIcon from '../../components/AppIcon.vue'
 
 const settings = useSnakeSettingsStore()
 
@@ -340,7 +364,10 @@ function beginOrResume() {
 }
 
 function onVisibilityChange() {
-  if (document.visibilityState === 'hidden' && !state.over) autosaver.flush()
+  if (document.visibilityState !== 'hidden') return
+  if (!state.over) autosaver.flush()
+  // 后台定时器仍会被节流执行：自动暂停，避免回到页面时这一局已经输掉
+  if (started.value && !state.over && !state.paused) togglePause()
 }
 function onPageHide() {
   if (!state.over) autosaver.flush()
@@ -414,24 +441,25 @@ function isHead(idx: number): boolean {
 }
 
 /** 蛇头眼睛位置：按移动方向分布（百分比定位，随格子缩放） */
-const HEAD_EYES: Record<Direction, [{ left: string; top: string }, { left: string; top: string }]> = {
-  up: [
-    { left: '16%', top: '14%' },
-    { left: '62%', top: '14%' },
-  ],
-  down: [
-    { left: '16%', top: '64%' },
-    { left: '62%', top: '64%' },
-  ],
-  left: [
-    { left: '14%', top: '16%' },
-    { left: '14%', top: '62%' },
-  ],
-  right: [
-    { left: '64%', top: '16%' },
-    { left: '64%', top: '62%' },
-  ],
-}
+const HEAD_EYES: Record<Direction, [{ left: string; top: string }, { left: string; top: string }]> =
+  {
+    up: [
+      { left: '16%', top: '14%' },
+      { left: '62%', top: '14%' },
+    ],
+    down: [
+      { left: '16%', top: '64%' },
+      { left: '62%', top: '64%' },
+    ],
+    left: [
+      { left: '14%', top: '16%' },
+      { left: '14%', top: '62%' },
+    ],
+    right: [
+      { left: '64%', top: '16%' },
+      { left: '64%', top: '62%' },
+    ],
+  }
 
 function eyeStyle(which: 0 | 1) {
   const pos = (HEAD_EYES[state.direction] ?? HEAD_EYES.right)[which]
@@ -479,7 +507,9 @@ function scheduleTick() {
       return
     }
     // tick 前记录食物位置（用于定位被吃的那个）
-    const prevFoodKeys = new Map<string, string>(state.foods.map((f) => [`${f.pos.x},${f.pos.y}`, f.type]))
+    const prevFoodKeys = new Map<string, string>(
+      state.foods.map((f) => [`${f.pos.x},${f.pos.y}`, f.type]),
+    )
     const prevScore = state.score
     engine.value.step()
     syncState()
@@ -533,7 +563,7 @@ async function shareResult() {
     text: gameShareText('snake', state.score, undefined, state.won),
     url: shareUrl('/game/snake'),
   })
-  toast(result === 'shared' ? '✅ 已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
+  toast(result === 'shared' ? '已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
 }
 
 function newGame() {
@@ -560,6 +590,20 @@ function togglePause() {
   }
 }
 
+/** 设置/玩法/排行榜弹层打开时自动暂停对局，关闭后恢复（仅恢复由弹层触发的暂停） */
+const pausedByUi = ref(false)
+const modalOpen = computed(() => settings.showSettings || showLeaderboard.value || showHowTo.value)
+watch(modalOpen, (open) => {
+  if (!started.value || state.over) return
+  if (open && !state.paused) {
+    togglePause()
+    pausedByUi.value = true
+  } else if (!open && pausedByUi.value) {
+    pausedByUi.value = false
+    if (state.paused) togglePause()
+  }
+})
+
 /** 应用设置：重建引擎并重新开始 */
 function applySettings(config: SnakeConfig) {
   engine.value = new SnakeEngine(config)
@@ -575,10 +619,20 @@ function applySettings(config: SnakeConfig) {
 // ===== 键盘操作 =====
 function onKeydown(e: KeyboardEvent) {
   // 设置/排行榜弹窗打开时忽略游戏按键，避免误操作背后的棋盘
-  if (settings.showSettings || showLeaderboard.value) return
+  if (settings.showSettings || showLeaderboard.value || showHowTo.value) return
   const map: Record<string, SnakeConfig['speed'] | Direction | 'pause'> = {
-    ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
-    w: 'up', W: 'up', s: 'down', S: 'down', a: 'left', A: 'left', d: 'right', D: 'right',
+    ArrowUp: 'up',
+    ArrowDown: 'down',
+    ArrowLeft: 'left',
+    ArrowRight: 'right',
+    w: 'up',
+    W: 'up',
+    s: 'down',
+    S: 'down',
+    a: 'left',
+    A: 'left',
+    d: 'right',
+    D: 'right',
     ' ': 'pause',
   }
   const action = map[e.key]
@@ -644,7 +698,12 @@ function updateLayout() {
   padding.value = g + 2
 }
 
-useGamePageEvents({ keydown: onKeydown, resize: updateLayout, visibilitychange: onVisibilityChange, pagehide: onPageHide })
+useGamePageEvents({
+  keydown: onKeydown,
+  resize: updateLayout,
+  visibilitychange: onVisibilityChange,
+  pagehide: onPageHide,
+})
 
 onMounted(() => {
   updateLayout()

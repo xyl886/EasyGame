@@ -2,24 +2,14 @@
   <div class="eg-shell">
     <!-- 顶部栏 -->
     <header class="max-w-md w-full mx-auto flex items-center justify-between mb-5">
-      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅">
-        ←
-      </RouterLink>
-      <div class="eg-game-title">🔢 数独</div>
+      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅"> ← </RouterLink>
+      <div class="eg-game-title">数独</div>
       <div class="flex gap-2">
-        <button
-          @click="showLeaderboard = true"
-          class="eg-icon-btn"
-          aria-label="排行榜"
-        >
-          🏆
+        <button @click="showLeaderboard = true" class="eg-icon-btn" aria-label="排行榜">
+          <AppIcon name="trophy" :size="18" />
         </button>
-        <button
-          @click="settings.openSettings()"
-          class="eg-icon-btn"
-          aria-label="设置"
-        >
-          ⚙️
+        <button @click="settings.openSettings()" class="eg-icon-btn" aria-label="设置">
+          <AppIcon name="settings" :size="18" />
         </button>
         <SoundToggle />
         <ThemeToggle />
@@ -31,7 +21,9 @@
       <!-- 分数面板 -->
       <div class="eg-score-row">
         <div>
-          <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-text-light dark:text-text-dark">
+          <h1
+            class="text-4xl md:text-5xl font-extrabold tracking-tight text-text-light dark:text-text-dark"
+          >
             数独
           </h1>
           <p class="text-xs opacity-70 mt-1 text-text-muted-light dark:text-text-muted-dark">
@@ -41,13 +33,31 @@
           </p>
         </div>
         <div class="flex gap-2">
-          <div class="flex flex-col items-end justify-center px-3 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[72px]">
-            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark">用时</span>
-            <span class="text-lg font-bold tabular-nums text-text-light dark:text-text-dark">{{ elapsedText }}</span>
+          <div
+            class="flex flex-col items-end justify-center px-3 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[72px]"
+          >
+            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark"
+              >用时</span
+            >
+            <span class="text-lg font-bold tabular-nums text-text-light dark:text-text-dark">{{
+              elapsedText
+            }}</span>
           </div>
-          <div class="flex flex-col items-end justify-center px-3 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[52px]">
-            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark">错误</span>
-            <span class="text-lg font-bold tabular-nums" :class="state.mistakes > 0 ? 'text-red-500 dark:text-red-400' : 'text-text-light dark:text-text-dark'">{{ state.mistakes }}</span>
+          <div
+            class="flex flex-col items-end justify-center px-3 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[52px]"
+          >
+            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark"
+              >错误</span
+            >
+            <span
+              class="text-lg font-bold tabular-nums"
+              :class="
+                state.mistakes > 0
+                  ? 'text-danger-light dark:text-danger-dark'
+                  : 'text-text-light dark:text-text-dark'
+              "
+              >{{ state.mistakes }}</span
+            >
           </div>
         </div>
       </div>
@@ -55,48 +65,39 @@
       <!-- 操作按钮 -->
       <div class="eg-toolbar mb-4 flex-wrap">
         <div class="flex gap-2">
-          <button
-            @click="showHowTo = true"
-            class="eg-ghost-btn"
-          >
-            ❓ 玩法
+          <button @click="showHowTo = true" class="eg-ghost-btn">
+            <AppIcon name="help" :size="18" /> 玩法
           </button>
           <button
             @click="toggleNotesMode"
             class="eg-ghost-btn"
-            :class="notesMode
-              ? '!bg-emerald-400 !text-white !border-transparent hover:!border-transparent'
-              : ''"
+            :class="
+              notesMode
+                ? '!bg-accent-light !text-white dark:!bg-accent-dark dark:!text-bg-dark'
+                : ''
+            "
           >
-            ✏️ 笔记{{ notesMode ? '·开' : '' }}
+            <AppIcon name="pencil" :size="18" /> 笔记{{ notesMode ? '·开' : '' }}
           </button>
-          <button
-            @click="doCheck"
-            class="eg-ghost-btn"
-          >
-            ✅ 检查
+          <button @click="doCheck" class="eg-ghost-btn">
+            <AppIcon name="check" :size="18" /> 检查
           </button>
           <button
             @click="doHint"
             :disabled="state.hintsUsed >= MAX_HINTS || state.won"
             class="eg-ghost-btn"
           >
-            💡 提示{{ state.hintsUsed >= MAX_HINTS ? '' : ` ${MAX_HINTS - state.hintsUsed}` }}
+            <AppIcon name="lightbulb" :size="18" /> 提示{{
+              state.hintsUsed >= MAX_HINTS ? '' : ` ${MAX_HINTS - state.hintsUsed}`
+            }}
           </button>
         </div>
-        <div class="flex gap-2 w-full sm:w-auto justify-end">
-          <button
-            @click="undo"
-            :disabled="!canUndo"
-            class="eg-ghost-btn"
-          >
-            ↩️ 撤销
+        <div class="ml-auto flex gap-2">
+          <button @click="undo" :disabled="!canUndo" class="eg-ghost-btn">
+            <AppIcon name="undo" :size="18" /> 撤销
           </button>
-          <button
-            @click="newGame"
-            class="eg-primary-btn"
-          >
-            🔄 新游戏
+          <button @click="newGame" class="eg-primary-btn">
+            <AppIcon name="restart" :size="18" /> 新游戏
           </button>
         </div>
       </div>
@@ -131,8 +132,13 @@
                 v-for="nn in state.size"
                 :key="nn"
                 class="flex items-center justify-center text-[9px] leading-none"
-                :class="hasNoteAt(i - 1, nn) ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-transparent'"
-              >{{ nn }}</span>
+                :class="
+                  hasNoteAt(i - 1, nn)
+                    ? 'text-accent-light dark:text-accent-dark font-semibold'
+                    : 'text-transparent'
+                "
+                >{{ nn }}</span
+              >
             </span>
           </button>
         </div>
@@ -140,23 +146,21 @@
         <!-- 继续上次遮罩 -->
         <div
           v-if="showResume && !state.won"
-          class="absolute inset-0 flex items-center justify-center backdrop-blur-sm bg-bg-light/70 dark:bg-bg-dark/70"
+          class="absolute inset-0 flex items-center justify-center bg-bg-light dark:bg-bg-dark"
         >
           <div class="text-center space-y-4 px-4">
-            <div class="text-3xl md:text-4xl font-extrabold text-emerald-600 dark:text-emerald-300">🕹️ 上次进度还在</div>
-            <p class="opacity-80 text-text-light dark:text-text-dark text-sm">已填 {{ pendingAutosave?.moves ?? 0 }} 次，继续挑战？</p>
+            <div class="font-display text-heading font-medium text-text-light dark:text-text-dark">
+              上次进度还在
+            </div>
+            <p class="opacity-80 text-text-light dark:text-text-dark text-sm">
+              已填 {{ pendingAutosave?.moves ?? 0 }} 次，继续挑战？
+            </p>
             <div class="flex gap-3 justify-center flex-wrap">
-              <button
-                @click="resumeGame"
-                class="px-5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-500 text-white font-bold shadow-claude-md transition-all active:scale-95"
-              >
-                ▶️ 继续上次
+              <button @click="resumeGame" class="eg-primary-btn">
+                <AppIcon name="play" :size="18" /> 继续上次
               </button>
-              <button
-                @click="discardAutosave"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                🔄 重新开始
+              <button @click="discardAutosave" class="eg-secondary-btn">
+                <AppIcon name="restart" :size="18" /> 重新开始
               </button>
             </div>
           </div>
@@ -165,32 +169,26 @@
         <!-- 胜利遮罩 -->
         <div
           v-if="state.won"
-          class="absolute inset-0 flex items-center justify-center backdrop-blur-sm bg-emerald-500/80"
+          class="absolute inset-0 flex items-center justify-center bg-bg-light/85 backdrop-blur-sm dark:bg-bg-dark/85"
         >
           <div class="text-center space-y-4 px-4">
-            <div class="text-4xl md:text-5xl font-extrabold text-white">🎉 完成！</div>
+            <div class="text-4xl md:text-5xl font-extrabold text-white">完成！</div>
             <p class="opacity-90 text-white">
-              用时 {{ elapsedText }}<span v-if="state.mistakes > 0"> · 错 {{ state.mistakes }} 次</span>
-              <span v-if="state.bestTime > 0 && finishedElapsed === state.bestTime" class="ml-2">🏅 刷新最快纪录！</span>
+              用时 {{ elapsedText
+              }}<span v-if="state.mistakes > 0"> · 错 {{ state.mistakes }} 次</span>
+              <span v-if="state.bestTime > 0 && finishedElapsed === state.bestTime" class="ml-2"
+                >刷新最快纪录！</span
+              >
             </p>
             <div class="flex gap-3 justify-center flex-wrap">
-              <button
-                @click="showLeaderboard = true"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                🏆 查看排行榜
+              <button @click="showLeaderboard = true" class="eg-secondary-btn">
+                <AppIcon name="trophy" :size="18" /> 查看排行榜
               </button>
-              <button
-                @click="shareResult"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                📤 分享成绩
+              <button @click="shareResult" class="eg-secondary-btn">
+                <AppIcon name="share" :size="18" /> 分享成绩
               </button>
-              <button
-                @click="newGame"
-                class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-claude-md transition-all active:scale-95"
-              >
-                🔄 再来一局
+              <button @click="newGame" class="eg-primary-btn">
+                <AppIcon name="restart" :size="18" /> 再来一局
               </button>
             </div>
           </div>
@@ -199,24 +197,27 @@
 
       <!-- 数字面板 -->
       <div
-        class="mt-4 grid gap-1.5 w-full max-w-[440px] mx-auto"
-        :style="{ gridTemplateColumns: `repeat(${state.size + 1}, 1fr)` }"
+        class="mx-auto mt-4 grid w-full max-w-[440px] grid-cols-[repeat(auto-fit,minmax(2.75rem,1fr))] gap-1.5"
       >
         <button
           v-for="n in state.size"
           :key="n"
           type="button"
           @click="inputNum(n)"
-          class="aspect-square rounded-lg bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude hover:shadow-claude-md hover:border-emerald-400/50 transition-all active:scale-95 font-bold text-text-light dark:text-text-dark flex flex-col items-center justify-center"
+          class="eg-opt aspect-square !min-h-11 flex-col gap-0.5 !px-0 !py-0 font-bold"
           :class="remaining(n) === 0 ? 'opacity-30' : ''"
         >
           <span class="text-base leading-none">{{ n }}</span>
-          <span class="text-[9px] leading-none mt-0.5 opacity-60" :class="remaining(n) === 0 ? 'text-red-500' : ''">{{ remaining(n) }}</span>
+          <span
+            class="text-[9px] leading-none mt-0.5 opacity-60"
+            :class="remaining(n) === 0 ? 'text-danger-light dark:text-danger-dark' : ''"
+            >{{ remaining(n) }}</span
+          >
         </button>
         <button
           type="button"
           @click="erase"
-          class="aspect-square rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-500 dark:text-red-400 shadow-claude hover:shadow-claude-md transition-all active:scale-95 text-sm font-bold"
+          class="eg-opt aspect-square !min-h-11 !px-0 !py-0 text-danger-light dark:text-danger-dark"
           aria-label="擦除"
         >
           ✕
@@ -224,8 +225,8 @@
       </div>
 
       <!-- 操作说明（小屏） -->
-      <div class="text-center text-xs opacity-60 mt-3 sm:hidden">
-        👆 点格子选中，点数字面板填数 · ✏️ 笔记模式可标候选
+      <div v-if="!showResume" class="text-center text-xs opacity-60 mt-3 sm:hidden">
+        点格子选中，点数字面板填数 · <AppIcon name="pencil" :size="18" /> 笔记模式可标候选
       </div>
     </main>
 
@@ -239,9 +240,19 @@
     <!-- 玩法说明 -->
     <HowToPlay v-model="showHowTo" title="数独">
       <ol class="list-decimal pl-5 space-y-2 opacity-90">
-        <li>每行、每列、每个粗线宫（4×4 为 2×2 宫，6×6 为 2×3 宫，9×9 为 3×3 宫）都填入 <strong>1-N 且不重复</strong></li>
+        <li>
+          每行、每列、每个粗线宫（4×4 为 2×2 宫，6×6 为 2×3 宫，9×9 为 3×3 宫）都填入
+          <strong>1-N 且不重复</strong>
+        </li>
         <li><strong>点击格子选中</strong>，用数字键或下方数字面板填数；填错会变红并计入错误数</li>
-        <li>✏️ <strong>笔记</strong>：标记候选数字辅助推理；✅ <strong>检查</strong>：校验冲突与完成度；💡 <strong>提示</strong>：自动填入正确数字（每局限 3 次）</li>
+        <li>
+          <AppIcon name="pencil" :size="18" /> <strong>笔记</strong>：标记候选数字辅助推理；<AppIcon
+            name="check"
+            :size="18"
+          />
+          <strong>检查</strong>：校验冲突与完成度；<AppIcon name="lightbulb" :size="18" />
+          <strong>提示</strong>：自动填入正确数字（每局限 3 次）
+        </li>
         <li>所有格子填对即<strong>获胜</strong>，用时越短成绩越高</li>
       </ol>
     </HowToPlay>
@@ -262,7 +273,13 @@ import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef } from 
 import { SudokuEngine, findConflicts } from '../../game/sudoku/GameEngine'
 import { isSudokuAutosave } from '../../game/base/autosaveGuards'
 import type { SudokuState, SudokuConfig, SudokuDifficulty } from '../../game/sudoku/types'
-import { DIFFICULTY_LABELS, specOf, SIZES, sudokuScoreForTime, MAX_HINTS } from '../../game/sudoku/types'
+import {
+  DIFFICULTY_LABELS,
+  specOf,
+  SIZES,
+  sudokuScoreForTime,
+  MAX_HINTS,
+} from '../../game/sudoku/types'
 import { useSudokuSettingsStore } from '../../stores/sudoku-settings'
 import { useGamePageEvents } from '../../composables/useGamePageEvents'
 import { useLeaderboardStore } from '../../stores/leaderboard'
@@ -276,6 +293,7 @@ import SoundToggle from '../../components/SoundToggle.vue'
 import HowToPlay from '../../components/HowToPlay.vue'
 import SudokuSettingsPanel from './components/SudokuSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
+import AppIcon from '../../components/AppIcon.vue'
 
 const settings = useSudokuSettingsStore()
 
@@ -345,8 +363,21 @@ function discardAutosave() {
   syncState()
 }
 
+/** 切后台暂停计时：回到前台时把隐藏时长补进 startTime，避免排行榜用时失真 */
+let hiddenAt = 0
 function onVisibilityChange() {
-  if (document.visibilityState === 'hidden' && !state.won) persistAutosave()
+  if (document.visibilityState === 'hidden') {
+    hiddenAt = Date.now()
+    if (!state.won) persistAutosave()
+    return
+  }
+  if (hiddenAt <= 0) return
+  const delta = Date.now() - hiddenAt
+  hiddenAt = 0
+  if (delta > 0 && state.startTime > 0 && !state.won) {
+    state.startTime += delta
+    now.value = Date.now()
+  }
 }
 function onPageHide() {
   if (!state.won) persistAutosave()
@@ -472,8 +503,13 @@ function cellClass(idx: number): string {
     classes.push('border-b-2 border-b-emerald-700/40 dark:border-b-emerald-400/30')
   // 数字颜色
   if (v !== 0) {
-    if (conflictSet.value.has(key)) classes.push('text-red-500 dark:text-red-400')
-    else classes.push(state.given[r][c] ? 'text-text-light dark:text-text-dark' : 'text-emerald-600 dark:text-emerald-400')
+    if (conflictSet.value.has(key)) classes.push('text-danger-light dark:text-danger-dark')
+    else
+      classes.push(
+        state.given[r][c]
+          ? 'text-text-light dark:text-text-dark'
+          : 'text-accent-light dark:text-accent-dark',
+      )
   }
   // 填错抖动反馈
   if (wrongCell.value && wrongCell.value.row === r && wrongCell.value.col === c) {
@@ -482,7 +518,8 @@ function cellClass(idx: number): string {
   // 提示格高亮
   if (hintCell.value && hintCell.value.row === r && hintCell.value.col === c) {
     classes.push('bg-amber-300/50 dark:bg-amber-300/40')
-  } else if (sel && sel.row === r && sel.col === c) {    classes.push('bg-emerald-400/30 dark:bg-emerald-400/25')
+  } else if (sel && sel.row === r && sel.col === c) {
+    classes.push('bg-emerald-400/30 dark:bg-emerald-400/25')
   } else if (sel && (sel.row === r || sel.col === c || inSameBox(sel.row, sel.col, r, c))) {
     classes.push('bg-emerald-400/10 dark:bg-emerald-400/8')
   } else if (sel && selectedNum.value !== 0 && v === selectedNum.value) {
@@ -572,7 +609,7 @@ function toggleNotesMode() {
 function doCheck() {
   if (state.won) return
   const res = engine.value.check()
-  if (res.complete) toast('🎉 全部正确，完成！')
+  if (res.complete) toast('全部正确，完成！')
   else if (res.conflicts > 0) toast(`有 ${res.conflicts} 处冲突，请检查红色格子`)
   else if (res.empty > 0) toast(`还没有冲突，还剩 ${res.empty} 个空格`)
 }
@@ -644,7 +681,7 @@ async function shareResult() {
     text: `我在 EasyGame 数独用 ${time} 完成了「${specOf(state.size).label} · ${DIFFICULTY_LABELS[state.difficulty]}」难度，来挑战我！🔢`,
     url: shareUrl('/game/sudoku'),
   })
-  toast(result === 'shared' ? '✅ 已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
+  toast(result === 'shared' ? '已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
 }
 
 function syncState() {
@@ -673,8 +710,18 @@ function onKeydown(e: KeyboardEvent) {
   const k = e.key
   // 方向键 / WASD 移动光标
   const dirMap: Record<string, [number, number]> = {
-    ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1],
-    w: [-1, 0], W: [-1, 0], s: [1, 0], S: [1, 0], a: [0, -1], A: [0, -1], d: [0, 1], D: [0, 1],
+    ArrowUp: [-1, 0],
+    ArrowDown: [1, 0],
+    ArrowLeft: [0, -1],
+    ArrowRight: [0, 1],
+    w: [-1, 0],
+    W: [-1, 0],
+    s: [1, 0],
+    S: [1, 0],
+    a: [0, -1],
+    A: [0, -1],
+    d: [0, 1],
+    D: [0, 1],
   }
   if (dirMap[k]) {
     e.preventDefault()
@@ -722,7 +769,11 @@ function onKeydown(e: KeyboardEvent) {
 // ===== 计时器 =====
 let timer: ReturnType<typeof setInterval> | null = null
 
-useGamePageEvents({ keydown: onKeydown, visibilitychange: onVisibilityChange, pagehide: onPageHide })
+useGamePageEvents({
+  keydown: onKeydown,
+  visibilitychange: onVisibilityChange,
+  pagehide: onPageHide,
+})
 
 onMounted(() => {
   syncState()

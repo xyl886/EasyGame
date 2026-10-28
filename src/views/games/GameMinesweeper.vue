@@ -2,24 +2,14 @@
   <div class="eg-shell">
     <!-- 顶部栏 -->
     <header class="max-w-xl w-full mx-auto flex items-center justify-between mb-5">
-      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅">
-        ←
-      </RouterLink>
-      <div class="eg-game-title">💣 扫雷</div>
+      <RouterLink to="/" class="eg-back-btn group" aria-label="返回游戏大厅"> ← </RouterLink>
+      <div class="eg-game-title">扫雷</div>
       <div class="flex gap-2">
-        <button
-          @click="showLeaderboard = true"
-          class="eg-icon-btn"
-          aria-label="排行榜"
-        >
-          🏆
+        <button @click="showLeaderboard = true" class="eg-icon-btn" aria-label="排行榜">
+          <AppIcon name="trophy" :size="18" />
         </button>
-        <button
-          @click="settings.openSettings()"
-          class="eg-icon-btn"
-          aria-label="设置"
-        >
-          ⚙️
+        <button @click="settings.openSettings()" class="eg-icon-btn" aria-label="设置">
+          <AppIcon name="settings" :size="18" />
         </button>
         <SoundToggle />
         <ThemeToggle />
@@ -31,13 +21,25 @@
       <!-- 状态栏 -->
       <div class="eg-toolbar !mb-3 flex-wrap">
         <div class="flex items-center gap-2">
-          <div class="flex flex-col items-center justify-center px-3 py-1 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[64px]">
-            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark">💣 剩余</span>
-            <span class="text-lg font-bold tabular-nums text-red-500 dark:text-red-400">{{ minesLeft }}</span>
+          <div
+            class="flex flex-col items-center justify-center px-3 py-1 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[64px]"
+          >
+            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark"
+              >剩余</span
+            >
+            <span class="text-lg font-bold tabular-nums text-danger-light dark:text-danger-dark">{{
+              minesLeft
+            }}</span>
           </div>
-          <div class="flex flex-col items-center justify-center px-3 py-1 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[72px]">
-            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark">⏱ 用时</span>
-            <span class="text-lg font-bold tabular-nums text-text-light dark:text-text-dark">{{ elapsedText }}</span>
+          <div
+            class="flex flex-col items-center justify-center px-3 py-1 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark shadow-claude min-w-[72px]"
+          >
+            <span class="text-[10px] opacity-60 text-text-muted-light dark:text-text-muted-dark"
+              >⏱ 用时</span
+            >
+            <span class="text-lg font-bold tabular-nums text-text-light dark:text-text-dark">{{
+              elapsedText
+            }}</span>
           </div>
           <!-- 经典笑脸重开按钮 -->
           <button
@@ -48,20 +50,17 @@
           >
             {{ smiley }}
           </button>
-          <button
-            @click="showHowTo = true"
-            class="eg-ghost-btn"
-          >
-            ❓ 玩法
+          <button @click="showHowTo = true" class="eg-ghost-btn">
+            <AppIcon name="help" :size="18" /> 玩法
           </button>
           <button
             @click="flagMode = !flagMode"
             class="eg-ghost-btn"
-            :class="flagMode
-              ? '!bg-blue-500 !text-white !border-transparent hover:!border-transparent'
-              : ''"
+            :class="
+              flagMode ? '!bg-accent-light !text-white dark:!bg-accent-dark dark:!text-bg-dark' : ''
+            "
           >
-            🚩 旗子{{ flagMode ? '·开' : '' }}
+            <AppIcon name="flag" :size="18" /> 旗子{{ flagMode ? '·开' : '' }}
           </button>
         </div>
         <div class="flex items-center gap-2">
@@ -69,11 +68,8 @@
             {{ difficultyLabel }} · {{ state.rows }}×{{ state.cols }}
             <span v-if="state.bestTime > 0"> · 最快 {{ bestTimeText }}</span>
           </span>
-          <button
-            @click="newGame"
-            class="eg-primary-btn"
-          >
-            🔄 新游戏
+          <button @click="newGame" class="eg-primary-btn">
+            <AppIcon name="restart" :size="18" /> 新游戏
           </button>
         </div>
       </div>
@@ -81,48 +77,48 @@
       <!-- 棋盘 -->
       <div
         ref="boardRef"
-        class="relative mx-auto select-none touch-none w-full rounded-lg overflow-hidden border-2 border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark shadow-inner"
+        class="relative mx-auto w-full select-none touch-pan-x overflow-x-auto rounded-lg border-2 border-border-light bg-card-light shadow-inner dark:border-border-dark dark:bg-card-dark"
         :class="{ 'board-shake': state.status === 'lost' }"
         @pointerleave="cancelPress"
       >
         <div
           class="grid w-full"
-          :style="{ gridTemplateColumns: `repeat(${state.cols}, 1fr)` }"
+          :style="{ gridTemplateColumns: `repeat(${state.cols}, minmax(1.5rem, 1fr))` }"
         >
           <button
             v-for="(cell, i) in state.cells"
             :key="i"
             type="button"
-            class="relative flex items-center justify-center text-[13px] sm:text-base leading-none transition-all duration-75"
+            class="relative flex min-h-6 min-w-6 items-center justify-center text-[13px] leading-none transition-all duration-75 sm:text-base"
             :class="cellClass(cell, i)"
             :style="[winDelay(i), { aspectRatio: '1 / 1' }]"
             @pointerdown="onPointerDown(i, $event)"
             @pointerup="onPointerUp(i)"
             @pointercancel="cancelPress"
             @contextmenu.prevent="toggleFlagAt(i)"
-          >{{ cellText(cell) }}</button>
+          >
+            {{ cellText(cell) }}
+          </button>
         </div>
 
         <!-- 继续上次遮罩 -->
         <div
           v-if="showResume && state.status !== 'won' && state.status !== 'lost'"
-          class="absolute inset-0 flex items-center justify-center backdrop-blur-sm bg-bg-light/70 dark:bg-bg-dark/70"
+          class="absolute inset-0 flex items-center justify-center bg-bg-light dark:bg-bg-dark"
         >
           <div class="text-center space-y-4 px-4">
-            <div class="text-3xl md:text-4xl font-extrabold text-gray-700 dark:text-gray-200">🕹️ 上次进度还在</div>
-            <p class="opacity-80 text-text-light dark:text-text-dark text-sm">已翻开 {{ revealedCount }} 格，继续？</p>
+            <div class="font-display text-heading font-medium text-text-light dark:text-text-dark">
+              上次进度还在
+            </div>
+            <p class="opacity-80 text-text-light dark:text-text-dark text-sm">
+              已翻开 {{ revealedCount }} 格，继续？
+            </p>
             <div class="flex gap-3 justify-center flex-wrap">
-              <button
-                @click="resumeGame"
-                class="px-5 py-2.5 rounded-xl bg-gray-600 hover:bg-gray-700 text-white font-bold shadow-claude-md transition-all active:scale-95"
-              >
-                ▶️ 继续上次
+              <button @click="resumeGame" class="eg-primary-btn">
+                <AppIcon name="play" :size="18" /> 继续上次
               </button>
-              <button
-                @click="discardAutosave"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                🔄 重新开始
+              <button @click="discardAutosave" class="eg-secondary-btn">
+                <AppIcon name="restart" :size="18" /> 重新开始
               </button>
             </div>
           </div>
@@ -131,17 +127,14 @@
         <!-- 失败遮罩 -->
         <div
           v-if="state.status === 'lost'"
-          class="absolute inset-0 flex items-center justify-center backdrop-blur-sm bg-red-500/80"
+          class="absolute inset-0 flex items-center justify-center bg-bg-light/85 backdrop-blur-sm dark:bg-bg-dark/85"
         >
           <div class="text-center space-y-4 px-4">
-            <div class="text-4xl md:text-5xl font-extrabold text-white">💥 踩到雷了！</div>
+            <div class="text-4xl md:text-5xl font-extrabold text-white">踩到雷了！</div>
             <p class="opacity-90 text-white">翻开 {{ state.moves }} 格 · 用时 {{ elapsedText }}</p>
             <div class="flex gap-3 justify-center flex-wrap">
-              <button
-                @click="newGame"
-                class="px-6 py-2.5 rounded-xl bg-white text-red-600 font-bold shadow-claude-md transition-all active:scale-95"
-              >
-                🔄 再来一局
+              <button @click="newGame" class="eg-secondary-btn">
+                <AppIcon name="restart" :size="18" /> 再来一局
               </button>
             </div>
           </div>
@@ -150,31 +143,29 @@
         <!-- 胜利遮罩 -->
         <div
           v-if="state.status === 'won'"
-          class="absolute inset-0 flex items-center justify-center backdrop-blur-sm bg-gray-600/80 dark:bg-gray-800/80"
+          class="absolute inset-0 flex items-center justify-center bg-bg-light/85 backdrop-blur-sm dark:bg-bg-dark/85"
         >
           <div class="text-center space-y-4 px-4">
-            <div class="text-4xl md:text-5xl font-extrabold text-yellow-300">🎉 扫雷成功！</div>
-            <p class="opacity-90 text-white">
-              用时 {{ elapsedText }}<span v-if="state.bestTime > 0 && finishedElapsed === state.bestTime" class="ml-2">🏅 刷新最快纪录！</span>
+            <div
+              class="text-4xl md:text-5xl font-display font-medium text-text-light dark:text-text-dark"
+            >
+              扫雷成功！
+            </div>
+            <p class="eg-caption">
+              用时 {{ elapsedText
+              }}<span v-if="state.bestTime > 0 && finishedElapsed === state.bestTime" class="ml-2"
+                >刷新最快纪录！</span
+              >
             </p>
             <div class="flex gap-3 justify-center flex-wrap">
-              <button
-                @click="showLeaderboard = true"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                🏆 查看排行榜
+              <button @click="showLeaderboard = true" class="eg-secondary-btn">
+                <AppIcon name="trophy" :size="18" /> 查看排行榜
               </button>
-              <button
-                @click="shareResult"
-                class="px-5 py-2.5 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-dark font-bold shadow-claude hover:shadow-claude-md transition-all active:scale-95"
-              >
-                📤 分享成绩
+              <button @click="shareResult" class="eg-secondary-btn">
+                <AppIcon name="share" :size="18" /> 分享成绩
               </button>
-              <button
-                @click="newGame"
-                class="px-5 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold shadow-claude-md transition-all active:scale-95"
-              >
-                🔄 再来一局
+              <button @click="newGame" class="eg-primary-btn">
+                <AppIcon name="restart" :size="18" /> 再来一局
               </button>
             </div>
           </div>
@@ -182,9 +173,11 @@
       </div>
 
       <!-- 操作说明 -->
-      <div class="text-center text-xs opacity-60 mt-3">
+      <div v-if="!showResume" class="text-center text-xs opacity-60 mt-3">
         PC：左键翻开 · 右键标记 · 按住数字格快速展开
-        <span class="sm:hidden block mt-1">📱 手机：点击翻开 · 长按或「🚩 旗子」模式标记</span>
+        <span class="sm:hidden block mt-1"
+          >手机：点击翻开 · 长按或「<AppIcon name="flag" :size="18" /> 旗子」模式标记</span
+        >
       </div>
     </main>
 
@@ -199,10 +192,16 @@
     <HowToPlay v-model="showHowTo" title="扫雷">
       <ol class="list-decimal pl-5 space-y-2 opacity-90">
         <li><strong>点击翻开</strong>格子；数字表示它周围 8 格里的<strong>地雷数量</strong></li>
-        <li>根据数字推理出雷的位置，用 🚩 <strong>标记</strong>（PC 右键 / 手机长按或旗子模式）</li>
+        <li>
+          根据数字推理出雷的位置，用 <AppIcon name="flag" :size="18" /> <strong>标记</strong>（PC
+          右键 / 手机长按或旗子模式）
+        </li>
         <li><strong>首次点击必定安全</strong>；翻开所有非雷格即获胜</li>
         <li>踩到雷游戏结束——标错的旗子会显示<strong>红叉 ✗</strong></li>
-        <li>💡 按住已翻开的数字格可<strong>快速展开</strong>周围区域（旗子数匹配时）</li>
+        <li>
+          <AppIcon name="lightbulb" :size="18" />
+          按住已翻开的数字格可<strong>快速展开</strong>周围区域（旗子数匹配时）
+        </li>
       </ol>
     </HowToPlay>
 
@@ -220,7 +219,13 @@
 import { reactive, computed, onMounted, onBeforeUnmount, ref, shallowRef } from 'vue'
 import { MinesweeperEngine } from '../../game/minesweeper/GameEngine'
 import { isMinesweeperAutosave } from '../../game/base/autosaveGuards'
-import type { MineState, MineConfig, MineCell, MineDifficulty, MineStatus } from '../../game/minesweeper/types'
+import type {
+  MineState,
+  MineConfig,
+  MineCell,
+  MineDifficulty,
+  MineStatus,
+} from '../../game/minesweeper/types'
 import { DIFFICULTY_LABELS, mineScoreForTime } from '../../game/minesweeper/types'
 import { useMinesweeperSettingsStore } from '../../stores/minesweeper-settings'
 import { useGamePageEvents } from '../../composables/useGamePageEvents'
@@ -235,6 +240,7 @@ import SoundToggle from '../../components/SoundToggle.vue'
 import HowToPlay from '../../components/HowToPlay.vue'
 import MinesweeperSettingsPanel from './components/MinesweeperSettingsPanel.vue'
 import LeaderboardPanel from './components/LeaderboardPanel.vue'
+import AppIcon from '../../components/AppIcon.vue'
 
 const settings = useMinesweeperSettingsStore()
 
@@ -297,8 +303,21 @@ function discardAutosave() {
   syncState()
 }
 
+/** 切后台暂停计时：回到前台时把隐藏时长补进 startTime，避免排行榜用时失真 */
+let hiddenAt = 0
 function onVisibilityChange() {
-  if (document.visibilityState === 'hidden' && state.status !== 'won' && state.status !== 'lost') persistAutosave()
+  if (document.visibilityState === 'hidden') {
+    hiddenAt = Date.now()
+    if (state.status !== 'won' && state.status !== 'lost') persistAutosave()
+    return
+  }
+  if (hiddenAt <= 0) return
+  const delta = Date.now() - hiddenAt
+  hiddenAt = 0
+  if (delta > 0 && state.startTime > 0 && state.status !== 'won' && state.status !== 'lost') {
+    state.startTime += delta
+    now.value = Date.now()
+  }
 }
 function onPageHide() {
   if (state.status !== 'won' && state.status !== 'lost') persistAutosave()
@@ -315,7 +334,9 @@ const cursor = ref<number | null>(null)
 const flagMode = ref(false)
 
 /** 经典笑脸：随游戏状态变化（玩/赢/输） */
-const smiley = computed(() => (state.status === 'won' ? '😎' : state.status === 'lost' ? '😵' : '🙂'))
+const smiley = computed(() =>
+  state.status === 'won' ? '😎' : state.status === 'lost' ? '😵' : '🙂',
+)
 
 const difficultyLabel = computed(() => DIFFICULTY_LABELS[settings.config.difficulty])
 
@@ -344,7 +365,7 @@ const NUM_COLORS = [
   '',
   'text-blue-600 dark:text-blue-400',
   'text-green-600 dark:text-green-400',
-  'text-red-500',
+  'text-danger-light dark:text-danger-dark',
   'text-indigo-700 dark:text-indigo-400',
   'text-rose-700 dark:text-rose-400',
   'text-cyan-600 dark:text-cyan-400',
@@ -357,15 +378,23 @@ function cellClass(cell: MineCell, i: number): string {
   if (cell.revealed) {
     if (cell.isMine) {
       // 踩中的雷红底，其余雷灰底
-      classes.push(cell.exploded ? 'bg-red-500/50 dark:bg-red-500/60' : 'bg-card-light dark:bg-card-dark')
+      classes.push(
+        cell.exploded
+          ? 'bg-danger-light dark:bg-danger-dark/50 dark:bg-danger-light dark:bg-danger-dark/60'
+          : 'bg-card-light dark:bg-card-dark',
+      )
     } else {
       classes.push('bg-card-light dark:bg-card-dark')
     }
   } else {
     // 未翻开：凸起
-    classes.push('bg-gradient-to-b from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 shadow-inner')
-    if (cell.flag === 'flag') classes.push('!from-blue-200 !to-blue-300 dark:!from-blue-900 dark:!to-blue-800')
-    if (cell.flag === 'question') classes.push('!from-amber-200 !to-amber-300 dark:!from-amber-900 dark:!to-amber-800')
+    classes.push(
+      'bg-gradient-to-b from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 shadow-inner',
+    )
+    if (cell.flag === 'flag')
+      classes.push('!from-blue-200 !to-blue-300 dark:!from-blue-900 dark:!to-blue-800')
+    if (cell.flag === 'question')
+      classes.push('!from-amber-200 !to-amber-300 dark:!from-amber-900 dark:!to-amber-800')
     // 误标的旗子：红色调
     if (state.status === 'lost' && cell.flag === 'flag' && !cell.isMine) {
       classes.push('!from-red-200 !to-red-300 dark:!from-red-900 dark:!to-red-800')
@@ -492,7 +521,7 @@ async function shareResult() {
     text: `我在 EasyGame 扫雷用 ${elapsedText.value} 扫清了「${DIFFICULTY_LABELS[settings.config.difficulty]}」难度，来挑战我！💣`,
     url: shareUrl('/game/minesweeper'),
   })
-  toast(result === 'shared' ? '✅ 已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
+  toast(result === 'shared' ? '已分享' : result === 'copied' ? '📋 链接已复制' : '❌ 分享失败')
 }
 
 function syncState() {
@@ -516,8 +545,18 @@ function onKeydown(e: KeyboardEvent) {
   const k = e.key
   const total = state.rows * state.cols
   const dirMap: Record<string, number> = {
-    ArrowUp: -state.cols, ArrowDown: state.cols, ArrowLeft: -1, ArrowRight: 1,
-    w: -state.cols, W: -state.cols, s: state.cols, S: state.cols, a: -1, A: -1, d: 1, D: 1,
+    ArrowUp: -state.cols,
+    ArrowDown: state.cols,
+    ArrowLeft: -1,
+    ArrowRight: 1,
+    w: -state.cols,
+    W: -state.cols,
+    s: state.cols,
+    S: state.cols,
+    a: -1,
+    A: -1,
+    d: 1,
+    D: 1,
   }
   if (dirMap[k]) {
     e.preventDefault()
@@ -549,7 +588,8 @@ function onKeydown(e: KeyboardEvent) {
     if (cursor.value === null) return
     const i = cursor.value
     if (k === ' ' && state.status !== 'won' && state.status !== 'lost') onLeftClick(i)
-    else if ((k === 'f' || k === 'F') && state.status !== 'won' && state.status !== 'lost') toggleFlagAt(i)
+    else if ((k === 'f' || k === 'F') && state.status !== 'won' && state.status !== 'lost')
+      toggleFlagAt(i)
     else if (k === 'Enter') onChord(i)
     return
   }
@@ -654,7 +694,11 @@ function isPressed(cell: MineCell, i: number): boolean {
 // ===== 计时器 =====
 let timer: ReturnType<typeof setInterval> | null = null
 
-useGamePageEvents({ keydown: onKeydown, visibilitychange: onVisibilityChange, pagehide: onPageHide })
+useGamePageEvents({
+  keydown: onKeydown,
+  visibilitychange: onVisibilityChange,
+  pagehide: onPageHide,
+})
 
 onMounted(() => {
   syncState()
@@ -682,11 +726,22 @@ onBeforeUnmount(() => {
 }
 /* 失败抖动 */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-6px); }
-  40% { transform: translateX(6px); }
-  60% { transform: translateX(-4px); }
-  80% { transform: translateX(4px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
 }
 .board-shake {
   animation: shake 0.4s ease;
@@ -708,8 +763,14 @@ onBeforeUnmount(() => {
 }
 /* 胜利闪绿 */
 @keyframes winFlash {
-  0% { background-color: rgba(74, 222, 128, 0.9); transform: scale(1.06); }
-  100% { background-color: transparent; transform: scale(1); }
+  0% {
+    background-color: rgba(74, 222, 128, 0.9);
+    transform: scale(1.06);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
 }
 .win-cell {
   animation: winFlash 0.4s ease both;

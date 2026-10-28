@@ -1,5 +1,5 @@
 <template>
-  <transition name="panel">
+  <transition name="eg-panel">
     <div
       v-if="settings.showSettings"
       class="eg-modal-overlay"
@@ -9,17 +9,13 @@
       <div class="eg-modal-mask"></div>
 
       <!-- 面板 -->
-      <div class="eg-modal-card">
+      <div class="eg-modal-card" role="dialog" aria-modal="true" aria-label="游戏设置">
         <div class="eg-modal-head">
           <h3 class="eg-modal-title">
-            <span>⚙️</span>
             <span>贪吃蛇设置</span>
           </h3>
-          <button
-            @click="settings.closeSettings()"
-            class="eg-modal-close"
-          >
-            ✕
+          <button aria-label="关闭设置" @click="settings.closeSettings()" class="eg-modal-close">
+            <AppIcon name="close" :size="18" />
           </button>
         </div>
 
@@ -35,8 +31,7 @@
               :key="s"
               @click="localConfig.size = s"
               class="eg-opt"
-              :class="localConfig.size === s
-                 ? 'eg-opt-on' : ''"
+              :class="localConfig.size === s ? 'eg-opt-on' : ''"
             >
               {{ s }}
             </button>
@@ -52,8 +47,7 @@
               :key="opt.value"
               @click="localConfig.speed = opt.value"
               class="eg-opt"
-              :class="localConfig.speed === opt.value
-                 ? 'eg-opt-on' : ''"
+              :class="localConfig.speed === opt.value ? 'eg-opt-on' : ''"
             >
               {{ opt.label }}
             </button>
@@ -67,16 +61,14 @@
             <button
               @click="localConfig.wallThrough = false"
               class="eg-opt"
-              :class="!localConfig.wallThrough
-                 ? 'eg-opt-on' : ''"
+              :class="!localConfig.wallThrough ? 'eg-opt-on' : ''"
             >
               撞墙死
             </button>
             <button
               @click="localConfig.wallThrough = true"
               class="eg-opt"
-              :class="localConfig.wallThrough
-                 ? 'eg-opt-on' : ''"
+              :class="localConfig.wallThrough ? 'eg-opt-on' : ''"
             >
               穿墙绕到对面
             </button>
@@ -90,16 +82,14 @@
             <button
               @click="localConfig.multiFood = false"
               class="eg-opt"
-              :class="!localConfig.multiFood
-                 ? 'eg-opt-on' : ''"
+              :class="!localConfig.multiFood ? 'eg-opt-on' : ''"
             >
               单食物（经典）
             </button>
             <button
               @click="localConfig.multiFood = true"
               class="eg-opt"
-              :class="localConfig.multiFood
-                 ? 'eg-opt-on' : ''"
+              :class="localConfig.multiFood ? 'eg-opt-on' : ''"
             >
               多食物（同时 3 个）
             </button>
@@ -116,8 +106,7 @@
               :key="n"
               @click="localConfig.obstacleCount = n"
               class="eg-opt"
-              :class="localConfig.obstacleCount === n
-                 ? 'eg-opt-on' : ''"
+              :class="localConfig.obstacleCount === n ? 'eg-opt-on' : ''"
             >
               {{ n === 0 ? '无' : n }}
             </button>
@@ -133,8 +122,7 @@
               :key="opt.value"
               @click="localConfig.winLength = opt.value"
               class="eg-opt text-xs"
-              :class="localConfig.winLength === opt.value
-                 ? 'eg-opt-on' : ''"
+              :class="localConfig.winLength === opt.value ? 'eg-opt-on' : ''"
             >
               {{ opt.label }}
             </button>
@@ -144,18 +132,8 @@
 
         <!-- 底部按钮 -->
         <div class="eg-modal-actions">
-          <button
-            @click="resetDefault"
-            class="eg-ghost-btn"
-          >
-            恢复默认
-          </button>
-          <button
-            @click="apply"
-            class="eg-primary-btn"
-          >
-            应用并重新开始
-          </button>
+          <button @click="resetDefault" class="eg-ghost-btn">恢复默认</button>
+          <button @click="apply" class="eg-primary-btn">应用并重新开始</button>
         </div>
       </div>
     </div>
@@ -164,11 +142,24 @@
 
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
-import { useSnakeSettingsStore, SIZE_OPTIONS, OBSTACLE_OPTIONS, WIN_LENGTH_OPTIONS, SPEED_OPTIONS } from '../../../stores/snake-settings'
+import {
+  useSnakeSettingsStore,
+  SIZE_OPTIONS,
+  OBSTACLE_OPTIONS,
+  WIN_LENGTH_OPTIONS,
+  SPEED_OPTIONS,
+} from '../../../stores/snake-settings'
 import { DEFAULT_CONFIG } from '../../../game/snake/types'
 import type { SnakeConfig } from '../../../game/snake/types'
+import { useEscapeKey } from '../../../composables/useEscapeKey'
+import AppIcon from '../../../components/AppIcon.vue'
 
 const settings = useSnakeSettingsStore()
+
+useEscapeKey(
+  () => settings.showSettings,
+  () => settings.closeSettings(),
+)
 
 const localConfig = reactive<SnakeConfig>({ ...settings.config })
 
@@ -195,22 +186,3 @@ function resetDefault() {
   Object.assign(localConfig, DEFAULT_CONFIG)
 }
 </script>
-
-<style scoped>
-.panel-enter-active,
-.panel-leave-active {
-  transition: opacity 0.2s ease;
-}
-.panel-enter-active > div:last-child,
-.panel-leave-active > div:last-child {
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.panel-enter-from,
-.panel-leave-to {
-  opacity: 0;
-}
-.panel-enter-from > div:last-child,
-.panel-leave-to > div:last-child {
-  transform: scale(0.9) translateY(10px);
-}
-</style>
