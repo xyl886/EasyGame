@@ -11,7 +11,8 @@ const validThemes: LinkTheme[] = ['fruit', 'animal', 'emoji']
 function loadConfig(): LinkConfig {
   const saved = StorageAdapter.get<Partial<LinkConfig>>(CONFIG_KEY) ?? {}
   const merged = { ...DEFAULT_LINK_CONFIG, ...saved }
-  if (!validDifficulties.includes(merged.difficulty)) merged.difficulty = DEFAULT_LINK_CONFIG.difficulty
+  if (!validDifficulties.includes(merged.difficulty))
+    merged.difficulty = DEFAULT_LINK_CONFIG.difficulty
   if (!validThemes.includes(merged.theme)) merged.theme = DEFAULT_LINK_CONFIG.theme
   return merged
 }

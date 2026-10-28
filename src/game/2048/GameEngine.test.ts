@@ -14,9 +14,7 @@ describe('Game2048Engine', () => {
   })
 
   function loadBoard(values: number[][]) {
-    const grid = values.map((row, r) =>
-      row.map((v, c) => (v === 0 ? null : tile(v, r, c))),
-    )
+    const grid = values.map((row, r) => row.map((v, c) => (v === 0 ? null : tile(v, r, c))))
     engine.loadState({
       grid,
       score: 0,

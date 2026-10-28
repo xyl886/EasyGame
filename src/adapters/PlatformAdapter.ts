@@ -10,8 +10,10 @@ export const PlatformAdapter = {
 
   /** 是否在微信小程序环境 */
   isWechatMiniProgram(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return typeof (globalThis as any).wx !== 'undefined' && typeof (globalThis as any).wx.getSystemInfoSync === 'function'
+    const host = globalThis as typeof globalThis & {
+      wx?: { getSystemInfoSync?: () => unknown }
+    }
+    return typeof host.wx !== 'undefined' && typeof host.wx.getSystemInfoSync === 'function'
   },
 
   /** 复制到剪贴板 */

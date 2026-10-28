@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { generatePuzzle, generatePuzzleFor, countSolutions, canPlace, generateSolved } from './generator'
+import {
+  generatePuzzle,
+  generatePuzzleFor,
+  countSolutions,
+  canPlace,
+  generateSolved,
+} from './generator'
 import { specOf, SIZES } from './types'
 
 function zeros(n: number): number[][] {

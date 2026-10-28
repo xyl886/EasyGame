@@ -269,7 +269,10 @@ export class EliminateEngine implements BaseGame<EliminateState, EliminateMove> 
         while (
           (fill + 2 < this.rows && this.grid[fill + 1][c] === v && this.grid[fill + 2][c] === v) ||
           (c >= 2 && this.grid[fill][c - 1] === v && this.grid[fill][c - 2] === v) ||
-          (c >= 1 && c + 1 < this.cols && this.grid[fill][c - 1] === v && this.grid[fill][c + 1] === v) ||
+          (c >= 1 &&
+            c + 1 < this.cols &&
+            this.grid[fill][c - 1] === v &&
+            this.grid[fill][c + 1] === v) ||
           (c + 2 < this.cols && this.grid[fill][c + 1] === v && this.grid[fill][c + 2] === v)
         ) {
           v = randInt(this.colorCount) + 1
@@ -595,7 +598,8 @@ export class EliminateEngine implements BaseGame<EliminateState, EliminateMove> 
         ;[flat[i], flat[j]] = [flat[j], flat[i]]
       }
       idx = 0
-      for (let r = 0; r < this.rows; r++) for (let c = 0; c < this.cols; c++) this.grid[r][c] = flat[idx++] ?? 1
+      for (let r = 0; r < this.rows; r++)
+        for (let c = 0; c < this.cols; c++) this.grid[r][c] = flat[idx++] ?? 1
       this.resolveBoard()
     }
     this.selected = null

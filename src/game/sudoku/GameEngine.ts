@@ -7,11 +7,7 @@
  * 最快完成用时持久化、自动存档。
  */
 import type { BaseGame } from '../base/BaseGame'
-import type {
-  SudokuState,
-  SudokuConfig,
-  SudokuSpec,
-} from './types'
+import type { SudokuState, SudokuConfig, SudokuSpec } from './types'
 import { specOf, HOLES_BY_DIFFICULTY, DEFAULT_SUDOKU_CONFIG, MAX_HINTS } from './types'
 import { generatePuzzle, canPlace } from './generator'
 import { StorageAdapter } from '../../adapters/StorageAdapter'

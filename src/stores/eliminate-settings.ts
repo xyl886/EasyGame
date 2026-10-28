@@ -11,7 +11,8 @@ const validThemes: EliminateTheme[] = ['gem', 'candy', 'fruit']
 function loadConfig(): EliminateConfig {
   const saved = StorageAdapter.get<Partial<EliminateConfig>>(CONFIG_KEY) ?? {}
   const merged = { ...DEFAULT_ELIMINATE_CONFIG, ...saved }
-  if (!validDifficulties.includes(merged.difficulty)) merged.difficulty = DEFAULT_ELIMINATE_CONFIG.difficulty
+  if (!validDifficulties.includes(merged.difficulty))
+    merged.difficulty = DEFAULT_ELIMINATE_CONFIG.difficulty
   if (!validThemes.includes(merged.theme)) merged.theme = DEFAULT_ELIMINATE_CONFIG.theme
   return merged
 }

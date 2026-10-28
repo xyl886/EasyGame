@@ -59,7 +59,13 @@ export class LianliankanEngine implements BaseGame<LinkState, LinkMove> {
    * 最近一次金卡对连带消除的额外一对（含消除前路径，供视图绘制连线反馈）。
    * 瞬态动画数据，不进入存档。
    */
-  lastExtra: { r1: number; c1: number; r2: number; c2: number; path: Array<[number, number]> } | null = null
+  lastExtra: {
+    r1: number
+    c1: number
+    r2: number
+    c2: number
+    path: Array<[number, number]>
+  } | null = null
   private pairs = 0
   private moves = 0
   private score = 0
@@ -174,8 +180,14 @@ export class LianliankanEngine implements BaseGame<LinkState, LinkMove> {
   private canPairTiles(r1: number, c1: number, r2: number, c2: number): boolean {
     if (
       (r1 === r2 && c1 === c2) ||
-      r1 < 0 || r1 >= this.rows || c1 < 0 || c1 >= this.cols ||
-      r2 < 0 || r2 >= this.rows || c2 < 0 || c2 >= this.cols
+      r1 < 0 ||
+      r1 >= this.rows ||
+      c1 < 0 ||
+      c1 >= this.cols ||
+      r2 < 0 ||
+      r2 >= this.rows ||
+      c2 < 0 ||
+      c2 >= this.cols
     ) {
       return false
     }
@@ -397,8 +409,14 @@ export class LianliankanEngine implements BaseGame<LinkState, LinkMove> {
             this.pairs++
             this.score += linkScoreForPair(et)
             this.lastExtra = {
-              r1: extra.r1, c1: extra.c1, r2: extra.r2, c2: extra.c2,
-              path: extra.path ?? [[extra.r1 + 1, extra.c1 + 1], [extra.r2 + 1, extra.c2 + 1]],
+              r1: extra.r1,
+              c1: extra.c1,
+              r2: extra.r2,
+              c2: extra.c2,
+              path: extra.path ?? [
+                [extra.r1 + 1, extra.c1 + 1],
+                [extra.r2 + 1, extra.c2 + 1],
+              ],
             }
           }
         }

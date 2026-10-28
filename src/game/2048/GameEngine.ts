@@ -18,7 +18,9 @@ function createEmptyGrid(size: number): Grid {
 
 function cloneGrid(grid: Grid): Grid {
   return grid.map((row) =>
-    row.map((tile) => (tile ? { ...tile, isNew: false, isMerged: false, mergedFrom: undefined } : null)),
+    row.map((tile) =>
+      tile ? { ...tile, isNew: false, isMerged: false, mergedFrom: undefined } : null,
+    ),
   )
 }
 
@@ -226,9 +228,7 @@ export class Game2048Engine implements BaseGame<Game2048State, Direction> {
   }
 
   private serializeGrid(): string {
-    return this.grid
-      .map((row) => row.map((t) => (t ? t.value : 0)).join(','))
-      .join('|')
+    return this.grid.map((row) => row.map((t) => (t ? t.value : 0)).join(',')).join('|')
   }
 
   /**
@@ -236,11 +236,17 @@ export class Game2048Engine implements BaseGame<Game2048State, Direction> {
    * 关键：合并产生的新 tile 沿用「前一个 tile 的 id」，
    * 这样视图层 key 不变、元素被复用，CSS transition 能平滑过渡位置。
    */
-  private traverse(getLine: (i: number) => Array<{ tile: Tile | null; r: number; c: number }>): boolean {
+  private traverse(
+    getLine: (i: number) => Array<{ tile: Tile | null; r: number; c: number }>,
+  ): boolean {
     let moved = false
     for (let i = 0; i < this.size; i++) {
       const line = getLine(i)
-      const tiles = line.filter((x) => x.tile !== null) as Array<{ tile: Tile; r: number; c: number }>
+      const tiles = line.filter((x) => x.tile !== null) as Array<{
+        tile: Tile
+        r: number
+        c: number
+      }>
       const result: Array<{ tile: Tile; r: number; c: number; isMerged: boolean }> = []
       let j = 0
       while (j < tiles.length) {

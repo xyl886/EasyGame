@@ -7,13 +7,7 @@
  * - 旗子/问号标记；数字格 chord（双击/右键）快速展开
  */
 import type { BaseGame } from '../base/BaseGame'
-import type {
-  MineState,
-  MineConfig,
-  MineCell,
-  FlagState,
-  MineStatus,
-} from './types'
+import type { MineState, MineConfig, MineCell, FlagState, MineStatus } from './types'
 import { MINE_PRESETS, DEFAULT_MINE_CONFIG } from './types'
 import { StorageAdapter } from '../../adapters/StorageAdapter'
 
@@ -85,7 +79,10 @@ export class MinesweeperEngine implements BaseGame<MineState, number> {
 
   /** 布雷：排除首击格及其周围（保证首击安全） */
   private plantMines(safeIdx: number): void {
-    const safe = new Set<number>([safeIdx, ...this.neighbors(Math.floor(safeIdx / this.cols), safeIdx % this.cols)])
+    const safe = new Set<number>([
+      safeIdx,
+      ...this.neighbors(Math.floor(safeIdx / this.cols), safeIdx % this.cols),
+    ])
     const candidates: number[] = []
     for (let i = 0; i < this.cells.length; i++) {
       if (!safe.has(i)) candidates.push(i)

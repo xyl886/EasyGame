@@ -141,7 +141,10 @@ export function deriveLevelParams(level: number, difficulty: EliminateDifficulty
   if (level <= 1) return { ...base }
   const factor = 1 + 0.12 * (level - 1)
   const targetScore = Math.round(base.targetScore * factor)
-  const moves = Math.max(Math.round(base.moves * (1 - 0.03 * (level - 1))), Math.round(base.moves * 0.7))
+  const moves = Math.max(
+    Math.round(base.moves * (1 - 0.03 * (level - 1))),
+    Math.round(base.moves * 0.7),
+  )
   return { ...base, targetScore, moves }
 }
 

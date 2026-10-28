@@ -5,8 +5,20 @@ on:
   push:
     branches-ignore: [main]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   quality:
+    uses: ./.github/workflows/quality.yml
+
+  build:
+    name: Production build
+    needs: quality
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -14,23 +26,16 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm lint
-
-      - name: Test
-        run: pnpm test
-
-      - name: Typecheck & Build
-        run: pnpm build
+      # 与线上一致的子路径构建，避免 PR 绿 / 上线白屏
+      - name: Build
+        run: pnpm build --base=/EasyGame/

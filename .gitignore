@@ -45,3 +45,13 @@ Desktop.ini
 
 # 本地 AI 工具的计划笔记（非项目文档）
 .trae
+
+# 测试覆盖率
+coverage
+
+# 另一条独立产品线的静态站（不属于 EasyGame，见 README）
+docs/
+
+# 缓存 / TS 构建信息
+.vitest
+*.tsbuildinfo

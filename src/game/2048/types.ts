@@ -69,10 +69,10 @@ export const CAKE_EMOJI: Record<number, string> = {
 export const CAKE_OVERFLOW_EMOJI = '✨'
 
 export const DIFFICULTY_TWO_RATIO: Record<Difficulty, number> = {
-  easy: 0.95,       // 95% 生成 2
-  normal: 0.9,      // 90% 生成 2（经典）
-  hard: 0.75,       // 75% 生成 2
-  nightmare: 0.5,  // 50% 生成 2 / 50% 生成 4
+  easy: 0.95, // 95% 生成 2
+  normal: 0.9, // 90% 生成 2（经典）
+  hard: 0.75, // 75% 生成 2
+  nightmare: 0.5, // 50% 生成 2 / 50% 生成 4
 }
 
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = {

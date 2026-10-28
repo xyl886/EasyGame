@@ -33,12 +33,7 @@ function loadConfig(): SnakeConfig {
   return merged
 }
 
-export {
-  SIZE_OPTIONS,
-  OBSTACLE_OPTIONS,
-  WIN_LENGTH_OPTIONS,
-  SPEED_OPTIONS,
-}
+export { SIZE_OPTIONS, OBSTACLE_OPTIONS, WIN_LENGTH_OPTIONS, SPEED_OPTIONS }
 
 export const useSnakeSettingsStore = defineStore('snake-settings', {
   state: () => ({

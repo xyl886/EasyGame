@@ -33,17 +33,14 @@ export function useLeaderboardStore(gameId: string) {
         /** 该游戏的全部记录（按 玩家+维度 去重后，分数降序的最高分榜） */
         entries,
         /** 玩家昵称，跨游戏共享（写入独立 key） */
-        playerName:
-          StorageAdapter.get<string>(PLAYER_NAME_KEY) ?? DEFAULT_PLAYER_NAME,
+        playerName: StorageAdapter.get<string>(PLAYER_NAME_KEY) ?? DEFAULT_PLAYER_NAME,
       }
     },
     getters: {
       /** 按 score 降序的全部记录 */
-      byScore: (state) =>
-        [...state.entries].sort((a, b) => b.score - a.score),
+      byScore: (state) => [...state.entries].sort((a, b) => b.score - a.score),
       /** 按时间降序的全部记录 */
-      byTime: (state) =>
-        [...state.entries].sort((a, b) => b.timestamp - a.timestamp),
+      byTime: (state) => [...state.entries].sort((a, b) => b.timestamp - a.timestamp),
     },
     actions: {
       /**
@@ -64,10 +61,7 @@ export function useLeaderboardStore(gameId: string) {
         let submittedId: string | null = null
         // 尝试找到同一玩家同维度的现有记录
         const existIdx = this.entries.findIndex(
-          (e) =>
-            e.playerName === playerName &&
-            e.difficulty === difficulty &&
-            e.size === size,
+          (e) => e.playerName === playerName && e.difficulty === difficulty && e.size === size,
         )
         if (existIdx >= 0) {
           const existing = this.entries[existIdx]
@@ -120,8 +114,10 @@ export function useLeaderboardStore(gameId: string) {
         this.entries = dedupeKeepBest(this.entries).slice(0, DEFAULT_TOP_N)
         this.persist()
         return existIdx >= 0
-          ? this.entries.find((e) => e.playerName === playerName && e.difficulty === difficulty && e.size === size) ?? null
-          : this.entries.find((e) => e.id === submittedId) ?? null
+          ? (this.entries.find(
+              (e) => e.playerName === playerName && e.difficulty === difficulty && e.size === size,
+            ) ?? null)
+          : (this.entries.find((e) => e.id === submittedId) ?? null)
       },
 
       /** 设置玩家昵称（同时写入跨游戏共享 key） */

@@ -26,11 +26,7 @@ function loadConfig(): TetrisConfig {
   return merged
 }
 
-export {
-  SPEED_OPTIONS,
-  TARGET_LINES_OPTIONS,
-  PREVIEW_COUNT_OPTIONS,
-}
+export { SPEED_OPTIONS, TARGET_LINES_OPTIONS, PREVIEW_COUNT_OPTIONS }
 
 export const useTetrisSettingsStore = defineStore('tetris-settings', {
   state: () => ({

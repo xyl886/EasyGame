@@ -58,10 +58,7 @@ export function scoreForMoves(moves: number): number {
   return Math.max(1, SCORE_BASE - moves)
 }
 
-const SIZE_RANGE: [number, number] = [
-  Math.min(...SIZE_OPTIONS),
-  Math.max(...SIZE_OPTIONS),
-]
+const SIZE_RANGE: [number, number] = [Math.min(...SIZE_OPTIONS), Math.max(...SIZE_OPTIONS)]
 
 export function clampSize(size: number): number {
   const [min, max] = SIZE_RANGE

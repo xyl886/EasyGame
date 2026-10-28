@@ -3,3 +3,7 @@ node_modules/**
 coverage/**
 pnpm-lock.yaml
 *.min.js
+
+docs/
+test-tailwind-output.css
+.dsh/

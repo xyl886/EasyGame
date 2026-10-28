@@ -9,16 +9,8 @@
  * 例：按 ← = 空格右边的数字向左移入空格（空格右移一格）。
  */
 import type { BaseGame } from '../base/BaseGame'
-import type {
-  KlotskiState,
-  KlotskiConfig,
-  KlotskiDirection,
-} from './types'
-import {
-  SHUFFLE_STEPS,
-  clampSize,
-  DEFAULT_CONFIG,
-} from './types'
+import type { KlotskiState, KlotskiConfig, KlotskiDirection } from './types'
+import { SHUFFLE_STEPS, clampSize, DEFAULT_CONFIG } from './types'
 import { StorageAdapter } from '../../adapters/StorageAdapter'
 
 const BEST_KEY_PREFIX = 'easygame-klotski-best'

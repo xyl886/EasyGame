@@ -182,12 +182,7 @@ export class SnakeEngine implements BaseGame<SnakeState, Direction> {
       }
     } else {
       newHead = { x: head.x + delta.x, y: head.y + delta.y }
-      if (
-        newHead.x < 0 ||
-        newHead.x >= this.size ||
-        newHead.y < 0 ||
-        newHead.y >= this.size
-      ) {
+      if (newHead.x < 0 || newHead.x >= this.size || newHead.y < 0 || newHead.y >= this.size) {
         this.over = true
         return true
       }
@@ -207,9 +202,7 @@ export class SnakeEngine implements BaseGame<SnakeState, Direction> {
 
     this.snake.unshift(newHead)
     // 检查吃食物
-    const foodIdx = this.foods.findIndex(
-      (f) => f.pos.x === newHead.x && f.pos.y === newHead.y,
-    )
+    const foodIdx = this.foods.findIndex((f) => f.pos.x === newHead.x && f.pos.y === newHead.y)
     if (foodIdx >= 0) {
       const food = this.foods[foodIdx]
       this.score += food.type === 'bonus' ? BONUS_SCORE : 1

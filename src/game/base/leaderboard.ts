@@ -72,8 +72,11 @@ export function genEntryId(): string {
  * 生成排行榜「玩家 + 维度」的唯一键：同一玩家在相同难度/尺寸下只保留一条最高分记录。
  * 当某维度缺失时，该分量以 "∗" 通配，避免缺失维度意外与其他键撞车。
  */
-export function playerDimensionKey(entry: Pick<LeaderboardEntry, 'playerName' | 'difficulty' | 'size'>): string {
-  const diff = entry.difficulty === undefined || entry.difficulty === null ? '∗' : String(entry.difficulty)
+export function playerDimensionKey(
+  entry: Pick<LeaderboardEntry, 'playerName' | 'difficulty' | 'size'>,
+): string {
+  const diff =
+    entry.difficulty === undefined || entry.difficulty === null ? '∗' : String(entry.difficulty)
   const sz = entry.size === undefined || entry.size === null ? '∗' : String(entry.size)
   const name = String(entry.playerName ?? DEFAULT_PLAYER_NAME)
   // 用竖线分隔，保证 playerName 中若意外含竖线也能区分
@@ -91,11 +94,7 @@ export function dedupeKeepBest(entries: LeaderboardEntry[]): LeaderboardEntry[] 
   for (const e of entries) {
     const key = playerDimensionKey(e)
     const prev = bestMap.get(key)
-    if (
-      !prev ||
-      e.score > prev.score ||
-      (e.score === prev.score && e.timestamp > prev.timestamp)
-    ) {
+    if (!prev || e.score > prev.score || (e.score === prev.score && e.timestamp > prev.timestamp)) {
       bestMap.set(key, e)
     }
   }

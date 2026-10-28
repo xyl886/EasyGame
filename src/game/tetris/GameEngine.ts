@@ -172,7 +172,14 @@ export class TetrisEngine implements BaseGame<TetrisState, Direction> {
     const newRotation = (this.current.rotation + (dir === 'cw' ? 1 : 3)) % 4
     const candidate: ActivePiece = { ...this.current, rotation: newRotation }
     const kicks: Array<[number, number]> = [
-      [0, 0], [-1, 0], [1, 0], [0, -1], [-1, -1], [1, -1], [-2, 0], [2, 0],
+      [0, 0],
+      [-1, 0],
+      [1, 0],
+      [0, -1],
+      [-1, -1],
+      [1, -1],
+      [-2, 0],
+      [2, 0],
     ]
     for (const [kx, ky] of kicks) {
       const test = { ...candidate, x: candidate.x + kx, y: candidate.y + ky }
@@ -215,7 +222,8 @@ export class TetrisEngine implements BaseGame<TetrisState, Direction> {
 
   /** Hold：把当前方块与 hold 槽交换，每个方块只能 hold 一次 */
   hold(): boolean {
-    if (this.over || this.paused || !this.current || !this.config.holdPiece || !this.canHold) return false
+    if (this.over || this.paused || !this.current || !this.config.holdPiece || !this.canHold)
+      return false
     const currentType = this.current.type
     if (this.heldPiece === null) {
       this.heldPiece = currentType
