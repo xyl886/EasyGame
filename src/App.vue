@@ -3,7 +3,7 @@
     <router-view v-slot="{ Component }">
       <Suspense>
         <template #default>
-          <component :is="Component" class="animate-fade-in" />
+          <component :is="Component" :key="$route.path" class="animate-fade-in" />
         </template>
         <template #fallback>
           <RouteLoading />

@@ -93,11 +93,18 @@ test.describe('排行榜底部抽屉（移动端）', () => {
 })
 
 test.describe('联机对战（五子棋）', () => {
-  test('大厅有联机区块并可进入五子棋', async ({ page }) => {
+  test('大厅有联机区块，五子棋/四子棋都可进入', async ({ page }) => {
     await page.goto('/')
     await expect(page.getByRole('heading', { name: '联机对战' })).toBeVisible()
+    await expect(page.locator('a[href*="/multiplayer/gomoku"]')).toHaveCount(1)
+    await expect(page.locator('a[href*="/multiplayer/connect4"]')).toHaveCount(1)
+
     await page.locator('a[href*="/multiplayer/gomoku"]').click()
     await expect(page.locator('.eg-game-title')).toContainText('五子棋')
+    await expect(page.getByRole('button', { name: '创建房间' })).toBeVisible()
+
+    await page.goto('/#/multiplayer/connect4')
+    await expect(page.locator('.eg-game-title')).toContainText('四子棋')
     await expect(page.getByRole('button', { name: '创建房间' })).toBeVisible()
   })
 
@@ -128,9 +135,27 @@ test.describe('联机对战（五子棋）', () => {
       if (i < white.length) await cell(white[i][0], white[i][1]).click()
     }
 
-    const result = page.getByTestId('gomoku-result')
+    const result = page.getByTestId('room-result')
     await expect(result).toBeVisible()
     await expect(result).toContainText('黑棋获胜')
+  })
+
+  test('本机双人：四子棋先连成四子获胜', async ({ page }) => {
+    await page.goto('/#/multiplayer/connect4')
+    await page.getByRole('button', { name: '本机双人' }).click()
+
+    const board = page.getByTestId('connect4-board')
+    await expect(board).toBeVisible()
+    const column = (col: number) => board.locator('button').nth(col)
+
+    // 红方（先手）依次落 0/1/2/3 列，黄方落在 4/5/6 列
+    for (const col of [0, 4, 1, 5, 2, 6, 3]) {
+      await column(col).click()
+    }
+
+    const result = page.getByTestId('room-result')
+    await expect(result).toBeVisible()
+    await expect(result).toContainText('红方获胜')
   })
 
   test('创建房间会生成 6 位房号并可离开', async ({ page }) => {

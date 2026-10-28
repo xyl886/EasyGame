@@ -95,39 +95,62 @@
         id="multiplayer"
         class="mt-12 scroll-mt-6 border-t border-border-subtle-light pt-8 dark:border-border-subtle-dark"
       >
-        <div class="mb-5 flex items-end justify-between gap-3">
-          <h2 class="eg-heading">联机对战</h2>
-          <span class="eg-chip">P2P · 房号邀请</span>
-        </div>
-        <RouterLink
-          to="/multiplayer/gomoku"
-          class="group flex items-center gap-4 rounded-2xl bg-card-light p-4 shadow-ring transition-all duration-200 ease-calm hover:-translate-y-0.5 hover:shadow-lift-strong dark:bg-card-dark"
-        >
+        <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <h2 class="eg-heading">联机对战</h2>
+            <span class="eg-chip">P2P · 房号邀请</span>
+          </div>
           <span
-            class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-sand-light font-display text-2xl text-accent-light shadow-ring dark:bg-sand-dark dark:text-accent-dark"
-            aria-hidden="true"
-            >五</span
+            class="flex items-center gap-1.5 text-caption text-text-faint-light dark:text-text-faint-dark"
           >
-          <span class="min-w-0 flex-1">
-            <span class="flex items-center gap-2">
-              <span class="font-display text-lg font-medium text-text-light dark:text-text-dark"
-                >五子棋</span
+            我的段位
+            <span
+              class="inline-flex items-center gap-1 font-medium text-text-soft-light dark:text-text-soft-dark"
+            >
+              <span
+                class="h-2 w-2 rounded-full"
+                :style="{ backgroundColor: myTier.color }"
+                aria-hidden="true"
+              ></span>
+              {{ myTier.name }}
+            </span>
+            <span>{{ profile.rating }}</span>
+          </span>
+        </div>
+        <div class="grid gap-3 md:grid-cols-2">
+          <RouterLink
+            v-for="game in multiplayerGames"
+            :key="game.id"
+            :to="`/multiplayer/${game.id}`"
+            class="group flex items-center gap-4 rounded-2xl bg-card-light p-4 shadow-ring transition-all duration-200 ease-calm hover:-translate-y-0.5 hover:shadow-lift-strong dark:bg-card-dark"
+          >
+            <span
+              class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-sand-light font-display text-2xl text-accent-light shadow-ring dark:bg-sand-dark dark:text-accent-dark"
+              aria-hidden="true"
+              >{{ game.glyph }}</span
+            >
+            <span class="min-w-0 flex-1">
+              <span class="flex items-center gap-2">
+                <span
+                  class="font-display text-lg font-medium text-text-light dark:text-text-dark"
+                  >{{ game.name }}</span
+                >
+                <span class="eg-chip">联机</span>
+              </span>
+              <span
+                class="mt-1 block text-[0.75rem] leading-relaxed text-text-muted-light dark:text-text-muted-dark"
               >
-              <span class="eg-chip">联机</span>
+                {{ game.description }}支持观战与断线重连。
+              </span>
             </span>
             <span
-              class="mt-1 block text-[0.75rem] leading-relaxed text-text-muted-light dark:text-text-muted-dark"
+              class="text-text-faint-light transition-transform group-hover:translate-x-0.5 dark:text-text-faint-dark"
+              aria-hidden="true"
             >
-              创建 6 位房号，把链接发给朋友，浏览器 P2P 直连；也支持本机双人。
+              <AppIcon name="arrow-right" :size="18" />
             </span>
-          </span>
-          <span
-            class="text-text-faint-light transition-transform group-hover:translate-x-0.5 dark:text-text-faint-dark"
-            aria-hidden="true"
-          >
-            <AppIcon name="arrow-right" :size="18" />
-          </span>
-        </RouterLink>
+          </RouterLink>
+        </div>
       </section>
 
       <!-- 扫码即玩 + 操作方式 -->
@@ -158,10 +181,16 @@ import ThemeToggle from '../components/ThemeToggle.vue'
 import SoundToggle from '../components/SoundToggle.vue'
 import GameCard from '../components/GameCard.vue'
 import OnlinePanel from '../components/OnlinePanel.vue'
+import { MULTIPLAYER_GAMES } from '../game/multiplayer/adapters'
+import { loadProfile, tierOf } from '../game/multiplayer/profile'
 
 const gameStore = useGameStore()
 const games = gameStore.games
 const gameNames = games.map((g) => g.name).join('、')
+
+const multiplayerGames = MULTIPLAYER_GAMES
+const profile = loadProfile()
+const myTier = tierOf(profile.rating)
 
 function scrollToLobby() {
   document.getElementById('lobby')?.scrollIntoView({ behavior: 'smooth', block: 'start' })

@@ -12,6 +12,8 @@ async function mountHome() {
     routes: [
       { path: '/', component: { template: '<div />' } },
       ...gameRegistry.map((g) => ({ path: g.route, component: { template: '<div />' } })),
+      { path: '/multiplayer/gomoku', component: { template: '<div />' } },
+      { path: '/multiplayer/connect4', component: { template: '<div />' } },
     ],
   })
   await router.push('/')
@@ -61,5 +63,7 @@ describe('Home（大厅）', () => {
     expect(text).toContain('无需账号')
     expect(text).toContain('联机对战')
     expect(text).toContain('五子棋')
+    expect(text).toContain('四子棋')
+    expect(text).toContain('我的段位')
   })
 })

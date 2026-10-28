@@ -52,6 +52,13 @@ test.describe('可访问性（axe）', () => {
     await expectNoBlockingViolations(page, '设置弹层')
   })
 
+  test('联机五子棋（本机双人）', async ({ page }) => {
+    await page.goto('/#/multiplayer/gomoku')
+    await page.getByRole('button', { name: '本机双人' }).click()
+    await expect(page.getByTestId('gomoku-board')).toBeVisible()
+    await expectNoBlockingViolations(page, '联机五子棋')
+  })
+
   test('排行榜底部抽屉（移动端）', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/#/game/2048')
