@@ -4,9 +4,20 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => (id.includes('node_modules/peerjs') ? 'peerjs' : undefined),
+      },
+    },
+  },
   plugins: [
     vue(),
     VitePWA({
+      workbox: {
+        // peerjs 仅联机时按需加载，不进入离线预缓存
+        globIgnores: ['assets/peerjs-*'],
+      },
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
