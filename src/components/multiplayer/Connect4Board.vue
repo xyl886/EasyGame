@@ -45,6 +45,7 @@
                 state.lastMove === indexOf(row - 1, col - 1) &&
                 fallingIndex !== indexOf(row - 1, col - 1),
               'c4-disc--win': isWinning(indexOf(row - 1, col - 1)),
+              'c4-disc--falling': fallingIndex === indexOf(row - 1, col - 1),
             },
           ]"
           :style="winStyle(indexOf(row - 1, col - 1))"
@@ -183,7 +184,6 @@ async function animateDrop(index: number): Promise<void> {
 
   fallingIndex.value = index
   disc.style.opacity = '0'
-  disc.classList.add('c4-disc--falling')
   const animation = disc.animate(
     [
       {
@@ -234,7 +234,6 @@ async function animateDrop(index: number): Promise<void> {
   animation.onfinish = () => {
     fallingIndex.value = null
     disc.style.opacity = ''
-    disc.classList.remove('c4-disc--falling')
     activeAnimations.delete(animation)
   }
 }
