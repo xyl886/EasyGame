@@ -7,7 +7,11 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: (id) => (id.includes('node_modules/peerjs') ? 'peerjs' : undefined),
+        manualChunks: (id) => {
+          if (id.includes('node_modules/peerjs')) return 'peerjs'
+          if (id.includes('node_modules/mqtt')) return 'mqtt'
+          return undefined
+        },
       },
     },
   },
@@ -15,8 +19,10 @@ export default defineConfig({
     vue(),
     VitePWA({
       workbox: {
-        // peerjs 仅联机时按需加载，不进入离线预缓存
-        globIgnores: ['assets/peerjs-*'],
+        cleanupOutdatedCaches: true,
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        // peerjs / mqtt 仅联机时按需加载，不进入离线预缓存
+        globIgnores: ['assets/peerjs-*', 'assets/mqtt-*'],
       },
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
@@ -49,10 +55,6 @@ export default defineConfig({
             purpose: 'any maskable',
           },
         ],
-      },
-      workbox: {
-        cleanupOutdatedCaches: true,
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
       },
     }),
   ],

@@ -12,7 +12,7 @@
 
 - 🎯 **8 款游戏**：2048、俄罗斯方块、扫雷、数独、贪吃蛇、华容道、连连看、消消乐
 - 🏮 **隐藏关卡**：三国华容道（40 种经典布局 + 最少步数 + 自动演示，从「华容道 → 设置 → 三国版」进入）
-- 🌐 **联机对战**：五子棋 / 四子棋支持 P2P 房号邀请（PeerJS 公共信令 + WebRTC 直连），支持预设快捷语、观战、断线自动重连与本机段位（仅本机记录）；不需要账号，不经过服务器保存
+- 🌐 **联机对战**：五子棋 / 四子棋支持 P2P 房号邀请（PeerJS 公共信令 + WebRTC 直连）；首页有**跨浏览器公开房间列表**（公共 MQTT 只同步房号/状态，对局仍为 P2P），点「申请加入」后由房主同意；支持公开/私密房、快捷语、观战、断线重连与本机段位（仅本机记录）
 - 📱 **扫码即玩**：首页「扫码即玩」面板生成线上地址二维码，手机扫码直达游戏大厅
 - 📲 **PWA 离线可用**：可安装到桌面（添加到主屏幕），断网也能玩
 - 🔊 **游戏音效**：Web Audio 合成音效（合并 / 吃食物 / 消行 / 通关等），顶栏一键开关
@@ -26,15 +26,15 @@
 
 ## 🛠️ 技术栈
 
-| 层级     | 技术                                           |
-| -------- | ---------------------------------------------- |
-| 框架     | [Vue 3](https://vuejs.org/)（Composition API） |
-| 构建     | [Vite 5](https://vitejs.dev/)                  |
-| 样式     | [TailwindCSS 3](https://tailwindcss.com/)      |
-| 状态管理 | [Pinia](https://pinia.vuejs.org/)              |
-| 路由     | [Vue Router 4](https://router.vuejs.org/)      |
-| 语言     | TypeScript                                     |
-| 其他     | qrcode（扫码）、Workbox（PWA 离线缓存）        |
+| 层级     | 技术                                                          |
+| -------- | ------------------------------------------------------------- |
+| 框架     | [Vue 3](https://vuejs.org/)（Composition API）                |
+| 构建     | [Vite 5](https://vitejs.dev/)                                 |
+| 样式     | [TailwindCSS 3](https://tailwindcss.com/)                     |
+| 状态管理 | [Pinia](https://pinia.vuejs.org/)                             |
+| 路由     | [Vue Router 4](https://router.vuejs.org/)                     |
+| 语言     | TypeScript                                                    |
+| 其他     | qrcode（扫码）、mqtt（公开房间目录）、Workbox（PWA 离线缓存） |
 
 ## 🚀 快速开始
 
@@ -67,6 +67,7 @@ pnpm format:check
 
 - **手机访问线上**：直接访问 [在线地址](https://xyl886.github.io/EasyGame/)，或首页「扫码即玩」面板扫码直达
 - **手机访问本地开发**：`pnpm dev` 已监听 `0.0.0.0:5173`，同一 WiFi 下手机访问 `http://局域网IP:5173/`（需放行 Windows 防火墙 5173 端口）
+- **房间目录**：默认使用 `broker.emqx.io` / `broker.hivemq.com` / `test.mosquitto.org` 的 WSS 公共 broker；可用浏览器控制台执行 `localStorage.setItem('easygame-room-broker', 'ws://127.0.0.1:8888/mqtt')` 后刷新来指向自建 broker。`pnpm test:e2e` 会自动启动本地 MQTT broker（`e2e/mqtt-broker.mjs`），不依赖公网
 - **GitHub Pages 自动部署**：已配置 GitHub Actions（`.github/workflows/deploy.yml`），推送 `main` 分支即自动构建发布（`--base=/EasyGame/` 子路径部署）
 - **其他静态托管**：`pnpm build` 后将 `dist/` 目录上传至任意静态托管（Nginx / Vercel / Netlify 等）即可；若部署在子路径，构建时需加 `--base=/子路径/`
 
@@ -105,6 +106,7 @@ EasyGame/
 │   │   ├── minesweeper/
 │   │   ├── lianliankan/
 │   │   └── eliminate/
+│   ├── net/                     # P2P 传输、房间协议、公共房间目录（MQTT）
 │   ├── composables/             # 游戏页面共享生命周期行为
 │   ├── router/                  # 路由配置（从注册表派生）
 │   ├── stores/                  # Pinia 状态（游戏、各游戏设置、主题、排行榜）
@@ -134,6 +136,7 @@ EasyGame/
 - [x] 华容道（数字滑块 3×3~5×5）
 - [x] 三国华容道经典滑块（40 种布局 + 最少步数与自动演示，隐藏入口）
 - [x] 联机五子棋 / 四子棋（PeerJS P2P 房号邀请 + 快捷语 + 观战 + 断线重连 + 本机段位）
+- [x] 公开房间列表与申请加入（公共 MQTT 目录 + 房主审批；公开/私密房可选）
 - [x] 数独（4×4 / 6×6 / 9×9 三尺寸 × 三难度，唯一解题面；候选笔记、错误计数、一键校验、智能提示）
 - [x] 扫雷（初/中/高三档经典难度，首击安全、旗子标记、Chord 快速展开、键盘操作）
 - [x] 连连看（≤2 弯经典路径算法，水果/动物/表情三主题，提示/洗牌/连线动画）

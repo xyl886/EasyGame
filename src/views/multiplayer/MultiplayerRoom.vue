@@ -57,6 +57,22 @@
             </button>
           </form>
 
+          <label
+            class="mt-5 flex items-start gap-3 rounded-xl border border-border-subtle-light bg-sand-light/60 p-3 dark:border-border-subtle-dark dark:bg-sand-dark/40"
+          >
+            <input v-model="publicRoom" type="checkbox" class="mt-0.5 h-4 w-4 accent-[#b5543a]" />
+            <span class="min-w-0">
+              <span class="block text-sm font-medium text-text-light dark:text-text-dark"
+                >公开房间</span
+              >
+              <span
+                class="mt-0.5 block text-caption leading-relaxed text-text-muted-light dark:text-text-muted-dark"
+              >
+                会出现在首页「公开房间」列表，允许陌生人申请加入；朋友仍可通过邀请链接直接进入。
+              </span>
+            </span>
+          </label>
+
           <p
             v-if="room.errorText.value"
             class="mt-4 text-sm text-danger-light dark:text-danger-dark"
@@ -113,6 +129,9 @@
         <section class="eg-card mb-4 p-3 sm:p-4">
           <div class="flex flex-wrap items-center gap-2">
             <span class="eg-chip">{{ roleLabel }}</span>
+            <span v-if="room.mode.value === 'online'" class="eg-chip">{{
+              room.isPublicRoom.value ? '公开房' : '私密房'
+            }}</span>
             <span
               v-if="room.mode.value === 'online'"
               class="flex items-center gap-2 text-text-light dark:text-text-dark"
@@ -165,132 +184,213 @@
           </div>
         </section>
 
-        <div class="relative mx-auto w-full max-w-[min(92vw,34rem)]">
-          <GomokuBoard
-            v-if="gameId === 'gomoku'"
-            :state="gomokuState"
-            :can-select="canSelectGomoku"
-            @select="room.play"
-          />
-          <Connect4Board
-            v-else
-            :state="connect4State"
-            :can-select="canSelectConnect4"
-            @select="room.play"
-          />
-
-          <!-- 快捷语气泡 -->
-          <Transition name="bubble">
-            <div
-              v-if="chatBubble"
-              class="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-xl bg-card-light/95 px-3.5 py-2 text-sm shadow-lift dark:bg-card-dark/95"
-              role="status"
-              aria-live="polite"
-            >
-              <span class="text-caption text-text-faint-light dark:text-text-faint-dark">
-                {{ chatBubble.from }}：
-              </span>
-              <span class="font-medium text-text-light dark:text-text-dark">{{
-                chatBubble.text
-              }}</span>
-            </div>
-          </Transition>
-
-          <!-- 结果遮罩 -->
-          <div
-            v-if="stateOver"
-            data-testid="room-result"
-            class="absolute inset-0 flex items-center justify-center rounded-2xl bg-bg-light/95 dark:bg-bg-dark/95"
-          >
-            <div class="space-y-3 px-4 text-center">
-              <div class="font-display text-3xl text-text-light dark:text-text-dark">
-                {{ resultTitle }}
-              </div>
-              <p class="text-sm text-text-muted-light dark:text-text-muted-dark">
-                {{ resultHint }}
-              </p>
-              <p
-                v-if="room.lastDelta.value !== null"
-                class="text-sm font-medium"
-                :class="
-                  room.lastDelta.value > 0
-                    ? 'text-success-light dark:text-success-dark'
-                    : room.lastDelta.value < 0
-                      ? 'text-danger-light dark:text-danger-dark'
-                      : 'text-text-muted-light dark:text-text-muted-dark'
-                "
-              >
-                本机段位 {{ room.lastDelta.value > 0 ? '+' : '' }}{{ room.lastDelta.value }}
-              </p>
-              <div class="flex flex-wrap justify-center gap-2">
-                <button
-                  type="button"
-                  class="eg-primary-btn"
-                  :disabled="room.isSpectator.value"
-                  @click="rematch"
-                >
-                  再来一局
-                </button>
-                <button
-                  v-if="!room.isSpectator.value"
-                  type="button"
-                  class="eg-secondary-btn"
-                  @click="shareResult"
-                >
-                  分享战绩
-                </button>
-                <button type="button" class="eg-ghost-btn" @click="backToMenu">返回</button>
-              </div>
-            </div>
+        <!-- 房主：加入申请 -->
+        <section
+          v-if="
+            room.mode.value === 'online' &&
+            room.role.value === 'host' &&
+            room.pendingRequests.value.length
+          "
+          data-testid="join-requests"
+          class="eg-card mb-4 p-4"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <h2 class="font-display text-lg font-medium text-text-light dark:text-text-dark">
+              加入申请
+            </h2>
+            <span class="eg-chip">{{ room.pendingRequests.value.length }} 位</span>
           </div>
-        </div>
-
-        <div class="mt-4 flex flex-col items-center gap-2 text-center">
-          <p class="font-display text-lg text-text-light dark:text-text-dark">{{ turnText }}</p>
-          <p
-            v-if="room.mode.value === 'online' && room.status.value === 'connected' && !stateOver"
-            class="text-caption text-text-faint-light dark:text-text-faint-dark"
+          <div
+            v-for="(request, index) in room.pendingRequests.value"
+            :key="request.id"
+            class="mt-3 flex flex-wrap items-center gap-2 rounded-xl bg-sand-light/60 px-3 py-2.5 dark:bg-sand-dark/40"
           >
-            {{ turnHint }}
-          </p>
-          <p
-            v-if="
-              room.mode.value === 'online' &&
-              room.reconnecting.value &&
-              room.status.value !== 'connected'
-            "
-            class="text-caption text-danger-light dark:text-danger-dark"
-          >
-            连接中断，正在自动重连…
-          </p>
-          <div class="flex flex-wrap items-center justify-center gap-2">
-            <span v-if="room.mode.value === 'local'" class="eg-chip">红/黑先手</span>
-            <button
-              v-if="room.mode.value === 'local'"
-              type="button"
-              class="eg-ghost-btn !min-h-9 !px-3 !text-xs"
-              @click="rematch"
+            <span class="text-sm text-text-light dark:text-text-dark"
+              >玩家 {{ index + 1 }} 申请加入</span
             >
-              重开
-            </button>
+            <span class="ml-auto flex gap-2">
+              <button
+                type="button"
+                class="eg-primary-btn !min-h-9 !px-3 !text-xs"
+                @click="room.acceptRequest(request.id)"
+              >
+                接受
+              </button>
+              <button
+                type="button"
+                class="eg-ghost-btn !min-h-9 !px-3 !text-xs"
+                @click="room.rejectRequest(request.id)"
+              >
+                拒绝
+              </button>
+            </span>
+          </div>
+        </section>
+
+        <!-- 访客：等待房主审批 / 被拒绝 -->
+        <section
+          v-if="room.approvalState.value !== 'idle'"
+          data-testid="approval-state"
+          class="eg-card mb-4 p-5 text-center"
+        >
+          <template v-if="room.approvalState.value === 'waiting'">
+            <div
+              class="mx-auto h-9 w-9 animate-spin rounded-full border-2 border-accent-light/25 border-t-accent-light dark:border-accent-dark/25 dark:border-t-accent-dark"
+              aria-hidden="true"
+            ></div>
+            <p class="mt-3 font-display text-lg text-text-light dark:text-text-dark">
+              已发送加入申请
+            </p>
+            <p class="mt-1 text-caption text-text-muted-light dark:text-text-muted-dark">
+              等待房主同意…
+            </p>
             <button
-              v-if="room.mode.value !== 'local' && room.status.value !== 'connected'"
               type="button"
-              class="eg-ghost-btn !min-h-9 !px-3 !text-xs"
+              class="eg-ghost-btn mt-4 !min-h-9 !px-3 !text-xs"
               @click="backToMenu"
             >
+              取消申请
+            </button>
+          </template>
+          <template v-else>
+            <p class="font-display text-lg text-danger-light dark:text-danger-dark">申请被拒绝</p>
+            <p class="mt-1 text-caption text-text-muted-light dark:text-text-muted-dark">
+              {{ room.rejectReason.value || '房主没有同意这次申请' }}
+            </p>
+            <button type="button" class="eg-secondary-btn mt-4" @click="backToMenu">
               返回房间
             </button>
-            <button
-              v-if="room.mode.value !== 'local'"
-              type="button"
-              class="eg-ghost-btn !min-h-9 !px-3 !text-xs"
-              @click="backToMenu"
+          </template>
+        </section>
+
+        <template v-if="room.approvalState.value === 'idle'">
+          <div class="relative mx-auto w-full max-w-[min(92vw,34rem)]">
+            <GomokuBoard
+              v-if="gameId === 'gomoku'"
+              :state="gomokuState"
+              :can-select="canSelectGomoku"
+              @select="room.play"
+            />
+            <Connect4Board
+              v-else
+              :state="connect4State"
+              :can-select="canSelectConnect4"
+              @select="room.play"
+            />
+
+            <!-- 快捷语气泡 -->
+            <Transition name="bubble">
+              <div
+                v-if="chatBubble"
+                class="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-xl bg-card-light/95 px-3.5 py-2 text-sm shadow-lift dark:bg-card-dark/95"
+                role="status"
+                aria-live="polite"
+              >
+                <span class="text-caption text-text-faint-light dark:text-text-faint-dark">
+                  {{ chatBubble.from }}：
+                </span>
+                <span class="font-medium text-text-light dark:text-text-dark">{{
+                  chatBubble.text
+                }}</span>
+              </div>
+            </Transition>
+
+            <!-- 结果遮罩 -->
+            <div
+              v-if="stateOver"
+              data-testid="room-result"
+              class="absolute inset-0 flex items-center justify-center rounded-2xl bg-bg-light/95 dark:bg-bg-dark/95"
             >
-              离开房间
-            </button>
+              <div class="space-y-3 px-4 text-center">
+                <div class="font-display text-3xl text-text-light dark:text-text-dark">
+                  {{ resultTitle }}
+                </div>
+                <p class="text-sm text-text-muted-light dark:text-text-muted-dark">
+                  {{ resultHint }}
+                </p>
+                <p
+                  v-if="room.lastDelta.value !== null"
+                  class="text-sm font-medium"
+                  :class="
+                    room.lastDelta.value > 0
+                      ? 'text-success-light dark:text-success-dark'
+                      : room.lastDelta.value < 0
+                        ? 'text-danger-light dark:text-danger-dark'
+                        : 'text-text-muted-light dark:text-text-muted-dark'
+                  "
+                >
+                  本机段位 {{ room.lastDelta.value > 0 ? '+' : '' }}{{ room.lastDelta.value }}
+                </p>
+                <div class="flex flex-wrap justify-center gap-2">
+                  <button
+                    type="button"
+                    class="eg-primary-btn"
+                    :disabled="room.isSpectator.value"
+                    @click="rematch"
+                  >
+                    再来一局
+                  </button>
+                  <button
+                    v-if="!room.isSpectator.value"
+                    type="button"
+                    class="eg-secondary-btn"
+                    @click="shareResult"
+                  >
+                    分享战绩
+                  </button>
+                  <button type="button" class="eg-ghost-btn" @click="backToMenu">返回</button>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+
+          <div class="mt-4 flex flex-col items-center gap-2 text-center">
+            <p class="font-display text-lg text-text-light dark:text-text-dark">{{ turnText }}</p>
+            <p
+              v-if="room.mode.value === 'online' && room.status.value === 'connected' && !stateOver"
+              class="text-caption text-text-faint-light dark:text-text-faint-dark"
+            >
+              {{ turnHint }}
+            </p>
+            <p
+              v-if="
+                room.mode.value === 'online' &&
+                room.reconnecting.value &&
+                room.status.value !== 'connected'
+              "
+              class="text-caption text-danger-light dark:text-danger-dark"
+            >
+              连接中断，正在自动重连…
+            </p>
+            <div class="flex flex-wrap items-center justify-center gap-2">
+              <span v-if="room.mode.value === 'local'" class="eg-chip">红/黑先手</span>
+              <button
+                v-if="room.mode.value === 'local'"
+                type="button"
+                class="eg-ghost-btn !min-h-9 !px-3 !text-xs"
+                @click="rematch"
+              >
+                重开
+              </button>
+              <button
+                v-if="room.mode.value !== 'local' && room.status.value !== 'connected'"
+                type="button"
+                class="eg-ghost-btn !min-h-9 !px-3 !text-xs"
+                @click="backToMenu"
+              >
+                返回房间
+              </button>
+              <button
+                v-if="room.mode.value !== 'local'"
+                type="button"
+                class="eg-ghost-btn !min-h-9 !px-3 !text-xs"
+                @click="backToMenu"
+              >
+                离开房间
+              </button>
+            </div>
+          </div>
+        </template>
       </template>
     </main>
 
@@ -339,6 +439,7 @@ const connect4State = computed(() => room.state.value as Connect4State)
 const stateOver = computed(() => adapter.isOver(room.state.value))
 
 const quickMessages = QUICK_MESSAGES.slice(0, 7)
+const publicRoom = ref(true)
 const showJoin = ref(false)
 const joinCode = ref('')
 const copyHint = ref('点击复制房号')
@@ -350,6 +451,8 @@ const nextTier = computed(() => nextTierGap(room.profile.value.rating))
 
 const roleLabel = computed(() => {
   if (room.mode.value === 'local') return '本机双人'
+  if (room.approvalState.value === 'waiting') return '申请加入中'
+  if (room.approvalState.value === 'rejected') return '申请被拒绝'
   if (room.role.value === 'host') return '房主（先手）'
   if (room.role.value === 'guest') return '访客（后手）'
   if (room.role.value === 'spectator') return '观战中'
@@ -358,11 +461,19 @@ const roleLabel = computed(() => {
 
 const statusText = computed(() => {
   if (room.mode.value === 'local') return '本机轮流落子'
+  if (room.approvalState.value === 'waiting') return '等待房主同意…'
+  if (room.approvalState.value === 'rejected') return '申请被拒绝'
   switch (room.status.value) {
     case 'connecting':
       return '正在连接…'
     case 'waiting':
-      return room.reconnecting.value ? '等待对手重连…' : '等待对手加入…'
+      if (room.pendingRequests.value.length)
+        return `${room.pendingRequests.value.length} 位玩家申请加入`
+      return room.reconnecting.value
+        ? '等待对手重连…'
+        : room.isPublicRoom.value
+          ? '等待玩家申请或加入…'
+          : '等待对手加入…'
     case 'connected':
       return room.spectators.value > 0 ? `已连接 · ${room.spectators.value} 人观战` : '已连接'
     case 'reconnecting':
@@ -473,7 +584,7 @@ function canSelectConnect4(col: number): boolean {
 
 function hostGame(): void {
   void router.replace({ query: { room: '' } })
-  void room.hostGame().then(() => {
+  void room.hostGame(publicRoom.value).then(() => {
     void router.replace({ query: { room: room.roomCode.value } })
   })
 }
@@ -574,7 +685,7 @@ onMounted(() => {
   const roomParam = normalizeRoomCode(String(route.query.room ?? ''))
   if (isValidRoomCode(roomParam)) {
     joinCode.value = roomParam
-    void room.joinGame(roomParam)
+    void room.joinGame(roomParam, { request: route.query.request === '1' })
   }
 })
 

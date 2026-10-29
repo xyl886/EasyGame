@@ -19,6 +19,7 @@
     "test:all": "pnpm test && pnpm test:e2e"
   },
   "dependencies": {
+    "mqtt": "^5.16.1",
     "peerjs": "^1.5.5",
     "pinia": "^3.0.4",
     "qrcode": "^1.5.3",
@@ -35,6 +36,7 @@
     "@vitest/coverage-istanbul": "^5.0.5",
     "@vitest/coverage-v8": "^5.0.5",
     "@vue/test-utils": "^2.5.1",
+    "aedes": "^1.2.0",
     "autoprefixer": "^10.4.18",
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
@@ -50,7 +52,8 @@
     "vite-plugin-pwa": "^2.0.0",
     "vitest": "^5.0.5",
     "vue-tsc": "^3.3.13",
-    "workbox-window": "^7.4.1"
+    "workbox-window": "^7.4.1",
+    "ws": "^8.22.0"
   },
   "description": "EasyGame · 轻量级经典益智小游戏集合（Vue 3 + Vite + Tailwind，PWA 离线可用）",
   "packageManager": "pnpm@10.32.1",
